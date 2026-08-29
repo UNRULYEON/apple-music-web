@@ -1,0 +1,5 @@
+- always talk in ASD-STE100 Simplified Technical English
+- use `kebab-case` for all file and folder names
+- prefer `function` over `const` for functions
+- always use Conventional Commits format for commit messages
+- only add comments as a last resort for weird cases. Prefer short comments

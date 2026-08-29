@@ -1,0 +1,13 @@
+{
+  "$schema": "./node_modules/oxlint/configuration_schema.json",
+  "categories": {
+    "correctness": "error",
+    "suspicious": "warn",
+    "perf": "warn"
+  },
+  "rules": {
+    "func-style": ["error", "declaration"],
+    "unicorn/filename-case": "error"
+  },
+  "ignorePatterns": [".claude/**", "src/routeTree.gen.ts"]
+}
