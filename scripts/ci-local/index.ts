@@ -5,11 +5,13 @@ import {
   chmodSync,
   copyFileSync,
   existsSync,
+  lstatSync,
   mkdirSync,
   readdirSync,
   readFileSync,
+  readlinkSync,
   rmSync,
-  statSync,
+  symlinkSync,
   writeFileSync,
 } from "node:fs";
 import { dirname, join } from "node:path";
@@ -137,13 +139,19 @@ function copyWorkingTree(root: string, repoDir: string): void {
 
   for (const file of listed.split("\0").filter(Boolean)) {
     const source = join(root, file);
-    if (!existsSync(source)) {
+    const stats = lstatSync(source, { throwIfNoEntry: false });
+    if (!stats) {
       continue;
     }
     const destination = join(repoDir, file);
     mkdirSync(dirname(destination), { recursive: true });
+    // git keeps a symlink as its target path, and that target can be a directory.
+    if (stats.isSymbolicLink()) {
+      symlinkSync(readlinkSync(source), destination);
+      continue;
+    }
     copyFileSync(source, destination);
-    chmodSync(destination, statSync(source).mode);
+    chmodSync(destination, stats.mode);
   }
 }
 
