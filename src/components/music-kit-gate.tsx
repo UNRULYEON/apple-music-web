@@ -1,7 +1,14 @@
 import { AnimatePresence, motion, MotionConfig } from "motion/react";
 import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Card, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardPanel,
+  CardTitle,
+} from "@/components/ui/card";
 import { Spinner } from "@/components/ui/spinner";
 import { loadAuthorization, signIn } from "@/lib/music-kit/auth";
 
@@ -90,7 +97,7 @@ export function MusicKitGate({ children }: { children: React.ReactNode }): React
                         You need an Apple Music subscription to play music and to read your library.
                       </CardDescription>
                     </CardHeader>
-                    <div className="flex flex-col gap-3 px-6 pb-6">
+                    <CardPanel className="flex flex-col">
                       <Button loading={isSigningIn} onClick={handleSignIn}>
                         Continue with Apple Music
                       </Button>
@@ -99,7 +106,11 @@ export function MusicKitGate({ children }: { children: React.ReactNode }): React
                           {error}
                         </p>
                       )}
-                    </div>
+                    </CardPanel>
+                    <CardFooter className="flex flex-col text-center text-muted-foreground text-xs">
+                      <p>Not affiliated with or endorsed by Apple Inc.</p>
+                      <p>Apple Music is a trademark of Apple Inc.</p>
+                    </CardFooter>
                   </Card>
                 </motion.div>
               )}
