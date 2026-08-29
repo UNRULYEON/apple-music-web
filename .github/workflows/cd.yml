@@ -9,6 +9,10 @@ on:
         description: Emergency deploy. Skips the checks.
         type: boolean
         default: false
+      reason:
+        description: Why you deploy by hand.
+        type: string
+        required: true
 
 jobs:
   ci:
@@ -29,6 +33,18 @@ jobs:
       cancel-in-progress: false
 
     steps:
+      # The reason is free text, so it goes through the environment.
+      - name: Record the reason
+        if: github.event_name == 'workflow_dispatch'
+        env:
+          REASON: ${{ inputs.reason }}
+        run: |
+          if [ -z "$(echo "$REASON" | tr -d '[:space:]')" ]; then
+            echo "::error::A manual deploy needs a reason."
+            exit 1
+          fi
+          echo "Manual deploy: $REASON" >> "$GITHUB_STEP_SUMMARY"
+
       - name: Check out code
         uses: actions/checkout@v4
 
