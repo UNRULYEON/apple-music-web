@@ -3,10 +3,17 @@ name: CD
 on:
   push:
     branches: [main]
+  workflow_dispatch:
+    inputs:
+      skip_checks:
+        description: Emergency deploy. Skips the checks.
+        type: boolean
+        default: false
 
 jobs:
   ci:
     name: ci
+    if: ${{ !inputs.skip_checks }}
     uses: ./.github/workflows/ci.yml
 
   deploy:
@@ -14,6 +21,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 10
     needs: ci
+    if: ${{ !cancelled() && (needs.ci.result == 'success' || inputs.skip_checks) }}
 
     # Never let two deploys of main overlap.
     concurrency:
