@@ -43,7 +43,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        task: [build, check-types, lint, format]
+        task: [build, test, check-types, lint, format]
 
     steps:
       - name: Check out code
