@@ -1,0 +1,15 @@
+[
+  {
+    "label": "vitest $ZED_SYMBOL",
+    "command": "bun",
+    "args": ["run", "vitest", "run", "$ZED_RELATIVE_FILE", "-t", "$ZED_SYMBOL"],
+    "cwd": "$ZED_WORKTREE_ROOT",
+    "tags": ["ts-test", "tsx-test", "js-test"]
+  },
+  {
+    "label": "vitest $ZED_RELATIVE_FILE",
+    "command": "bun",
+    "args": ["run", "vitest", "run", "$ZED_RELATIVE_FILE"],
+    "cwd": "$ZED_WORKTREE_ROOT"
+  }
+]
