@@ -1,13 +1,37 @@
 // @vitest-environment happy-dom
-import { cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
-import { afterEach, describe, expect, it, vi } from "vitest";
+import { act, cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { MusicKitGate } from "@/components/music-kit-gate";
-import { loadAuthorization, signIn } from "@/lib/music-kit/auth";
+import { setAuthStatus } from "@/lib/music-kit/auth";
+import { dropToken, restoreToken } from "@/lib/music-kit/dev-session";
+import { getMusicKit } from "@/lib/music-kit/instance";
 
-vi.mock("@/lib/music-kit/auth", () => ({ loadAuthorization: vi.fn(), signIn: vi.fn() }));
+vi.mock("@/lib/music-kit/instance", () => ({ getMusicKit: vi.fn() }));
 
-const load = vi.mocked(loadAuthorization);
-const authorize = vi.mocked(signIn);
+const loadMusicKit = vi.mocked(getMusicKit);
+
+function mockMusic(token = "") {
+  let current = token;
+
+  const music = {
+    isAuthorized: Boolean(token),
+    get musicUserToken(): string {
+      return current;
+    },
+    set musicUserToken(next: string) {
+      current = next;
+      music.isAuthorized = Boolean(next);
+    },
+    authorize: vi.fn(async () => {
+      music.musicUserToken = "music-user-token";
+      return music.musicUserToken;
+    }),
+  };
+
+  loadMusicKit.mockResolvedValue(music as unknown as MusicKit.MusicKitInstance);
+
+  return music;
+}
 
 function renderGate() {
   const view = render(
@@ -25,14 +49,19 @@ function renderGate() {
   };
 }
 
+beforeEach(() => {
+  setAuthStatus("checking");
+});
+
 afterEach(() => {
   cleanup();
+  localStorage.clear();
   vi.clearAllMocks();
 });
 
 describe("MusicKitGate", () => {
   it("shows only a spinner while MusicKit starts", () => {
-    load.mockReturnValue(new Promise(() => {}));
+    loadMusicKit.mockReturnValue(new Promise(() => {}));
 
     const gate = renderGate();
 
@@ -42,7 +71,7 @@ describe("MusicKitGate", () => {
   });
 
   it("swaps the spinner for the sign in dialog", async () => {
-    load.mockResolvedValue(false);
+    mockMusic();
 
     const gate = renderGate();
 
@@ -52,7 +81,7 @@ describe("MusicKitGate", () => {
   });
 
   it("swaps the spinner for the app when the visitor is already signed in", async () => {
-    load.mockResolvedValue(true);
+    mockMusic("a-music-user-token");
 
     const gate = renderGate();
 
@@ -62,9 +91,9 @@ describe("MusicKitGate", () => {
   });
 
   it("never shows the sign in dialog before the answer arrives", async () => {
-    let answer!: (authorized: boolean) => void;
-    load.mockReturnValue(
-      new Promise<boolean>((resolve) => {
+    let answer!: (music: MusicKit.MusicKitInstance) => void;
+    loadMusicKit.mockReturnValue(
+      new Promise<MusicKit.MusicKitInstance>((resolve) => {
         answer = resolve;
       }),
     );
@@ -72,26 +101,25 @@ describe("MusicKitGate", () => {
     const gate = renderGate();
     expect(gate.signInCard()).toBeNull();
 
-    answer(false);
+    answer({ isAuthorized: false } as MusicKit.MusicKitInstance);
 
     expect(await screen.findByText("Sign in to Apple Music")).not.toBeNull();
   });
 
   it("takes the gate away after a successful sign in", async () => {
-    load.mockResolvedValue(false);
-    authorize.mockResolvedValue(true);
+    const music = mockMusic();
 
     const gate = renderGate();
     fireEvent.click(await screen.findByRole("button", { name: "Continue with Apple Music" }));
 
     await waitFor(() => expect(gate.gate()).toBeNull());
-    expect(authorize).toHaveBeenCalledOnce();
+    expect(music.authorize).toHaveBeenCalledOnce();
     expect(gate.appIsBlocked()).toBe(false);
   });
 
   it("keeps the dialog and says why when sign in fails", async () => {
-    load.mockResolvedValue(false);
-    authorize.mockRejectedValue(new Error("The user closed the window."));
+    const music = mockMusic();
+    music.authorize.mockRejectedValue(new Error("The user closed the window."));
 
     const gate = renderGate();
     fireEvent.click(await screen.findByRole("button", { name: "Continue with Apple Music" }));
@@ -105,11 +133,48 @@ describe("MusicKitGate", () => {
   });
 
   it("never signs a visitor in on its own", async () => {
-    load.mockResolvedValue(false);
+    const music = mockMusic();
 
     renderGate();
     await screen.findByText("Sign in to Apple Music");
 
-    expect(authorize).not.toHaveBeenCalled();
+    expect(music.authorize).not.toHaveBeenCalled();
+  });
+
+  it("comes back when the devtools drop the token, with no page reload", async () => {
+    mockMusic("a-music-user-token");
+
+    const gate = renderGate();
+    await waitFor(() => expect(gate.gate()).toBeNull());
+
+    await act(async () => {
+      await dropToken();
+    });
+
+    expect(await screen.findByText("Sign in to Apple Music")).not.toBeNull();
+    expect(gate.appIsBlocked()).toBe(true);
+  });
+
+  it("goes away when the devtools give the token back", async () => {
+    const music = mockMusic("a-music-user-token");
+    localStorage.setItem(
+      "music-kit-devtools.saved-token",
+      JSON.stringify({ savedAt: new Date().toISOString(), token: "a-music-user-token" }),
+    );
+
+    const gate = renderGate();
+    await waitFor(() => expect(gate.gate()).toBeNull());
+
+    await act(async () => {
+      await dropToken();
+    });
+    await screen.findByText("Sign in to Apple Music");
+
+    await act(async () => {
+      await restoreToken();
+    });
+
+    await waitFor(() => expect(gate.gate()).toBeNull());
+    expect(music.authorize).not.toHaveBeenCalled();
   });
 });

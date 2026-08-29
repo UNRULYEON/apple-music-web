@@ -10,9 +10,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Spinner } from "@/components/ui/spinner";
-import { loadAuthorization, signIn } from "@/lib/music-kit/auth";
-
-type Status = "checking" | "signed-out" | "signed-in";
+import { loadAuthorization, signIn, useAuthStatus } from "@/lib/music-kit/auth";
 
 const TRANSITION = { duration: 0.24, ease: [0.16, 1, 0.3, 1] } as const;
 
@@ -23,22 +21,12 @@ const SWAP = {
 };
 
 export function MusicKitGate({ children }: { children: React.ReactNode }): React.ReactElement {
-  const [status, setStatus] = useState<Status>("checking");
+  const status = useAuthStatus();
   const [isSigningIn, setIsSigningIn] = useState(false);
   const [error, setError] = useState<string>();
 
   useEffect(() => {
-    let active = true;
-
-    void loadAuthorization().then((authorized) => {
-      if (active) {
-        setStatus(authorized ? "signed-in" : "signed-out");
-      }
-    });
-
-    return () => {
-      active = false;
-    };
+    void loadAuthorization();
   }, []);
 
   async function handleSignIn(): Promise<void> {
@@ -46,7 +34,7 @@ export function MusicKitGate({ children }: { children: React.ReactNode }): React
     setError(undefined);
 
     try {
-      setStatus((await signIn()) ? "signed-in" : "signed-out");
+      await signIn();
     } catch (cause) {
       setError(cause instanceof Error ? cause.message : "Sign in failed. Try again.");
     } finally {
@@ -65,18 +53,18 @@ export function MusicKitGate({ children }: { children: React.ReactNode }): React
         {children}
       </motion.div>
 
-      <AnimatePresence>
+      <AnimatePresence initial={false} mode="wait">
         {status !== "signed-in" && (
           <motion.div
-            animate={{ opacity: 1 }}
+            key="music-kit-gate"
+            initial={{ opacity: 0, filter: "blur(8px)" }}
+            animate={{ opacity: 1, filter: "blur(0px)" }}
+            exit={{ opacity: 0, filter: "blur(8px)" }}
+            transition={TRANSITION}
+            role="dialog"
             aria-label={status === "checking" ? "Starting Apple Music" : "Sign in to Apple Music"}
             aria-modal="true"
             className="fixed inset-0 z-50 flex items-center justify-center bg-background/80 p-6 backdrop-blur-sm"
-            exit={{ opacity: 0 }}
-            initial={false}
-            key="music-kit-gate"
-            role="dialog"
-            transition={TRANSITION}
           >
             <AnimatePresence initial={false} mode="wait">
               {status === "checking" ? (
