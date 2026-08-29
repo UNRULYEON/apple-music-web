@@ -67,8 +67,57 @@ Next, run the development server:
 bun dev
 ```
 
-All routes need a signed-in Apple Music user. Without one, the router sends you to `/login`.
-Guarded pages live under `src/routes/_authed/`.
+The whole app sits behind an Apple Music sign in. Until a user signs in, `MusicKitGate` covers
+it with a dialog.
+
+### Apple Authentication devtools
+
+The devtools panel in the corner has an **Apple Authentication** tab. It is added only when
+`import.meta.env.DEV` is true, so it never reaches a build.
+
+Apple gives MusicKit two different tokens. The **developer token** identifies the app, and the
+section above makes it. The **Music User Token** identifies the person, and Apple only gives it
+after the sign-in window accepts an Apple Account and an Apple Music subscription. This tab
+keeps a copy of that second token, so you do not have to open that window again.
+
+Sign in one time. The panel sees the new token and writes it to `localStorage`. After that the
+two badges show the authorization status and whether a copy is there.
+
+| Button                                   | What happens                                                         |
+| ---------------------------------------- | -------------------------------------------------------------------- |
+| `Sign in`                                | Gives the kept Music User Token back to MusicKit. Apple is not asked |
+| `Sign out`                               | Takes the Music User Token out of MusicKit. The copy stays           |
+| `Sign out and remove from local storage` | Also removes the copy, so the next sign in opens the Apple window    |
+
+#### How it works
+
+`MusicKitGate` and the panel read one store, `useAuthStatus` in `src/lib/music-kit/auth.ts`. The
+status is `checking`, `signed-out` or `signed-in`. Each button moves that store, and the gate
+reacts immediately. Nothing here reloads the page.
+
+`music.musicUserToken` is a setter, and one assignment does three things: it changes the token in
+memory, it writes or removes the storage key, and it sets the authorization status. An empty
+string is therefore a full sign out for this browser.
+
+| Key                                | Who writes it | What is in it                       |
+| ---------------------------------- | ------------- | ----------------------------------- |
+| `music.<team id>.media-user-token` | MusicKit      | The live Music User Token           |
+| `music-kit-devtools.saved-token`   | This panel    | The copy, with the date it was made |
+
+MusicKit builds its own key from your Apple Team ID, in lower case. It also keeps
+`music.<team id>.itua` for the storefront country.
+
+#### Limits
+
+`Sign out` does not call `unauthorize()`. That call sends a logout request to Apple, which ends
+the session there and makes the copy useless. The panel only changes this browser.
+
+The copy holds the Music User Token as clear text, the same as MusicKit does. Keep it to a
+development machine.
+
+A Music User Token does not live forever, and it stops working when the developer token that
+made it expires. If Apple starts to answer 401, use `Sign out and remove from local storage` and
+sign in again.
 
 ### Deploying to Cloudflare
 

@@ -3,11 +3,19 @@ import { TanStackRouterDevtoolsPanel } from "@tanstack/react-router-devtools";
 import { TanStackDevtools } from "@tanstack/react-devtools";
 
 import TanStackQueryDevtools from "../integrations/tanstack-query/devtools";
+import { MusicKitDevtools } from "@/components/music-kit-devtools";
 import { MusicKitGate } from "@/components/music-kit-gate";
 
 import appCss from "../styles.css?url";
 
 import type { QueryClient } from "@tanstack/react-query";
+import type { TanStackDevtoolsReactPlugin } from "@tanstack/react-devtools";
+
+const appleAuthDevtools: TanStackDevtoolsReactPlugin = {
+  id: "apple-auth",
+  name: "Apple Authentication",
+  render: (_element, props) => <MusicKitDevtools theme={props.theme} />,
+};
 
 interface MyRouterContext {
   queryClient: QueryClient;
@@ -61,6 +69,7 @@ function RootDocument({ children }: { children: React.ReactNode }) {
               render: <TanStackRouterDevtoolsPanel />,
             },
             TanStackQueryDevtools,
+            ...(import.meta.env.DEV ? [appleAuthDevtools] : []),
           ]}
         />
         <Scripts />
