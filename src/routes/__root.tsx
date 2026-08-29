@@ -7,9 +7,11 @@ import TanStackQueryDevtools from "../integrations/tanstack-query/devtools";
 import appCss from "../styles.css?url";
 
 import type { QueryClient } from "@tanstack/react-query";
+import type { MusicKitAuth } from "@/lib/music-kit/auth";
 
 interface MyRouterContext {
   queryClient: QueryClient;
+  auth: MusicKitAuth;
 }
 
 export const Route = createRootRouteWithContext<MyRouterContext>()({
@@ -30,6 +32,12 @@ export const Route = createRootRouteWithContext<MyRouterContext>()({
       {
         rel: "stylesheet",
         href: appCss,
+      },
+    ],
+    scripts: [
+      {
+        src: "https://js-cdn.music.apple.com/musickit/v3/musickit.js",
+        async: true,
       },
     ],
   }),
