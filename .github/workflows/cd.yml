@@ -3,6 +3,12 @@ name: CD
 on:
   push:
     branches: [main]
+    paths-ignore:
+      - "**.md"
+      - ".claude/**"
+      - ".agents/**"
+      - ".zed/**"
+      - "skills-lock.json"
   workflow_dispatch:
     inputs:
       skip_checks:
