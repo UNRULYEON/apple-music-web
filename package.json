@@ -17,6 +17,7 @@
     "format": "oxfmt --check --no-error-on-unmatched-pattern .",
     "format:fix": "oxfmt --no-error-on-unmatched-pattern .",
     "ci:local": "bun scripts/ci-local/index.ts",
+    "generate-music-kit-token": "bun scripts/generate-music-kit-token/index.ts",
     "generate-routes": "tsr generate",
     "check-types": "tsc --noEmit"
   },
