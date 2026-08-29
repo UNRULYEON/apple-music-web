@@ -4,4 +4,6 @@
   "compatibility_date": "2025-09-02",
   "compatibility_flags": ["nodejs_compat"],
   "main": "@tanstack/react-start/server-entry",
+  // SPA mode. The worker serves the shell and never renders a route on the server.
+  "vars": { "TSS_SHELL": "true" },
 }
