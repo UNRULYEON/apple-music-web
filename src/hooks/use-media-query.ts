@@ -52,10 +52,6 @@ function parseQuery(query: BreakpointQuery | MediaQueryInput | (string & {})): s
   return parts.length > 0 ? parts.join(" and ") : query;
 }
 
-function getServerSnapshot(): boolean {
-  return false;
-}
-
 export type MediaQueryInput = {
   min?: Breakpoint | number;
   max?: Breakpoint | number;
@@ -81,7 +77,10 @@ export function useMediaQuery(query: BreakpointQuery | MediaQueryInput | (string
     return window.matchMedia(mediaQuery).matches;
   }, [mediaQuery]);
 
-  return useSyncExternalStore(subscribe, getSnapshot, getServerSnapshot);
+  // getSnapshot doubles as the hydration snapshot. A snapshot that always says
+  // "desktop" makes the first client render disagree with the real viewport, and
+  // a mobile layout then paints wide and animates narrow.
+  return useSyncExternalStore(subscribe, getSnapshot, getSnapshot);
 }
 
 export function useIsMobile(): boolean {

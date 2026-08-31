@@ -116,6 +116,27 @@ describe("SidebarProvider", () => {
     expect(localStorage.getItem("sidebar-open")).toBe("true");
   });
 
+  it("is closed on the very first hydration render on mobile", () => {
+    localStorage.setItem("sidebar-open", "true");
+    setViewport(false);
+
+    const renders: Array<boolean> = [];
+
+    function Probe() {
+      renders.push(useSidebar().isOpen);
+      return null;
+    }
+
+    render(
+      <SidebarProvider>
+        <Probe />
+      </SidebarProvider>,
+      { hydrate: true },
+    );
+
+    expect(renders[0]).toBe(false);
+  });
+
   it("peeks instead of opening when the toggle is used on mobile", () => {
     setViewport(false);
     const seen = renderProvider();
