@@ -45,7 +45,7 @@ function renderGate() {
     gate: () => screen.queryByRole("dialog"),
     spinner: () => screen.queryByRole("status"),
     signInCard: () => screen.queryByText("Sign in to Apple Music"),
-    appIsBlocked: () => Boolean(view.container.querySelector(".isolate")?.hasAttribute("inert")),
+    appIsBlocked: () => Boolean(view.container.firstElementChild?.hasAttribute("inert")),
   };
 }
 
