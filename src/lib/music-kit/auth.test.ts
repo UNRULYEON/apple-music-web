@@ -18,6 +18,9 @@ function mockMusic(isAuthorized = false): MusicKit.MusicKitInstance {
       music.isAuthorized = true;
       return "music-user-token";
     }),
+    unauthorize: vi.fn(async () => {
+      music.isAuthorized = false;
+    }),
   };
 
   return music as unknown as MusicKit.MusicKitInstance;
@@ -84,6 +87,29 @@ describe("signIn", () => {
     loadMusicKit.mockResolvedValue(music);
 
     await expect(signIn()).rejects.toThrow("The user closed the window.");
+  });
+});
+
+describe("signOut", () => {
+  it("ends the Apple session and moves the store", async () => {
+    const { loadAuthorization, signOut, readAuthStatus } = await loadModule();
+    const music = mockMusic(true);
+    loadMusicKit.mockResolvedValue(music);
+    await loadAuthorization();
+
+    await signOut();
+
+    expect(music.unauthorize).toHaveBeenCalledOnce();
+    expect(readAuthStatus()).toBe("signed-out");
+  });
+
+  it("lets the error through so the button can show it", async () => {
+    const { signOut } = await loadModule();
+    const music = mockMusic(true);
+    vi.mocked(music.unauthorize).mockRejectedValue(new Error("The network is down."));
+    loadMusicKit.mockResolvedValue(music);
+
+    await expect(signOut()).rejects.toThrow("The network is down.");
   });
 });
 

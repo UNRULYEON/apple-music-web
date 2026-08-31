@@ -38,6 +38,13 @@ export async function signIn(): Promise<void> {
   setAuthStatus(music.isAuthorized ? "signed-in" : "signed-out");
 }
 
+export async function signOut(): Promise<void> {
+  const music = await getMusicKit();
+  await music.unauthorize();
+
+  setAuthStatus(music.isAuthorized ? "signed-in" : "signed-out");
+}
+
 export function subscribeToAuthStatus(listener: () => void): () => void {
   listeners.add(listener);
 
