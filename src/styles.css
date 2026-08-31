@@ -264,3 +264,16 @@ body {
     font-family: var(--font-mono);
   }
 }
+
+/* Holds the sidebar closed until hydration, so a stored closed state never paints open. */
+@layer base {
+  [data-sidebar^="closed"] [data-slot="nav-panel"] {
+    width: 0 !important;
+  }
+  [data-sidebar^="closed"] [data-slot="nav-panel-inner"] {
+    transform: translateX(-256px) !important;
+  }
+  [data-sidebar="closed"] [data-slot="nav-panel-inner"] {
+    top: 40px !important;
+  }
+}

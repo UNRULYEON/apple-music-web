@@ -2,7 +2,7 @@ import { HeadContent, Scripts, createRootRouteWithContext } from "@tanstack/reac
 import { TanStackRouterDevtoolsPanel } from "@tanstack/react-router-devtools";
 import { TanStackDevtools } from "@tanstack/react-devtools";
 
-import TanStackQueryDevtools from "../integrations/tanstack-query/devtools";
+import TanStackQueryDevtools from "@/integrations/tanstack-query/devtools";
 import { MusicKitDevtools } from "@/components/music-kit-devtools";
 import { MusicKitGate } from "@/components/music-kit-gate";
 
@@ -10,6 +10,9 @@ import appCss from "../styles.css?url";
 
 import type { QueryClient } from "@tanstack/react-query";
 import type { TanStackDevtoolsReactPlugin } from "@tanstack/react-devtools";
+import { Nav } from "@/components";
+import { SidebarProvider } from "@/contexts";
+import { preHydrationScript } from "@/lib/sidebar-storage";
 
 const appleAuthDevtools: TanStackDevtoolsReactPlugin = {
   id: "apple-auth",
@@ -43,6 +46,9 @@ export const Route = createRootRouteWithContext<MyRouterContext>()({
     ],
     scripts: [
       {
+        children: preHydrationScript,
+      },
+      {
         src: "https://js-cdn.music.apple.com/musickit/v3/musickit.js",
         async: true,
       },
@@ -53,12 +59,19 @@ export const Route = createRootRouteWithContext<MyRouterContext>()({
 
 function RootDocument({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en">
+    <html lang="en" suppressHydrationWarning>
       <head>
         <HeadContent />
       </head>
-      <body className="relative">
-        <MusicKitGate>{children}</MusicKitGate>
+      <body className="relative overflow-clip">
+        <div className="isolate relative flex flex-col grow min-h-svh bg-background">
+          <SidebarProvider>
+            <MusicKitGate>
+              <Nav />
+              <main className="flex grow">{children}</main>
+            </MusicKitGate>
+          </SidebarProvider>
+        </div>
         <TanStackDevtools
           config={{
             position: "bottom-right",

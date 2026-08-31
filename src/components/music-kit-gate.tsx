@@ -45,10 +45,12 @@ export function MusicKitGate({ children }: { children: React.ReactNode }): React
   return (
     <MotionConfig reducedMotion="user">
       <motion.div
-        className="isolate relative flex min-h-svh flex-col"
+        className="flex grow"
+        initial={{ ...SWAP.initial, scale: 1 }}
+        animate={{ ...SWAP.animate, scale: 1 }}
+        exit={{ ...SWAP.exit, scale: 1 }}
         transition={TRANSITION}
         inert={status !== "signed-in"}
-        {...SWAP}
       >
         {children}
       </motion.div>
