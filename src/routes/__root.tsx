@@ -11,8 +11,9 @@ import appCss from "../styles.css?url";
 import type { QueryClient } from "@tanstack/react-query";
 import type { TanStackDevtoolsReactPlugin } from "@tanstack/react-devtools";
 import { Nav } from "@/components";
-import { SidebarProvider } from "@/contexts";
-import { preHydrationScript } from "@/lib/sidebar-storage";
+import { SidebarProvider, ThemeProvider } from "@/contexts";
+import { preHydrationScript as sidebarPreHydrationScript } from "@/lib/sidebar-storage";
+import { preHydrationScript as themePreHydrationScript } from "@/lib/theme-storage";
 
 const appleAuthDevtools: TanStackDevtoolsReactPlugin = {
   id: "apple-auth",
@@ -46,7 +47,10 @@ export const Route = createRootRouteWithContext<MyRouterContext>()({
     ],
     scripts: [
       {
-        children: preHydrationScript,
+        children: themePreHydrationScript,
+      },
+      {
+        children: sidebarPreHydrationScript,
       },
       {
         src: "https://js-cdn.music.apple.com/musickit/v3/musickit.js",
@@ -65,12 +69,14 @@ function RootDocument({ children }: { children: React.ReactNode }) {
       </head>
       <body className="relative overflow-clip">
         <div className="isolate relative flex flex-col grow min-h-svh bg-background">
-          <SidebarProvider>
-            <MusicKitGate>
-              <Nav />
-              <main className="flex grow">{children}</main>
-            </MusicKitGate>
-          </SidebarProvider>
+          <ThemeProvider>
+            <SidebarProvider>
+              <MusicKitGate>
+                <Nav />
+                <main className="flex grow">{children}</main>
+              </MusicKitGate>
+            </SidebarProvider>
+          </ThemeProvider>
         </div>
         <TanStackDevtools
           config={{

@@ -27,7 +27,7 @@ export function SidebarToggle() {
       <Button
         variant="ghost"
         className={cn(
-          "relative data-hover:bg-neutral-300 transition-colors",
+          "relative data-hover:bg-neutral-300 data-hover:dark:bg-neutral-800 transition-colors",
           isMobile ? "z-0" : "z-40",
         )}
         onClick={() => setOpen((v) => !v)}

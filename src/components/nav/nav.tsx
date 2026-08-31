@@ -1,6 +1,7 @@
 import { useSidebar } from "@/hooks";
 import { cn } from "@/lib/utils";
 import { AnimatePresence, motion } from "motion/react";
+import { BottomNav } from "@/components";
 
 const SIDEBAR_WIDTH = 256;
 const SWIPE_CLOSE_DISTANCE = SIDEBAR_WIDTH * 0.1;
@@ -75,7 +76,7 @@ export function Nav() {
         >
           <nav
             className={cn(
-              `h-full`,
+              `h-full p-2`,
               "flex flex-col",
               "text-sidebar-foreground",
               "bg-sidebar",
@@ -83,7 +84,10 @@ export function Nav() {
               "rounded-lg",
             )}
           >
-            nav
+            <div className="flex flex-col grow">nav</div>
+            <div className="flex flex-col">
+              <BottomNav />
+            </div>
           </nav>
         </motion.div>
       </motion.div>

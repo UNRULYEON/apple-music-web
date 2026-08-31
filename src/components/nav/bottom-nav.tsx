@@ -1,0 +1,68 @@
+import { signOut } from "@/lib/music-kit/auth";
+import { useQueryClient } from "@tanstack/react-query";
+import { useState } from "react";
+import { Button } from "@/components/ui/button";
+import { HugeiconsIcon } from "@hugeicons/react";
+import { LaptopIcon, LogoutSquare01Icon, Moon02Icon, Sun03Icon } from "@hugeicons/core-free-icons";
+import {
+  segmentedControlItemVariants,
+  segmentedControlRootClassName,
+} from "@/lib/segmented-control";
+import { RadioGroupPrimitive, RadioPrimitive } from "@/components/ui/radio-group";
+import { useTheme } from "@/hooks";
+import type { Theme } from "@/lib/theme-storage";
+import { cn } from "@/lib/utils";
+
+const itemClassName = segmentedControlItemVariants({
+  className: "grow",
+  size: "sm",
+  state: "checked",
+});
+
+export function BottomNav() {
+  const { theme, setTheme } = useTheme();
+  const queryClient = useQueryClient();
+  const [isSigningOut, setIsSigningOut] = useState(false);
+
+  async function handleSignOut(): Promise<void> {
+    setIsSigningOut(true);
+
+    try {
+      await signOut();
+      queryClient.clear();
+    } finally {
+      setIsSigningOut(false);
+    }
+  }
+
+  return (
+    <div className="flex flex-col gap-2">
+      <RadioGroupPrimitive
+        aria-label="Theme picker"
+        className={cn(segmentedControlRootClassName, "w-full")}
+        value={theme}
+        onValueChange={(value) => setTheme(value as Theme)}
+      >
+        <RadioPrimitive.Root className={itemClassName} value="light" aria-label="Light">
+          <HugeiconsIcon icon={Sun03Icon} strokeWidth={2} aria-hidden="true" />
+        </RadioPrimitive.Root>
+        <RadioPrimitive.Root className={itemClassName} value="dark" aria-label="Dark">
+          <HugeiconsIcon icon={Moon02Icon} strokeWidth={2} aria-hidden="true" />
+        </RadioPrimitive.Root>
+        <RadioPrimitive.Root className={itemClassName} value="system" aria-label="System">
+          <HugeiconsIcon icon={LaptopIcon} strokeWidth={2} aria-hidden="true" />
+        </RadioPrimitive.Root>
+      </RadioGroupPrimitive>
+
+      <Button
+        variant="ghost"
+        className="justify-start"
+        loading={isSigningOut}
+        onClick={handleSignOut}
+      >
+        <HugeiconsIcon icon={LogoutSquare01Icon} strokeWidth={2} aria-hidden="true" />
+        Log out
+      </Button>
+    </div>
+  );
+}
