@@ -1,4 +1,3 @@
-// Reads the `on:` block of a workflow. act cannot trigger workflow_call.
 export function parseEvents(text: string): Array<string> {
   const header = /^on:(.*)$/m.exec(text);
   if (!header) {

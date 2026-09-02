@@ -25,9 +25,6 @@ export async function keepSession(): Promise<boolean> {
   return true;
 }
 
-// The setter reaches StoreKit, which holds the token in memory, in storage, and in
-// the authorization status. unauthorize() is no use here: it also ends the session
-// at Apple. An empty token therefore signs the user out of this browser only.
 export async function dropToken(): Promise<void> {
   await setToken("");
 }

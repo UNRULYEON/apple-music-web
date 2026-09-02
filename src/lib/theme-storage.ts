@@ -18,9 +18,7 @@ export function readStoredTheme(): Theme {
 export function writeStoredTheme(theme: Theme): void {
   try {
     window.localStorage.setItem(STORAGE_KEY, theme);
-  } catch {
-    // Private mode, or storage is full. The theme stays for this session only.
-  }
+  } catch {}
 
   for (const listener of listeners) {
     listener();
@@ -35,8 +33,6 @@ export function subscribeToTheme(listener: () => void): () => void {
   };
 }
 
-// The server has no storage, so it always renders the system theme. The client must
-// hydrate with the same theme, because React does not patch a mismatched attribute.
 export function readInitialTheme(): Theme {
   return "system";
 }
@@ -47,7 +43,6 @@ export function applyTheme(theme: Theme, prefersDark: boolean): void {
   document.documentElement.style.colorScheme = dark ? "dark" : "light";
 }
 
-/** Crossfades the page over the theme swap. Switches at once where the browser cannot. */
 export function startThemeTransition(update: () => void): void {
   if (!document.startViewTransition || window.matchMedia(REDUCED_MOTION_QUERY).matches) {
     update();
@@ -57,7 +52,6 @@ export function startThemeTransition(update: () => void): void {
   document.startViewTransition(update);
 }
 
-/** Runs in <head>, before the first paint, so the page never flashes the wrong theme. */
 export const preHydrationScript = `try{
 var t=localStorage.getItem(${JSON.stringify(STORAGE_KEY)});
 var d=t==="dark"||(t!=="light"&&matchMedia(${JSON.stringify(DARK_QUERY)}).matches);

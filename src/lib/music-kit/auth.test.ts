@@ -5,7 +5,6 @@ vi.mock("@/lib/music-kit/instance", () => ({ getMusicKit: vi.fn() }));
 
 const loadMusicKit = vi.mocked(getMusicKit);
 
-// The store lives in the module, so every test needs a module of its own.
 async function loadModule() {
   vi.resetModules();
   return await import("./auth.ts");

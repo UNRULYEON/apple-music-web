@@ -28,7 +28,6 @@ if (values.help) {
 const flagKeyPath = values.key ?? process.env.APPLE_PRIVATE_KEY_PATH;
 const flagTeamId = values["team-id"] ?? process.env.APPLE_TEAM_ID;
 
-// Full arguments keep the script quiet, so it stays usable in a pipe.
 if (flagKeyPath && flagTeamId) {
   const keyId = givenKeyId(flagKeyPath);
 
@@ -167,9 +166,7 @@ function findKeyFiles(): Array<string> {
           found.push(join(directory, name));
         }
       }
-    } catch {
-      // An unreadable folder is not worth a warning here.
-    }
+    } catch {}
   }
 
   return found;
@@ -243,7 +240,6 @@ function stop(message: string): never {
   process.exit(1);
 }
 
-// Without a terminal a prompt waits forever, so say what is missing instead.
 async function ask<T>(prompt: () => Promise<T | symbol>): Promise<T> {
   if (!process.stdin.isTTY) {
     stop("This step needs a terminal. Pass --key and --team-id instead, see --help.");

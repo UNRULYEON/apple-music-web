@@ -15,8 +15,6 @@ vi.mock("@/lib/music-kit/instance", () => ({ getMusicKit: vi.fn() }));
 const loadMusicKit = vi.mocked(getMusicKit);
 const SAVED_KEY = "music-kit-devtools.saved-token";
 
-// Setting musicUserToken writes the token to memory and to storage in one step,
-// and it moves isAuthorized with it.
 function mockMusic(token = "") {
   let current = token;
 

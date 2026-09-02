@@ -28,7 +28,6 @@ export async function signDeveloperToken(options: SignOptions): Promise<string> 
     ["sign"],
   );
 
-  // Web Crypto returns the raw r||s pair, which is the format JOSE wants.
   const signature = await crypto.subtle.sign(
     { name: "ECDSA", hash: "SHA-256" },
     key,

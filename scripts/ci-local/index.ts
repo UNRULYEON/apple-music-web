@@ -65,7 +65,6 @@ function hasCommand(command: string): boolean {
   return spawnSync(command, ["--version"], { stdio: "ignore" }).status === 0;
 }
 
-// act reads /var/run/docker.sock, which can point at a stopped Docker Desktop.
 function dockerHost(): string | undefined {
   if (process.env.DOCKER_HOST) {
     return process.env.DOCKER_HOST;
@@ -82,7 +81,6 @@ function dockerHost(): string | undefined {
   }
 }
 
-// act keeps one tag for every platform, so a cached image can be the wrong one.
 function imageMatches(architecture: Architecture, env: NodeJS.ProcessEnv): boolean {
   try {
     const found = execFileSync(
@@ -129,7 +127,6 @@ function isDirty(root: string): boolean {
   return git(["status", "--porcelain"], root).length > 0;
 }
 
-// Copies what git would see if you committed now, so gitignored paths stay out.
 function copyWorkingTree(root: string, repoDir: string): void {
   const listed = execFileSync(
     "git",
@@ -145,7 +142,6 @@ function copyWorkingTree(root: string, repoDir: string): void {
     }
     const destination = join(repoDir, file);
     mkdirSync(dirname(destination), { recursive: true });
-    // git keeps a symlink as its target path, and that target can be a directory.
     if (stats.isSymbolicLink()) {
       symlinkSync(readlinkSync(source), destination);
       continue;
@@ -160,7 +156,6 @@ function stop(message: string): never {
   process.exit(1);
 }
 
-// Without a terminal a prompt waits forever, so say what is missing instead.
 async function ask<T>(prompt: () => Promise<T | symbol>): Promise<T> {
   if (!process.stdin.isTTY) {
     stop("This step needs a terminal. Pass the values as arguments, see --help.");
@@ -250,7 +245,6 @@ function prepareCheckout(root: string, repoDir: string, target: Target): string 
   return `${label} at ${commit.slice(0, 7)}`;
 }
 
-// Keeps the newest lines on screen so a long run stays readable.
 function createLiveTail(): { push: (line: string) => void; stop: () => void } {
   const live = process.stdout.isTTY === true;
   const buffer: Array<string> = [];
@@ -347,8 +341,6 @@ async function runWorkflow(
   extraArgs: Array<string>,
 ): Promise<number> {
   const actDir = join(root, ".local/act");
-  // The path stays the same on each run. A cached tool holds the path it was
-  // built under, so a changing path breaks the restore.
   const repoDir = join(actDir, "repo");
 
   prompts.log.step(`Checking ${prepareCheckout(root, repoDir, target)}`);
@@ -364,11 +356,8 @@ async function runWorkflow(
     `ubuntu-latest=${RUNNER_IMAGE}`,
     "--container-architecture",
     architecture,
-    // node_modules holds native binaries, and the workflow cache key only knows
-    // the runner OS, so each architecture needs its own store.
     "--cache-server-path",
     join(actDir, "cache", architecture.replace("/", "-")),
-    // act refetches every action by default, which races across parallel jobs.
     "--action-cache-path",
     join(actDir, "actions"),
     "--action-offline-mode",
@@ -496,7 +485,6 @@ async function main(): Promise<number> {
           );
   }
 
-  // Only ask about the rest when the command itself came from a prompt.
   const interactive = given === undefined;
 
   let target: Target = { kind: "ref", ref: "HEAD" };

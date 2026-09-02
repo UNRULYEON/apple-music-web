@@ -35,8 +35,6 @@ export function SidebarProvider({ children }: { children: ReactNode }) {
   const isMobile = useMediaQuery("max-md");
   const isOpen = open && !isMobile;
 
-  // Motion writes its styles in a child layout effect, so the pre-hydration
-  // override is only safe to drop here, in the parent.
   useIsomorphicLayoutEffect(clearPreHydrationState, []);
 
   useEffect(() => {

@@ -14,16 +14,13 @@ export function readStoredOpen(): boolean {
 export function writeStoredOpen(open: boolean): void {
   try {
     window.localStorage.setItem(STORAGE_KEY, String(open));
-  } catch {
-    // Private mode, or storage is full. The state stays for this session only.
-  }
+  } catch {}
 }
 
 export function clearPreHydrationState(): void {
   document.documentElement.removeAttribute("data-sidebar");
 }
 
-/** Runs in <head>, before the first paint, so a closed sidebar never renders open. */
 export const preHydrationScript = `try{
 var m=!matchMedia(${JSON.stringify(DESKTOP_QUERY)}).matches;
 if(m||localStorage.getItem(${JSON.stringify(STORAGE_KEY)})==="false"){

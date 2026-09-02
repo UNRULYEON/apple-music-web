@@ -265,7 +265,6 @@ body {
   }
 }
 
-/* Holds the sidebar closed until hydration, so a stored closed state never paints open. */
 @layer base {
   [data-sidebar^="closed"] [data-slot="nav-panel"] {
     width: 0 !important;
@@ -278,7 +277,6 @@ body {
   }
 }
 
-/* Crossfades the page when the theme changes. */
 ::view-transition-old(root),
 ::view-transition-new(root) {
   animation-duration: 250ms;

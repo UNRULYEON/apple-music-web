@@ -1,6 +1,5 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 
-// The shared setup mocks this module for every other test, so reach past it here.
 const { readDeveloperToken } =
   await vi.importActual<typeof import("./developer-token.ts")>("./developer-token.ts");
 

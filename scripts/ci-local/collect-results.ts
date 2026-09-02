@@ -1,6 +1,5 @@
 export type JobResult = { name: string; passed: boolean; step?: string };
 
-// act prints one "Job succeeded" or "Job failed" line per job.
 export function collectResults(lines: Array<string>): Array<JobResult> {
   const results = new Map<string, JobResult>();
   const lastFailedStep: Record<string, string> = {};

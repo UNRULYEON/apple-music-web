@@ -34,10 +34,7 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
   const prefersDark = useMediaQuery(DARK_QUERY);
   const isApplied = useRef(false);
 
-  // A layout effect, so flushSync applies the class inside the view transition.
   useIsomorphicLayoutEffect(() => {
-    // The pre-hydration script owns the first paint. A second paint here would
-    // flash the system theme before the store reports the stored one.
     if (!isApplied.current) {
       isApplied.current = true;
       return;

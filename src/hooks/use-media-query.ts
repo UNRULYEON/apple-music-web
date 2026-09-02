@@ -55,7 +55,6 @@ function parseQuery(query: BreakpointQuery | MediaQueryInput | (string & {})): s
 export type MediaQueryInput = {
   min?: Breakpoint | number;
   max?: Breakpoint | number;
-  /** Touch-like input (finger). Use "fine" for mouse/trackpad. */
   pointer?: "coarse" | "fine";
 };
 
@@ -77,9 +76,6 @@ export function useMediaQuery(query: BreakpointQuery | MediaQueryInput | (string
     return window.matchMedia(mediaQuery).matches;
   }, [mediaQuery]);
 
-  // getSnapshot doubles as the hydration snapshot. A snapshot that always says
-  // "desktop" makes the first client render disagree with the real viewport, and
-  // a mobile layout then paints wide and animates narrow.
   return useSyncExternalStore(subscribe, getSnapshot, getSnapshot);
 }
 

@@ -3,7 +3,6 @@ import { getMusicKit } from "@/lib/music-kit/instance";
 
 export type AuthStatus = "checking" | "signed-out" | "signed-in";
 
-// MusicKit holds the token in memory, so one store keeps every reader in step.
 let status: AuthStatus = "checking";
 const listeners = new Set<() => void>();
 
@@ -57,7 +56,6 @@ export function readAuthStatus(): AuthStatus {
   return status;
 }
 
-// The server renders no token, so it always renders the loading state.
 function readInitialStatus(): AuthStatus {
   return "checking";
 }
