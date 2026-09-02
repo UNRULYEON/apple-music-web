@@ -1,6 +1,5 @@
 import { ErrorStates, LoadingState } from "@/components";
 import { EmptyStates } from "@/components/empty-states";
-import { Button } from "@/components/ui/button";
 import { useView } from "@/hooks";
 import { useAuthStatus } from "@/lib/music-kit/auth";
 import {
@@ -45,13 +44,8 @@ function Home() {
 }
 
 function Detail({ type, id }: { type: DetailType; id: string }) {
-  const { close } = useView();
-
   return (
     <div className="flex flex-col gap-4 grow px-4 pb-4">
-      <Button className="self-start" onClick={close} size="sm" variant="ghost">
-        Back
-      </Button>
       <div className="text-muted-foreground text-sm">
         {type} · {id}
       </div>

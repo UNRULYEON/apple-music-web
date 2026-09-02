@@ -10,7 +10,7 @@ import appCss from "../styles.css?url";
 
 import type { QueryClient } from "@tanstack/react-query";
 import type { TanStackDevtoolsReactPlugin } from "@tanstack/react-devtools";
-import { Nav, SidebarToggle } from "@/components";
+import { BackButton, Nav, SidebarToggle } from "@/components";
 import { SidebarProvider, ThemeProvider } from "@/contexts";
 import { preHydrationScript as sidebarPreHydrationScript } from "@/lib/sidebar-storage";
 import { preHydrationScript as themePreHydrationScript } from "@/lib/theme-storage";
@@ -77,6 +77,7 @@ function RootDocument({ children }: { children: React.ReactNode }) {
                 <div className="flex flex-col grow">
                   <div className="flex p-2 gap-0.5">
                     <SidebarToggle />
+                    <BackButton />
                   </div>
                   <ScrollArea className="flex-1 min-w-0" fill scrollFade>
                     <main className="flex min-h-full">{children}</main>
