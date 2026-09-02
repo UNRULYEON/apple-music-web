@@ -3,6 +3,8 @@ import { setupRouterSsrQueryIntegration } from "@tanstack/react-router-ssr-query
 import { routeTree } from "./routeTree.gen";
 import { getContext } from "./integrations/tanstack-query/root-provider";
 
+import type { View } from "@/lib/views/view";
+
 export function getRouter() {
   const context = getContext();
 
@@ -22,5 +24,11 @@ export function getRouter() {
 declare module "@tanstack/react-router" {
   interface Register {
     router: ReturnType<typeof getRouter>;
+  }
+}
+
+declare module "@tanstack/history" {
+  interface HistoryState {
+    view?: View;
   }
 }
