@@ -10,10 +10,11 @@ import appCss from "../styles.css?url";
 
 import type { QueryClient } from "@tanstack/react-query";
 import type { TanStackDevtoolsReactPlugin } from "@tanstack/react-devtools";
-import { Nav } from "@/components";
+import { Nav, SidebarToggle } from "@/components";
 import { SidebarProvider, ThemeProvider } from "@/contexts";
 import { preHydrationScript as sidebarPreHydrationScript } from "@/lib/sidebar-storage";
 import { preHydrationScript as themePreHydrationScript } from "@/lib/theme-storage";
+import { ScrollArea } from "@/components/ui/scroll-area";
 
 const appleAuthDevtools: TanStackDevtoolsReactPlugin = {
   id: "apple-auth",
@@ -68,12 +69,19 @@ function RootDocument({ children }: { children: React.ReactNode }) {
         <HeadContent />
       </head>
       <body className="relative overflow-clip">
-        <div className="isolate relative flex flex-col grow min-h-svh bg-background">
+        <div className="isolate relative flex flex-col h-svh bg-background">
           <ThemeProvider>
             <SidebarProvider>
               <MusicKitGate>
                 <Nav />
-                <main className="flex grow">{children}</main>
+                <div className="flex flex-col grow">
+                  <div className="flex p-2 gap-0.5">
+                    <SidebarToggle />
+                  </div>
+                  <ScrollArea className="flex-1 min-w-0" fill scrollFade>
+                    <main className="flex min-h-full">{children}</main>
+                  </ScrollArea>
+                </div>
               </MusicKitGate>
             </SidebarProvider>
           </ThemeProvider>
