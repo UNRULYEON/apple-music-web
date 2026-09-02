@@ -1,0 +1,16 @@
+{
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Write|Edit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bun \"${CLAUDE_PROJECT_DIR:-.}/.claude/hooks/no-comments.ts\"",
+            "statusMessage": "Checking for comments"
+          }
+        ]
+      }
+    ]
+  }
+}
