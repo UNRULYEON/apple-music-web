@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { readView } from "@/lib/views/view";
+import { isTopLevel, readView } from "@/lib/views/view";
 
 describe("readView", () => {
   it("reads the home view", () => {
@@ -43,5 +43,21 @@ describe("readView", () => {
     ["a detail with an unknown type", { name: "detail", type: "movies", id: "a.1" }],
   ])("gives no view for %s", (_name, value) => {
     expect(readView(value)).toBeUndefined();
+  });
+});
+
+describe("isTopLevel", () => {
+  it.each([
+    ["home", { name: "home" } as const],
+    ["a list", { name: "list", list: "recently-played" } as const],
+  ])("says %s is a destination", (_name, view) => {
+    expect(isTopLevel(view)).toBe(true);
+  });
+
+  it.each([
+    ["a detail", { name: "detail", type: "albums", id: "a.1" } as const],
+    ["settings", { name: "settings" } as const],
+  ])("says %s sits on top of a destination", (_name, view) => {
+    expect(isTopLevel(view)).toBe(false);
   });
 });

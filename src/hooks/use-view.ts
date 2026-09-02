@@ -1,5 +1,5 @@
 import { useIsHydrated } from "@/hooks/use-is-hydrated";
-import { HOME, readView, type View } from "@/lib/views/view";
+import { HOME, isTopLevel, readView, type View } from "@/lib/views/view";
 import { useCanGoBack, useLocation, useNavigate, useRouter } from "@tanstack/react-router";
 import { useCallback } from "react";
 
@@ -21,7 +21,11 @@ export function useView(): ViewNavigation {
 
   const open = useCallback(
     (next: View) => {
-      void navigate({ to: ".", state: (previous) => ({ ...previous, view: next }) });
+      void navigate({
+        to: ".",
+        replace: isTopLevel(next),
+        state: (previous) => ({ ...previous, view: next }),
+      });
     },
     [navigate],
   );
@@ -35,5 +39,5 @@ export function useView(): ViewNavigation {
     void navigate({ to: ".", replace: true, state: (previous) => ({ ...previous, view: HOME }) });
   }, [canGoBack, navigate, router]);
 
-  return { view, open, close, canClose: view.name !== "home" };
+  return { view, open, close, canClose: !isTopLevel(view) };
 }

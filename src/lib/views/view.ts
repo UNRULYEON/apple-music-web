@@ -19,6 +19,10 @@ export type View =
 
 export const HOME: View = { name: "home" };
 
+export function isTopLevel(view: View): boolean {
+  return view.name === "home" || view.name === "list";
+}
+
 export function readView(value: unknown): View | undefined {
   if (typeof value !== "object" || value === null || !("name" in value)) {
     return undefined;
