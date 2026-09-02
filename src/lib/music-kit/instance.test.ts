@@ -6,7 +6,6 @@ let loadedListeners: Array<() => void>;
 let configure: ReturnType<typeof vi.fn>;
 let music: MusicKit.MusicKitInstance;
 
-// Every test needs its own module, because getMusicKit caches the instance.
 async function loadModule() {
   vi.resetModules();
   const { getDeveloperToken } = await import("@/lib/music-kit/developer-token");
@@ -20,7 +19,7 @@ function stubBrowser({ scriptReady }: { scriptReady: boolean }): void {
   music = { isAuthorized: false } as MusicKit.MusicKitInstance;
   configure = vi.fn(async () => music);
 
-  vi.stubGlobal("window", scriptReady ? { MusicKit: {} } : {});
+  vi.stubGlobal("window", { MusicKit: scriptReady ? { configure } : {} });
   vi.stubGlobal("document", {
     addEventListener: vi.fn((_event: string, handler: () => void) => {
       loadedListeners.push(handler);
@@ -46,7 +45,7 @@ describe("getMusicKit", () => {
     expect(configure).toHaveBeenCalledWith({ developerToken: "test-developer-token", app: APP });
   });
 
-  it("waits for the musickitloaded event when the script is not ready", async () => {
+  it("waits for the musickitloaded event while the script has no configure", async () => {
     stubBrowser({ scriptReady: false });
     const { getMusicKit } = await loadModule();
 

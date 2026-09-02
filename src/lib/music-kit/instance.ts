@@ -3,7 +3,6 @@ import { getDeveloperToken } from "@/lib/music-kit/developer-token";
 let instance: Promise<MusicKit.MusicKitInstance> | undefined;
 
 export function getMusicKit(): Promise<MusicKit.MusicKitInstance> {
-  // Drop a failed attempt so the next sign-in retries instead of replaying the error.
   instance ??= configure().catch((cause: unknown) => {
     instance = undefined;
     throw cause;
@@ -24,7 +23,7 @@ async function configure(): Promise<MusicKit.MusicKitInstance> {
 }
 
 function waitForScript(): Promise<void> {
-  if (window.MusicKit) {
+  if (typeof window.MusicKit?.configure === "function") {
     return Promise.resolve();
   }
 
