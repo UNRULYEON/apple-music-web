@@ -75,7 +75,7 @@ function RootDocument({ children }: { children: React.ReactNode }) {
               <MusicKitGate>
                 <Nav />
                 <div className="flex flex-col grow">
-                  <div className="flex p-2 gap-0.5">
+                  <div className="flex p-2 gap-2">
                     <SidebarToggle />
                     <BackButton />
                   </div>
