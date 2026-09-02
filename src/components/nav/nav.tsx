@@ -1,7 +1,10 @@
-import { useSidebar } from "@/hooks";
+import { useSidebar, useView } from "@/hooks";
 import { cn } from "@/lib/utils";
 import { AnimatePresence, motion } from "motion/react";
 import { BottomNav } from "@/components";
+import { Button } from "@/components/ui/button";
+import { MusicNote02Icon } from "@hugeicons/core-free-icons";
+import { HugeiconsIcon } from "@hugeicons/react";
 
 const SIDEBAR_WIDTH = 256;
 const SWIPE_CLOSE_DISTANCE = SIDEBAR_WIDTH * 0.1;
@@ -10,6 +13,9 @@ const TRANSITION = { duration: 0.7, ease: [0.16, 1, 0.3, 1] } as const;
 
 export function Nav() {
   const { isOpen, isPeeking, isMobile, setOpen, setPeeking } = useSidebar();
+  const { view, open } = useView();
+  const isRecentlyPlayed =
+    view.name === "home" || (view.name === "list" && view.list === "recently-played");
 
   return (
     <div className="flex flex-col">
@@ -84,7 +90,21 @@ export function Nav() {
               "rounded-lg",
             )}
           >
-            <div className="flex flex-col grow">nav</div>
+            <div className="flex flex-col grow">
+              <Button
+                variant="ghost"
+                className={cn(
+                  "justify-start",
+                  isRecentlyPlayed &&
+                    "bg-sidebar-accent font-medium text-sidebar-accent-foreground",
+                )}
+                aria-current={isRecentlyPlayed ? "page" : undefined}
+                onClick={() => open({ name: "list", list: "recently-played" })}
+              >
+                <HugeiconsIcon icon={MusicNote02Icon} strokeWidth={2} aria-hidden="true" />
+                Recently played
+              </Button>
+            </div>
             <div className="flex flex-col">
               <BottomNav />
             </div>
