@@ -1,4 +1,4 @@
-import { DetailsView, ErrorStates, LoadingState } from "@/components";
+import { ArtworkImage, DetailsView, ErrorStates, LoadingState } from "@/components";
 import { EmptyStates } from "@/components/empty-states";
 import { useView } from "@/hooks";
 import { useAuthStatus } from "@/lib/music-kit/auth";
@@ -7,9 +7,6 @@ import {
   type RecentlyPlayedItem,
   type RecentlyPlayedType,
 } from "@/lib/music-kit/recently-played";
-import { artworkUrl } from "@/lib/music-kit/resource";
-import { MusicNote02Icon } from "@hugeicons/core-free-icons";
-import { HugeiconsIcon } from "@hugeicons/react";
 import { useQuery } from "@tanstack/react-query";
 import { createFileRoute } from "@tanstack/react-router";
 import { AnimatePresence, motion } from "motion/react";
@@ -79,22 +76,7 @@ function RecentlyPlayed() {
                 whileHover={{ scale: 1.01 }}
                 onClick={() => open({ name: "detail", type: item.type, id: item.id })}
               >
-                {item.artwork ? (
-                  <img
-                    src={artworkUrl(item.artwork, ARTWORK_SIZE)}
-                    alt=""
-                    draggable={false}
-                    className="aspect-square w-full rounded-md object-cover select-none"
-                  />
-                ) : (
-                  <div className="flex items-center justify-center aspect-square w-full rounded-md bg-muted select-none">
-                    <HugeiconsIcon
-                      icon={MusicNote02Icon}
-                      size={64}
-                      className="text-muted-foreground"
-                    />
-                  </div>
-                )}
+                <ArtworkImage artwork={item.artwork} size={ARTWORK_SIZE} className="rounded-md" />
                 <div className="flex flex-col">
                   <div className="truncate text-xs text-neutral-600 dark:text-neutral-300 select-none">
                     {item.name}

@@ -1,5 +1,5 @@
+import { ArtworkImage } from "@/components/artwork";
 import { songDuration } from "@/lib/format";
-import { artworkUrl } from "@/lib/music-kit/resource";
 import type { Song } from "@/lib/music-kit/track";
 
 const ARTWORK_SIZE = 48;
@@ -23,12 +23,12 @@ export function TrackList({
           <span className="min-w-6 tabular-nums text-sm text-center text-neutral-600 dark:text-neutral-400">
             {i + 1}
           </span>
-          {showArtwork && song.artwork && (
-            <img
-              src={artworkUrl(song.artwork, ARTWORK_SIZE)}
-              alt=""
-              draggable={false}
-              className="size-10 shrink-0 rounded-md object-cover select-none"
+          {showArtwork && (
+            <ArtworkImage
+              artwork={song.artwork}
+              size={ARTWORK_SIZE}
+              iconSize={20}
+              className="size-10 shrink-0 rounded-md"
             />
           )}
           <div className="flex flex-col grow min-w-0">
