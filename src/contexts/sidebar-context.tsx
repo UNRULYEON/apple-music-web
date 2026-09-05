@@ -1,5 +1,6 @@
 import { useMediaQuery } from "@/hooks";
 import { clearPreHydrationState, readStoredOpen, writeStoredOpen } from "@/lib/sidebar-storage";
+import { useHotkey } from "@tanstack/react-hotkeys";
 import {
   createContext,
   useCallback,
@@ -36,6 +37,14 @@ export function SidebarProvider({ children }: { children: ReactNode }) {
   const isOpen = open && !isMobile;
 
   useIsomorphicLayoutEffect(clearPreHydrationState, []);
+
+  useHotkey("[", () => {
+    if (isMobile) {
+      setPeeking((v) => !v);
+    } else {
+      setOpen((v) => !v);
+    }
+  });
 
   useEffect(() => {
     writeStoredOpen(open);

@@ -15,6 +15,7 @@ import { BackdropProvider, SidebarProvider, ThemeProvider } from "@/contexts";
 import { preHydrationScript as sidebarPreHydrationScript } from "@/lib/sidebar-storage";
 import { preHydrationScript as themePreHydrationScript } from "@/lib/theme-storage";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { hotkeysDevtoolsPlugin } from "@tanstack/react-hotkeys-devtools";
 
 const appleAuthDevtools: TanStackDevtoolsReactPlugin = {
   id: "apple-auth",
@@ -99,6 +100,7 @@ function RootDocument({ children }: { children: React.ReactNode }) {
               render: <TanStackRouterDevtoolsPanel />,
             },
             TanStackQueryDevtools,
+            hotkeysDevtoolsPlugin(),
             ...(import.meta.env.DEV ? [appleAuthDevtools] : []),
           ]}
         />
