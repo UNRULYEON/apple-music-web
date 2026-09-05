@@ -2,10 +2,10 @@ import { DetailsFooter } from "@/components/details/details-footer";
 import { DetailsHeader } from "@/components/details/details-header";
 import { DetailsShell } from "@/components/details/details-shell";
 import { TrackList } from "@/components/details/track-list";
+import { relativeDate } from "@/lib/format";
 import { useAuthStatus } from "@/lib/music-kit/auth";
 import { fetchPlaylist, type PlaylistType } from "@/lib/music-kit/playlists";
 import { useQuery } from "@tanstack/react-query";
-import { intlFormat } from "date-fns";
 
 export function PlaylistDetails({ type, id }: { type: PlaylistType; id: string }) {
   const status = useAuthStatus();
@@ -31,9 +31,9 @@ export function PlaylistDetails({ type, id }: { type: PlaylistType; id: string }
               )
             }
           />
-          <TrackList songs={playlist.songs} showArtwork />
+          <TrackList songs={playlist.songs} showTrackNumber={false} showArtwork />
           <DetailsFooter songs={playlist.songs}>
-            {modified && <span>Updated {intlFormat(modified)}</span>}
+            {modified && <span>Updated {relativeDate(modified)}</span>}
           </DetailsFooter>
         </>
       )}

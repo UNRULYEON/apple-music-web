@@ -7,10 +7,12 @@ const ARTWORK_SIZE = 48;
 export function TrackList({
   songs,
   primaryArtist,
+  showTrackNumber = true,
   showArtwork = false,
 }: {
   songs: Song[];
   primaryArtist?: string;
+  showTrackNumber?: boolean;
   showArtwork?: boolean;
 }) {
   return (
@@ -20,9 +22,11 @@ export function TrackList({
           key={song.id}
           className="flex items-center gap-4 px-2 sm:px-4 h-14 sm:h-16 hover:bg-neutral-600/15 hover:dark:bg-neutral-400/15 cursor-pointer rounded-xl backdrop-blur-3xl"
         >
-          <span className="min-w-6 tabular-nums text-sm text-center text-neutral-600 dark:text-neutral-400">
-            {i + 1}
-          </span>
+          {showTrackNumber && (
+            <span className="min-w-6 tabular-nums text-sm text-center text-neutral-600 dark:text-neutral-400">
+              {i + 1}
+            </span>
+          )}
           {showArtwork && (
             <ArtworkImage
               artwork={song.artwork}
