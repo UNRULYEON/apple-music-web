@@ -1,10 +1,13 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { getMusicKit } from "@/lib/music-kit/instance";
-import { fetchLibraryPlaylists } from "@/lib/music-kit/playlists";
+import { fetchLibraryPlaylists, fetchPlaylist, isPlaylistType } from "@/lib/music-kit/playlists";
+import { fetchStorefront } from "@/lib/music-kit/storefront";
 
 vi.mock("@/lib/music-kit/instance", () => ({ getMusicKit: vi.fn() }));
+vi.mock("@/lib/music-kit/storefront", () => ({ fetchStorefront: vi.fn() }));
 
 const loadMusicKit = vi.mocked(getMusicKit);
+const loadStorefront = vi.mocked(fetchStorefront);
 const music = vi.fn();
 
 function playlistItem(id: string) {
@@ -28,6 +31,7 @@ function mockPages(...pages: Array<{ data: unknown[]; next?: string }>) {
 
 beforeEach(() => {
   loadMusicKit.mockResolvedValue({ api: { music } } as unknown as MusicKit.MusicKitInstance);
+  loadStorefront.mockResolvedValue({ id: "nl", name: "Netherlands" });
 });
 
 afterEach(() => {
@@ -98,5 +102,103 @@ describe("fetchLibraryPlaylists", () => {
     mockPages({ data: [] });
 
     await expect(fetchLibraryPlaylists()).resolves.toEqual([]);
+  });
+});
+
+function playlistResponse(overrides: Record<string, unknown> = {}) {
+  return {
+    data: {
+      data: [
+        {
+          id: "pl.u-123",
+          type: "playlists",
+          attributes: { name: "Late night" },
+          ...overrides,
+        },
+      ],
+    },
+  };
+}
+
+function track(id: string, overrides: Record<string, unknown> = {}) {
+  return {
+    id,
+    type: "songs",
+    attributes: { name: `Track ${id}`, artistName: "boygenius", ...overrides },
+  };
+}
+
+describe("isPlaylistType", () => {
+  it("accepts a catalog playlist and a library playlist", () => {
+    expect(isPlaylistType("playlists")).toBe(true);
+    expect(isPlaylistType("library-playlists")).toBe(true);
+  });
+
+  it("rejects anything else", () => {
+    expect(isPlaylistType("albums")).toBe(false);
+    expect(isPlaylistType(undefined)).toBe(false);
+  });
+});
+
+describe("fetchPlaylist", () => {
+  it("asks the storefront catalog for the tracks", async () => {
+    music.mockResolvedValue(playlistResponse());
+
+    await fetchPlaylist("playlists", "pl.u-123");
+
+    expect(music).toHaveBeenCalledWith("/v1/catalog/nl/playlists/pl.u-123", { include: "tracks" });
+  });
+
+  it("asks the library for a library playlist, and does not need a storefront", async () => {
+    music.mockResolvedValue(playlistResponse());
+
+    await fetchPlaylist("library-playlists", "p.AbCdEf");
+
+    expect(music).toHaveBeenCalledWith("/v1/me/library/playlists/p.AbCdEf", { include: "tracks" });
+    expect(loadStorefront).not.toHaveBeenCalled();
+  });
+
+  it("reads the playlist and its tracks", async () => {
+    music.mockResolvedValue(
+      playlistResponse({
+        attributes: {
+          name: "Late night",
+          curatorName: "Apple Music",
+          description: { standard: "For the small hours." },
+          playlistType: "editorial",
+          lastModifiedDate: "2026-02-03T04:05:06Z",
+          artwork: { url: "https://example.com/{w}x{h}bb.jpg", width: 3000, height: 3000 },
+        },
+        relationships: {
+          tracks: { data: [track("s.1", { durationInMillis: 204000 }), track("s.2")] },
+        },
+      }),
+    );
+
+    const playlist = await fetchPlaylist("playlists", "pl.u-123");
+
+    expect(playlist.name).toBe("Late night");
+    expect(playlist.type).toBe("playlists");
+    expect(playlist.curator).toEqual({ name: "Apple Music" });
+    expect(playlist.description).toBe("For the small hours.");
+    expect(playlist.playlistType).toBe("editorial");
+    expect(playlist.lastModifiedDate).toBe("2026-02-03T04:05:06Z");
+    expect(playlist.artwork?.width).toBe(3000);
+    expect(playlist.songs).toHaveLength(2);
+    expect(playlist.songs[0]?.durationInMillis).toBe(204000);
+  });
+
+  it("gives an empty track list when the playlist has no tracks", async () => {
+    music.mockResolvedValue(playlistResponse());
+
+    await expect(fetchPlaylist("playlists", "pl.u-123")).resolves.toMatchObject({ songs: [] });
+  });
+
+  it("throws when the API describes no playlist", async () => {
+    music.mockResolvedValue({ data: { data: [] } });
+
+    await expect(fetchPlaylist("playlists", "pl.u-123")).rejects.toThrow(
+      "Apple Music returned no playlist for pl.u-123.",
+    );
   });
 });

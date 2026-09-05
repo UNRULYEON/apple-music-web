@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
-import { albumDuration, releaseYear, songDuration } from "@/lib/format";
-import type { Song } from "@/lib/music-kit/album";
+import { totalDuration, releaseYear, songDuration } from "@/lib/format";
+import type { Song } from "@/lib/music-kit/track";
 
 function song(durationInMillis?: number): Song {
   return { id: "1", name: "Forecast", durationInMillis };
@@ -40,16 +40,16 @@ describe("songDuration", () => {
   });
 });
 
-describe("albumDuration", () => {
+describe("totalDuration", () => {
   it("adds the songs together", () => {
-    expect(albumDuration([song(204000), song(185000), song(45000)])).toBe("7:14");
+    expect(totalDuration([song(204000), song(185000), song(45000)])).toBe("7:14");
   });
 
   it("ignores a song without a duration", () => {
-    expect(albumDuration([song(204000), song()])).toBe("3:24");
+    expect(totalDuration([song(204000), song()])).toBe("3:24");
   });
 
   it("gives zero for an album without songs", () => {
-    expect(albumDuration([])).toBe("0:00");
+    expect(totalDuration([])).toBe("0:00");
   });
 });

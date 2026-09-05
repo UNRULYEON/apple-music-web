@@ -1,8 +1,25 @@
 import { getMusicKit } from "@/lib/music-kit/instance";
-import { hasNextPage, readArtwork, readItems, type Artwork } from "@/lib/music-kit/resource";
+import {
+  hasNextPage,
+  readArtwork,
+  readCurator,
+  readItems,
+  readRelated,
+  readStandard,
+  readText,
+  type Artwork,
+  type Curator,
+} from "@/lib/music-kit/resource";
+import { fetchStorefront } from "@/lib/music-kit/storefront";
+import { readSong, type Song } from "@/lib/music-kit/track";
 
 const PATH = "/v1/me/library/playlists";
 const PAGE_SIZE = 100;
+
+const TYPES = ["playlists", "library-playlists"] as const;
+const INCLUDE = "tracks";
+
+export type PlaylistType = (typeof TYPES)[number];
 
 export interface LibraryPlaylist {
   id: string;
@@ -15,6 +32,26 @@ export interface LibraryPlaylist {
   dateAdded?: string;
 }
 
+export interface Playlist {
+  id: string;
+  type: PlaylistType;
+  name: string;
+  curator?: Curator;
+  artwork?: Artwork;
+  description?: string;
+  playlistType?: string;
+  lastModifiedDate?: string;
+  dateAdded?: string;
+  canEdit: boolean;
+  hasCatalog: boolean;
+  isPublic: boolean;
+  songs: Song[];
+}
+
+export function isPlaylistType(value: unknown): value is PlaylistType {
+  return TYPES.includes(value as PlaylistType);
+}
+
 export async function fetchLibraryPlaylists(): Promise<LibraryPlaylist[]> {
   const music = await getMusicKit();
   const playlists: LibraryPlaylist[] = [];
@@ -25,7 +62,7 @@ export async function fetchLibraryPlaylists(): Promise<LibraryPlaylist[]> {
     const items = readItems(data);
 
     for (const item of items) {
-      const playlist = readPlaylist(item);
+      const playlist = readLibraryPlaylist(item);
 
       if (playlist) {
         playlists.push(playlist);
@@ -38,7 +75,64 @@ export async function fetchLibraryPlaylists(): Promise<LibraryPlaylist[]> {
   }
 }
 
-function readPlaylist(value: unknown): LibraryPlaylist | undefined {
+export async function fetchPlaylist(type: PlaylistType, id: string): Promise<Playlist> {
+  const path = await playlistPath(type, id);
+  const music = await getMusicKit();
+  const { data } = await music.api.music(path, { include: INCLUDE });
+  const [first] = readItems(data);
+  const playlist = readPlaylist(type, first);
+
+  if (!playlist) {
+    throw new Error(`Apple Music returned no playlist for ${id}.`);
+  }
+
+  return playlist;
+}
+
+async function playlistPath(type: PlaylistType, id: string): Promise<string> {
+  if (type === "library-playlists") {
+    return `${PATH}/${encodeURIComponent(id)}`;
+  }
+
+  const storefront = await fetchStorefront();
+
+  return `/v1/catalog/${storefront.id}/playlists/${encodeURIComponent(id)}`;
+}
+
+function readPlaylist(type: PlaylistType, value: unknown): Playlist | undefined {
+  if (typeof value !== "object" || value === null) {
+    return undefined;
+  }
+
+  const candidate = value as {
+    id?: unknown;
+    attributes?: Record<string, unknown>;
+    relationships?: unknown;
+  };
+  const attributes = candidate.attributes;
+
+  if (typeof candidate.id !== "string" || typeof attributes?.name !== "string") {
+    return undefined;
+  }
+
+  return {
+    id: candidate.id,
+    type,
+    name: attributes.name,
+    curator: readCurator(attributes.curatorName),
+    artwork: readArtwork(attributes.artwork),
+    description: readStandard(attributes.description),
+    playlistType: readText(attributes.playlistType),
+    lastModifiedDate: readText(attributes.lastModifiedDate),
+    dateAdded: readText(attributes.dateAdded),
+    canEdit: attributes.canEdit === true,
+    hasCatalog: attributes.hasCatalog === true,
+    isPublic: attributes.isPublic === true,
+    songs: readRelated(candidate.relationships, "tracks", readSong),
+  };
+}
+
+function readLibraryPlaylist(value: unknown): LibraryPlaylist | undefined {
   if (typeof value !== "object" || value === null) {
     return undefined;
   }
@@ -53,21 +147,11 @@ function readPlaylist(value: unknown): LibraryPlaylist | undefined {
   return {
     id: candidate.id,
     name: attributes.name,
-    description: readDescription(attributes.description),
+    description: readStandard(attributes.description),
     artwork: readArtwork(attributes.artwork),
     canEdit: attributes.canEdit === true,
     hasCatalog: attributes.hasCatalog === true,
     isPublic: attributes.isPublic === true,
-    dateAdded: typeof attributes.dateAdded === "string" ? attributes.dateAdded : undefined,
+    dateAdded: readText(attributes.dateAdded),
   };
-}
-
-function readDescription(value: unknown): string | undefined {
-  if (typeof value !== "object" || value === null) {
-    return undefined;
-  }
-
-  const { standard } = value as { standard?: unknown };
-
-  return typeof standard === "string" ? standard : undefined;
 }

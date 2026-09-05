@@ -3,9 +3,14 @@ import {
   readArtist,
   readArtwork,
   readItems,
+  readNumber,
+  readRelated,
+  readStandard,
+  readText,
   type Artist,
   type Artwork,
 } from "@/lib/music-kit/resource";
+import { readSong, type Song } from "@/lib/music-kit/track";
 import { fetchStorefront } from "@/lib/music-kit/storefront";
 
 const TYPES = ["albums", "library-albums"] as const;
@@ -17,18 +22,6 @@ export interface AlbumArtist {
   id: string;
   name: string;
   artwork?: Artwork;
-}
-
-export interface Song {
-  id: string;
-  name: string;
-  artist?: Artist;
-  artwork?: Artwork;
-  discNumber?: number;
-  trackNumber?: number;
-  durationInMillis?: number;
-  contentRating?: string;
-  previewUrl?: string;
 }
 
 export interface Album {
@@ -104,36 +97,11 @@ function readAlbum(type: AlbumType, value: unknown): Album | undefined {
     genres: readGenres(attributes.genreNames),
     copyright: readText(attributes.copyright),
     recordLabel: readText(attributes.recordLabel),
-    notes: readNotes(attributes.editorialNotes),
+    notes: readStandard(attributes.editorialNotes),
     isComplete: attributes.isComplete === true,
     isSingle: attributes.isSingle === true,
     artists: readRelated(candidate.relationships, "artists", readAlbumArtist),
     songs: readRelated(candidate.relationships, "tracks", readSong),
-  };
-}
-
-function readSong(value: unknown): Song | undefined {
-  if (typeof value !== "object" || value === null) {
-    return undefined;
-  }
-
-  const candidate = value as { id?: unknown; attributes?: Record<string, unknown> };
-  const attributes = candidate.attributes;
-
-  if (typeof candidate.id !== "string" || typeof attributes?.name !== "string") {
-    return undefined;
-  }
-
-  return {
-    id: candidate.id,
-    name: attributes.name,
-    artist: readArtist(attributes.artistName),
-    artwork: readArtwork(attributes.artwork),
-    discNumber: readNumber(attributes.discNumber),
-    trackNumber: readNumber(attributes.trackNumber),
-    durationInMillis: readNumber(attributes.durationInMillis),
-    contentRating: readText(attributes.contentRating),
-    previewUrl: readPreviewUrl(attributes.previews),
   };
 }
 
@@ -156,60 +124,6 @@ function readAlbumArtist(value: unknown): AlbumArtist | undefined {
   };
 }
 
-function readRelated<T>(
-  relationships: unknown,
-  name: string,
-  read: (value: unknown) => T | undefined,
-): T[] {
-  if (typeof relationships !== "object" || relationships === null) {
-    return [];
-  }
-
-  const related: T[] = [];
-
-  for (const item of readItems((relationships as Record<string, unknown>)[name])) {
-    const parsed = read(item);
-
-    if (parsed) {
-      related.push(parsed);
-    }
-  }
-
-  return related;
-}
-
 function readGenres(value: unknown): string[] {
   return Array.isArray(value) ? value.filter((genre) => typeof genre === "string") : [];
-}
-
-function readNotes(value: unknown): string | undefined {
-  if (typeof value !== "object" || value === null) {
-    return undefined;
-  }
-
-  const { standard, short } = value as { standard?: unknown; short?: unknown };
-
-  return readText(standard) ?? readText(short);
-}
-
-function readPreviewUrl(value: unknown): string | undefined {
-  if (!Array.isArray(value)) {
-    return undefined;
-  }
-
-  const [first] = value;
-
-  if (typeof first !== "object" || first === null) {
-    return undefined;
-  }
-
-  return readText((first as { url?: unknown }).url);
-}
-
-function readText(value: unknown): string | undefined {
-  return typeof value === "string" ? value : undefined;
-}
-
-function readNumber(value: unknown): number | undefined {
-  return typeof value === "number" ? value : undefined;
 }

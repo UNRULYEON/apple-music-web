@@ -1,4 +1,4 @@
-import type { Song } from "@/lib/music-kit/album";
+import type { Song } from "@/lib/music-kit/track";
 import { format, parseISO } from "date-fns";
 
 const MILLIS_PER_SECOND = 1000;
@@ -16,6 +16,6 @@ export function songDuration(durationInMillis: number): string {
   return `${minutes}:${rest}`;
 }
 
-export function albumDuration(songs: Song[]): string {
+export function totalDuration(songs: Song[]): string {
   return songDuration(songs.reduce((total, song) => total + (song.durationInMillis ?? 0), 0));
 }

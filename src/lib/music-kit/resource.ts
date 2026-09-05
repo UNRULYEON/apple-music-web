@@ -100,3 +100,44 @@ export function artworkUrl(artwork: Artwork, size: number): string {
     .replace("{c}", CROP)
     .replace("{f}", FORMAT);
 }
+
+export function readText(value: unknown): string | undefined {
+  return typeof value === "string" ? value : undefined;
+}
+
+export function readNumber(value: unknown): number | undefined {
+  return typeof value === "number" ? value : undefined;
+}
+
+// editorial notes and playlist descriptions share this shape
+export function readStandard(value: unknown): string | undefined {
+  if (typeof value !== "object" || value === null) {
+    return undefined;
+  }
+
+  const { standard, short } = value as { standard?: unknown; short?: unknown };
+
+  return readText(standard) ?? readText(short);
+}
+
+export function readRelated<T>(
+  relationships: unknown,
+  name: string,
+  read: (value: unknown) => T | undefined,
+): T[] {
+  if (typeof relationships !== "object" || relationships === null) {
+    return [];
+  }
+
+  const related: T[] = [];
+
+  for (const item of readItems((relationships as Record<string, unknown>)[name])) {
+    const parsed = read(item);
+
+    if (parsed) {
+      related.push(parsed);
+    }
+  }
+
+  return related;
+}
