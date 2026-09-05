@@ -13,6 +13,11 @@ export interface Artwork {
   url: string;
   width: number;
   height: number;
+  bgColor?: string;
+  textColor1?: string;
+  textColor2?: string;
+  textColor3?: string;
+  textColor4?: string;
 }
 
 export function readItems(data: unknown): unknown[] {
@@ -50,7 +55,16 @@ export function readArtwork(value: unknown): Artwork | undefined {
     return undefined;
   }
 
-  const candidate = value as { url?: unknown; width?: unknown; height?: unknown };
+  const candidate = value as {
+    url?: unknown;
+    width?: unknown;
+    height?: unknown;
+    bgColor?: unknown;
+    textColor1?: unknown;
+    textColor2?: unknown;
+    textColor3?: unknown;
+    textColor4?: unknown;
+  };
 
   if (
     typeof candidate.url !== "string" ||
@@ -60,7 +74,21 @@ export function readArtwork(value: unknown): Artwork | undefined {
     return undefined;
   }
 
-  return { url: candidate.url, width: candidate.width, height: candidate.height };
+  return {
+    url: candidate.url,
+    width: candidate.width,
+    height: candidate.height,
+    bgColor: readColor(candidate.bgColor),
+    textColor1: readColor(candidate.textColor1),
+    textColor2: readColor(candidate.textColor2),
+    textColor3: readColor(candidate.textColor3),
+    textColor4: readColor(candidate.textColor4),
+  };
+}
+
+// the api gives a hex color without the leading hash
+function readColor(value: unknown): string | undefined {
+  return typeof value === "string" && value !== "" ? `#${value}` : undefined;
 }
 
 export function artworkUrl(artwork: Artwork, size: number): string {

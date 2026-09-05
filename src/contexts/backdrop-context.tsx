@@ -1,0 +1,40 @@
+import { TRANSITION_SLOW } from "@/lib/motion";
+import { MeshGradient } from "@paper-design/shaders-react";
+import { AnimatePresence, motion } from "motion/react";
+import { createContext, useState, type ReactNode } from "react";
+
+export type SetBackdropColors = (colors: string[] | undefined) => void;
+
+export const BackdropContext = createContext<SetBackdropColors | undefined>(undefined);
+
+export function BackdropProvider({ children }: { children: ReactNode }) {
+  const [colors, setColors] = useState<string[]>();
+
+  return (
+    <BackdropContext.Provider value={setColors}>
+      <AnimatePresence>
+        {colors && (
+          <motion.div
+            key="backdrop"
+            className="fixed inset-0 -z-10 pointer-events-none"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 0.2 }}
+            exit={{ opacity: 0 }}
+            transition={TRANSITION_SLOW}
+          >
+            <MeshGradient
+              className="size-full"
+              colors={colors}
+              distortion={0}
+              swirl={0}
+              grainMixer={1}
+              grainOverlay={1}
+              speed={1}
+            />
+          </motion.div>
+        )}
+      </AnimatePresence>
+      {children}
+    </BackdropContext.Provider>
+  );
+}

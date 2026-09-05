@@ -1,4 +1,4 @@
-import { ErrorStates, LoadingState } from "@/components";
+import { DetailsView, ErrorStates, LoadingState } from "@/components";
 import { EmptyStates } from "@/components/empty-states";
 import { useView } from "@/hooks";
 import { useAuthStatus } from "@/lib/music-kit/auth";
@@ -8,7 +8,6 @@ import {
   type RecentlyPlayedType,
 } from "@/lib/music-kit/recently-played";
 import { artworkUrl } from "@/lib/music-kit/resource";
-import type { DetailType } from "@/lib/views/view";
 import { MusicNote02Icon } from "@hugeicons/core-free-icons";
 import { HugeiconsIcon } from "@hugeicons/react";
 import { useQuery } from "@tanstack/react-query";
@@ -37,20 +36,10 @@ function Home() {
   const { view } = useView();
 
   if (view.name === "detail") {
-    return <Detail id={view.id} type={view.type} />;
+    return <DetailsView id={view.id} type={view.type} />;
   }
 
   return <RecentlyPlayed />;
-}
-
-function Detail({ type, id }: { type: DetailType; id: string }) {
-  return (
-    <div className="flex flex-col gap-4 grow px-4 pb-4">
-      <div className="text-muted-foreground text-sm">
-        {type} · {id}
-      </div>
-    </div>
-  );
 }
 
 function RecentlyPlayed() {

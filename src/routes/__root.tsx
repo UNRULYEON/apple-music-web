@@ -11,7 +11,7 @@ import appCss from "../styles.css?url";
 import type { QueryClient } from "@tanstack/react-query";
 import type { TanStackDevtoolsReactPlugin } from "@tanstack/react-devtools";
 import { BackButton, Nav, SidebarToggle } from "@/components";
-import { SidebarProvider, ThemeProvider } from "@/contexts";
+import { BackdropProvider, SidebarProvider, ThemeProvider } from "@/contexts";
 import { preHydrationScript as sidebarPreHydrationScript } from "@/lib/sidebar-storage";
 import { preHydrationScript as themePreHydrationScript } from "@/lib/theme-storage";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -70,22 +70,24 @@ function RootDocument({ children }: { children: React.ReactNode }) {
       </head>
       <body className="relative overflow-clip">
         <div className="isolate relative flex flex-col h-svh bg-background">
-          <ThemeProvider>
-            <SidebarProvider>
-              <MusicKitGate>
-                <Nav />
-                <div className="flex flex-col grow">
-                  <div className="flex p-2 gap-2">
-                    <SidebarToggle />
-                    <BackButton />
+          <BackdropProvider>
+            <ThemeProvider>
+              <SidebarProvider>
+                <MusicKitGate>
+                  <Nav />
+                  <div className="flex flex-col grow">
+                    <div className="flex p-2 gap-2 bg-transparent">
+                      <SidebarToggle />
+                      <BackButton />
+                    </div>
+                    <ScrollArea className="flex-1 min-w-0" fill scrollFade>
+                      <main className="flex min-h-full">{children}</main>
+                    </ScrollArea>
                   </div>
-                  <ScrollArea className="flex-1 min-w-0" fill scrollFade>
-                    <main className="flex min-h-full">{children}</main>
-                  </ScrollArea>
-                </div>
-              </MusicKitGate>
-            </SidebarProvider>
-          </ThemeProvider>
+                </MusicKitGate>
+              </SidebarProvider>
+            </ThemeProvider>
+          </BackdropProvider>
         </div>
         <TanStackDevtools
           config={{

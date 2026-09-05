@@ -11,8 +11,7 @@ import {
 } from "@/components/ui/card";
 import { Spinner } from "@/components/ui/spinner";
 import { loadAuthorization, signIn, useAuthStatus } from "@/lib/music-kit/auth";
-
-const TRANSITION = { duration: 0.24, ease: [0.16, 1, 0.3, 1] } as const;
+import { TRANSITION } from "@/lib/motion";
 
 const SWAP = {
   initial: { opacity: 0, scale: 0.96, filter: "blur(8px)" },

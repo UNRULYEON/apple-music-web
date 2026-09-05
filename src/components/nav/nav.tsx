@@ -1,4 +1,5 @@
 import { useSidebar, useView } from "@/hooks";
+import { TRANSITION_SLOW } from "@/lib/motion";
 import { cn } from "@/lib/utils";
 import { AnimatePresence, motion } from "motion/react";
 import { BottomNav } from "@/components";
@@ -9,7 +10,6 @@ import { HugeiconsIcon } from "@hugeicons/react";
 const SIDEBAR_WIDTH = 256;
 const SWIPE_CLOSE_DISTANCE = SIDEBAR_WIDTH * 0.1;
 const SWIPE_CLOSE_VELOCITY = 500;
-const TRANSITION = { duration: 0.7, ease: [0.16, 1, 0.3, 1] } as const;
 
 export function Nav() {
   const { isOpen, isPeeking, isMobile, setOpen, setPeeking } = useSidebar();
@@ -25,7 +25,7 @@ export function Nav() {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            transition={TRANSITION}
+            transition={TRANSITION_SLOW}
             className="fixed inset-0 z-20 bg-black/32 backdrop-blur-sm"
             data-slot="nav-backdrop"
             onClick={() => {
@@ -42,7 +42,7 @@ export function Nav() {
         animate={{
           width: isOpen ? SIDEBAR_WIDTH : 0,
         }}
-        transition={TRANSITION}
+        transition={TRANSITION_SLOW}
         onHoverStart={() => setPeeking(true)}
         onHoverEnd={() => setPeeking(false)}
       >
@@ -57,7 +57,7 @@ export function Nav() {
             width: SIDEBAR_WIDTH,
             x: isOpen || isPeeking ? 0 : -SIDEBAR_WIDTH,
           }}
-          transition={TRANSITION}
+          transition={TRANSITION_SLOW}
           drag={isMobile ? "x" : false}
           dragConstraints={{
             left: -SIDEBAR_WIDTH,
@@ -85,7 +85,8 @@ export function Nav() {
               `h-full p-2`,
               "flex flex-col",
               "text-sidebar-foreground",
-              "bg-sidebar",
+              "bg-sidebar/75",
+              "backdrop-blur-2xl",
               "border border-sidebar-border",
               "rounded-lg",
             )}

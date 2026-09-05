@@ -1,5 +1,11 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { artworkUrl, readArtist, readCurator, type Artwork } from "@/lib/music-kit/resource";
+import {
+  artworkUrl,
+  readArtist,
+  readArtwork,
+  readCurator,
+  type Artwork,
+} from "@/lib/music-kit/resource";
 
 function artwork(overrides: Partial<Artwork> = {}): Artwork {
   return {
@@ -65,5 +71,43 @@ describe("readCurator", () => {
 
   it("gives no curator for a value that is not a name", () => {
     expect(readCurator(undefined)).toBeUndefined();
+  });
+});
+
+describe("readArtwork", () => {
+  const source = { url: "https://example.com/image/{w}x{h}bb.jpg", width: 1200, height: 1200 };
+
+  it("reads the colors and adds the leading hash", () => {
+    const colors = {
+      bgColor: "1d1d1f",
+      textColor1: "f5f5f7",
+      textColor2: "d2d2d7",
+      textColor3: "a1a1a6",
+      textColor4: "6e6e73",
+    };
+
+    expect(readArtwork({ ...source, ...colors })).toEqual({
+      ...source,
+      bgColor: "#1d1d1f",
+      textColor1: "#f5f5f7",
+      textColor2: "#d2d2d7",
+      textColor3: "#a1a1a6",
+      textColor4: "#6e6e73",
+    });
+  });
+
+  it("gives no colors when the artwork has none", () => {
+    expect(readArtwork(source)).toEqual({
+      ...source,
+      bgColor: undefined,
+      textColor1: undefined,
+      textColor2: undefined,
+      textColor3: undefined,
+      textColor4: undefined,
+    });
+  });
+
+  it("gives no artwork for a value that is not artwork", () => {
+    expect(readArtwork("boygenius")).toBeUndefined();
   });
 });
