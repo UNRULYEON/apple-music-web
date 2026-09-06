@@ -146,7 +146,7 @@ export function Player() {
               className={cn(
                 "pointer-events-auto",
                 "flex items-center max-w-full",
-                isMobile ? "pl-4 pr-4 py-1" : "px-4 pt-1 pb-0",
+                isMobile ? "pl-4 pr-4 py-1" : "px-4 pt-0 pb-0",
                 "bg-neutral-100 dark:bg-neutral-950",
                 "border border-neutral-100/10",
                 "rounded-full",
@@ -214,7 +214,9 @@ export function Player() {
                 )}
               </AnimatePresence>
               <div className="flex flex-col min-w-0" style={{ width: META_WIDTH }}>
-                <div className="flex items-center gap-2 min-w-0">
+                <div
+                  className={cn("flex items-center gap-2 pt-2 min-w-0", isMobile ? "pb-2" : "pb-0")}
+                >
                   <div className="relative size-8 shrink-0">
                     <AnimatePresence initial={false}>
                       <motion.div
