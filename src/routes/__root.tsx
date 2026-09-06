@@ -10,8 +10,8 @@ import appCss from "../styles.css?url";
 
 import type { QueryClient } from "@tanstack/react-query";
 import type { TanStackDevtoolsReactPlugin } from "@tanstack/react-devtools";
-import { BackButton, Nav, SidebarToggle } from "@/components";
-import { BackdropProvider, SidebarProvider, ThemeProvider } from "@/contexts";
+import { BackButton, MainContent, Nav, Player, SidebarToggle } from "@/components";
+import { BackdropProvider, PlayerProvider, SidebarProvider, ThemeProvider } from "@/contexts";
 import { preHydrationScript as sidebarPreHydrationScript } from "@/lib/sidebar-storage";
 import { preHydrationScript as themePreHydrationScript } from "@/lib/theme-storage";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -74,18 +74,21 @@ function RootDocument({ children }: { children: React.ReactNode }) {
           <BackdropProvider>
             <ThemeProvider>
               <SidebarProvider>
-                <MusicKitGate>
-                  <Nav />
-                  <div className="flex flex-col grow">
-                    <div className="flex p-2 gap-2 bg-transparent">
-                      <SidebarToggle />
-                      <BackButton />
+                <PlayerProvider>
+                  <MusicKitGate>
+                    <Nav />
+                    <div className="relative flex flex-col grow min-h-0">
+                      <div className="flex p-2 gap-2 bg-transparent">
+                        <SidebarToggle />
+                        <BackButton />
+                      </div>
+                      <ScrollArea className="flex-1 min-w-0" fill scrollFade>
+                        <MainContent>{children}</MainContent>
+                      </ScrollArea>
+                      <Player />
                     </div>
-                    <ScrollArea className="flex-1 min-w-0" fill scrollFade>
-                      <main className="flex min-h-full">{children}</main>
-                    </ScrollArea>
-                  </div>
-                </MusicKitGate>
+                  </MusicKitGate>
+                </PlayerProvider>
               </SidebarProvider>
             </ThemeProvider>
           </BackdropProvider>

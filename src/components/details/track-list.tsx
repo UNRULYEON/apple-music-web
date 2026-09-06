@@ -1,4 +1,5 @@
 import { ArtworkImage } from "@/components/artwork";
+import { usePlayer } from "@/hooks";
 import { songDuration } from "@/lib/format";
 import type { Song } from "@/lib/music-kit/track";
 
@@ -15,12 +16,16 @@ export function TrackList({
   showTrackNumber?: boolean;
   showArtwork?: boolean;
 }) {
+  const { play } = usePlayer();
+
   return (
     <div className="flex flex-col">
       {songs.map((song, i) => (
-        <div
-          key={song.id}
-          className="flex items-center gap-4 px-2 sm:px-4 h-14 sm:h-16 hover:bg-neutral-600/15 hover:dark:bg-neutral-400/15 cursor-pointer rounded-xl backdrop-blur-3xl"
+        <button
+          key={`${song.id}-${i}`}
+          type="button"
+          onClick={() => play(songs, { startAt: i })}
+          className="flex items-center text-left gap-4 px-2 sm:px-4 h-14 sm:h-16 hover:bg-neutral-600/15 hover:dark:bg-neutral-400/15 cursor-pointer rounded-xl backdrop-blur-3xl"
         >
           {showTrackNumber && (
             <span className="min-w-6 tabular-nums text-sm text-center text-neutral-600 dark:text-neutral-400">
@@ -44,7 +49,7 @@ export function TrackList({
           <div className="text-sm tabular-nums text-neutral-600 dark:text-neutral-400">
             {song.durationInMillis ? songDuration(song.durationInMillis) : null}
           </div>
-        </div>
+        </button>
       ))}
     </div>
   );
