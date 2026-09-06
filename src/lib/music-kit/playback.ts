@@ -99,6 +99,12 @@ export async function pausePlayback(): Promise<void> {
   music.pause();
 }
 
+export async function seekTo(seconds: number): Promise<void> {
+  const music = await getMusicKit();
+
+  await music.seekToTime(seconds);
+}
+
 export async function stopPlayback(): Promise<void> {
   const music = await getMusicKit();
 

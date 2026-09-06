@@ -34,6 +34,8 @@ export function fakeMusicKit() {
     },
     playbackState: PLAYBACK_STATES.none,
     isPlaying: false,
+    currentPlaybackTime: 0,
+    currentPlaybackDuration: 0,
     nowPlayingItemIndex: 0,
     shuffleMode: SHUFFLE_MODES.off,
     repeatMode: REPEAT_MODES.none,

@@ -11,6 +11,7 @@ import {
   type FakeMusicKit,
 } from "@/lib/music-kit/fake-music-kit";
 import { getMusicKit } from "@/lib/music-kit/instance";
+import { resetPlaybackTime } from "@/lib/music-kit/playback-time";
 import { resetPlayerState } from "@/lib/music-kit/player-state";
 import type { Song } from "@/lib/music-kit/track";
 import { act, cleanup, render, waitFor } from "@testing-library/react";
@@ -30,6 +31,7 @@ let music: FakeMusicKit;
 
 beforeEach(() => {
   resetPlayerState();
+  resetPlaybackTime();
   stubMusicKitGlobals();
   music = fakeMusicKit();
   vi.mocked(getMusicKit).mockResolvedValue(music as unknown as MusicKit.MusicKitInstance);

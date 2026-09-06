@@ -5,4 +5,5 @@ export { useIsHydrated } from "./use-is-hydrated";
 export { useView } from "./use-view";
 export { useBackdrop } from "./use-backdrop";
 export { usePlayer } from "./use-player";
+export { usePlaybackTime } from "./use-playback-time";
 export { usePrefetchRecentlyPlayed } from "./use-prefetch-recently-played";
