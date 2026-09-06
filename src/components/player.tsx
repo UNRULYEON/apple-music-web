@@ -1,4 +1,4 @@
-import { usePlayer } from "@/hooks";
+import { useIsMobile, usePlayer } from "@/hooks";
 import { TRANSITION, TRANSITION_REVEAL, TRANSITION_SWAP } from "@/lib/motion";
 import type { RepeatMode } from "@/lib/music-kit/player-state";
 import { cn } from "@/lib/utils";
@@ -42,6 +42,19 @@ const ICON_SHOWN = { opacity: 1, scale: 1, filter: "blur(0px)" };
 const ART_HIDDEN = { opacity: 0, scale: 0.96, filter: "blur(2px)" };
 const ART_SHOWN = { opacity: 1, scale: 1, filter: "blur(0px)" };
 
+const BAR_GAP = 16;
+
+const GROUP_COLLAPSED = { width: 0, opacity: 0, filter: "blur(2px)" };
+const GROUP_EXPANDED = { width: "auto", opacity: 1, filter: "blur(0px)" };
+
+const ROW_COLLAPSED = { height: 0, opacity: 0, filter: "blur(2px)" };
+const ROW_EXPANDED = { height: "auto", opacity: 1, filter: "blur(0px)" };
+
+const GROUP_AT_START = { ...GROUP_COLLAPSED, marginInlineStart: 0 };
+const GROUP_AFTER_START = { ...GROUP_EXPANDED, marginInlineStart: BAR_GAP };
+const GROUP_AT_END = { ...GROUP_COLLAPSED, marginInlineEnd: 0 };
+const GROUP_BEFORE_END = { ...GROUP_EXPANDED, marginInlineEnd: BAR_GAP };
+
 const FADED = { opacity: 0 };
 const OPAQUE = { opacity: 1 };
 
@@ -51,22 +64,58 @@ const REPEAT_LABELS: Record<RepeatMode, string> = {
   song: "Repeat the song",
 };
 
-export function Player() {
-  const {
-    nowPlaying,
-    isPlaying,
-    isLoading,
-    isShuffled,
-    repeat,
-    canSkipNext,
-    canSkipPrevious,
-    toggle,
-    toggleShuffle,
-    cycleRepeat,
-    previous,
-    next,
-  } = usePlayer();
+function PlayButton({ size = "icon" }: { size?: "icon" | "icon-lg" }) {
+  const { isPlaying, isLoading, toggle } = usePlayer();
   const prefersReducedMotion = useReducedMotion();
+
+  return (
+    <Button
+      onClick={toggle}
+      variant="ghost"
+      size={size}
+      aria-label={isLoading ? "Stop loading" : isPlaying ? "Pause" : "Play"}
+    >
+      <AnimatePresence mode="popLayout">
+        <motion.div
+          key={isLoading ? "loading" : isPlaying ? "pause" : "play"}
+          initial={ICON_HIDDEN}
+          animate={ICON_SHOWN}
+          exit={ICON_HIDDEN}
+          transition={prefersReducedMotion ? NO_TRANSITION : TRANSITION}
+        >
+          <HugeiconsIcon
+            icon={isLoading ? Loading03Icon : isPlaying ? PauseIcon : PlayIcon}
+            size={16}
+            strokeWidth={2}
+            className={cn(isLoading && "animate-spin")}
+          />
+        </motion.div>
+      </AnimatePresence>
+    </Button>
+  );
+}
+
+function NextButton({ size = "icon-xs" }: { size?: "icon-xs" | "icon-lg" }) {
+  const { canSkipNext, next } = usePlayer();
+
+  return (
+    <Button
+      onClick={next}
+      disabled={!canSkipNext}
+      variant="ghost"
+      size={size}
+      aria-label="Next song"
+    >
+      <HugeiconsIcon icon={NextIcon} size={16} strokeWidth={2} />
+    </Button>
+  );
+}
+
+export function Player() {
+  const { nowPlaying, isShuffled, repeat, canSkipPrevious, toggleShuffle, cycleRepeat, previous } =
+    usePlayer();
+  const prefersReducedMotion = useReducedMotion();
+  const isMobile = useIsMobile();
 
   const hidden = prefersReducedMotion ? FADED : HIDDEN;
   const shown = prefersReducedMotion ? OPAQUE : SHOWN;
@@ -78,7 +127,7 @@ export function Player() {
   const openTransition = prefersReducedMotion ? NO_TRANSITION : TRANSITION_REVEAL;
   const closeTransition = prefersReducedMotion ? NO_TRANSITION : TRANSITION;
   const swapTransition = prefersReducedMotion ? NO_TRANSITION : TRANSITION_SWAP;
-  const iconTransition = prefersReducedMotion ? NO_TRANSITION : TRANSITION;
+  const shapeTransition = prefersReducedMotion ? NO_TRANSITION : TRANSITION;
 
   return (
     <AnimatePresence>
@@ -96,87 +145,74 @@ export function Player() {
             <div
               className={cn(
                 "pointer-events-auto",
-                "flex items-center gap-4 px-4 pt-1 pb-0 max-w-full",
+                "flex items-center max-w-full",
+                isMobile ? "pl-4 pr-4 py-1" : "px-4 pt-1 pb-0",
                 "bg-neutral-100 dark:bg-neutral-950",
                 "border border-neutral-100/10",
                 "rounded-full",
                 "select-none",
               )}
             >
-              <div className="flex items-center shrink-0">
-                <Button
-                  onClick={toggleShuffle}
-                  variant="ghost"
-                  size="icon-xs"
-                  aria-label="Shuffle"
-                  aria-pressed={isShuffled}
-                >
-                  <HugeiconsIcon
-                    icon={ShuffleIcon}
-                    size={16}
-                    strokeWidth={2}
-                    className={cn("transition-opacity", isShuffled ? "opacity-100" : "opacity-40")}
-                  />
-                </Button>
-                <Button
-                  onClick={previous}
-                  disabled={!canSkipPrevious}
-                  variant="ghost"
-                  size="icon-xs"
-                  aria-label="Previous song"
-                >
-                  <HugeiconsIcon icon={PreviousIcon} size={16} strokeWidth={2} />
-                </Button>
-                <Button
-                  onClick={toggle}
-                  variant="ghost"
-                  size="icon"
-                  aria-label={isLoading ? "Stop loading" : isPlaying ? "Pause" : "Play"}
-                >
-                  <AnimatePresence mode="popLayout">
-                    <motion.div
-                      key={isLoading ? "loading" : isPlaying ? "pause" : "play"}
-                      initial={ICON_HIDDEN}
-                      animate={ICON_SHOWN}
-                      exit={ICON_HIDDEN}
-                      transition={iconTransition}
-                    >
-                      <HugeiconsIcon
-                        icon={isLoading ? Loading03Icon : isPlaying ? PauseIcon : PlayIcon}
-                        size={16}
-                        strokeWidth={2}
-                        className={cn(isLoading && "animate-spin")}
-                      />
-                    </motion.div>
-                  </AnimatePresence>
-                </Button>
-                <Button
-                  onClick={next}
-                  disabled={!canSkipNext}
-                  variant="ghost"
-                  size="icon-xs"
-                  aria-label="Next song"
-                >
-                  <HugeiconsIcon icon={NextIcon} size={16} strokeWidth={2} />
-                </Button>
-                <Button
-                  onClick={cycleRepeat}
-                  variant="ghost"
-                  size="icon-xs"
-                  aria-label={REPEAT_LABELS[repeat]}
-                  aria-pressed={repeat !== "off"}
-                >
-                  <HugeiconsIcon
-                    icon={repeat === "song" ? RepeatOne02Icon : RepeatIcon}
-                    size={16}
-                    strokeWidth={2}
-                    className={cn(
-                      "transition-opacity",
-                      repeat === "off" ? "opacity-40" : "opacity-100",
-                    )}
-                  />
-                </Button>
-              </div>
+              <AnimatePresence initial={false}>
+                {!isMobile && (
+                  <motion.div
+                    key="controls"
+                    className="shrink-0 overflow-hidden"
+                    initial={GROUP_AT_END}
+                    animate={GROUP_BEFORE_END}
+                    exit={GROUP_AT_END}
+                    transition={shapeTransition}
+                  >
+                    <div className="flex items-center w-max">
+                      <Button
+                        onClick={toggleShuffle}
+                        variant="ghost"
+                        size="icon-xs"
+                        aria-label="Shuffle"
+                        aria-pressed={isShuffled}
+                      >
+                        <HugeiconsIcon
+                          icon={ShuffleIcon}
+                          size={16}
+                          strokeWidth={2}
+                          className={cn(
+                            "transition-opacity",
+                            isShuffled ? "opacity-100" : "opacity-40",
+                          )}
+                        />
+                      </Button>
+                      <Button
+                        onClick={previous}
+                        disabled={!canSkipPrevious}
+                        variant="ghost"
+                        size="icon-xs"
+                        aria-label="Previous song"
+                      >
+                        <HugeiconsIcon icon={PreviousIcon} size={16} strokeWidth={2} />
+                      </Button>
+                      <PlayButton />
+                      <NextButton />
+                      <Button
+                        onClick={cycleRepeat}
+                        variant="ghost"
+                        size="icon-xs"
+                        aria-label={REPEAT_LABELS[repeat]}
+                        aria-pressed={repeat !== "off"}
+                      >
+                        <HugeiconsIcon
+                          icon={repeat === "song" ? RepeatOne02Icon : RepeatIcon}
+                          size={16}
+                          strokeWidth={2}
+                          className={cn(
+                            "transition-opacity",
+                            repeat === "off" ? "opacity-40" : "opacity-100",
+                          )}
+                        />
+                      </Button>
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
               <div className="flex flex-col min-w-0" style={{ width: META_WIDTH }}>
                 <div className="flex items-center gap-2 min-w-0">
                   <div className="relative size-8 shrink-0">
@@ -205,7 +241,7 @@ export function Player() {
                       <AnimatePresence mode="popLayout" initial={false}>
                         <motion.span
                           key={nowPlaying.name}
-                          className="block truncate text-sm font-bold"
+                          className="block truncate text-xs font-bold"
                           initial={blurred}
                           animate={sharp}
                           exit={blurred}
@@ -231,16 +267,56 @@ export function Player() {
                     </div>
                   </div>
                 </div>
-                <PlayerProgress
-                  songId={nowPlaying.id}
-                  durationInMillis={nowPlaying.durationInMillis}
-                />
+                <AnimatePresence initial={false}>
+                  {!isMobile && (
+                    <motion.div
+                      key="progress"
+                      className="overflow-hidden"
+                      initial={ROW_COLLAPSED}
+                      animate={ROW_EXPANDED}
+                      exit={ROW_COLLAPSED}
+                      transition={shapeTransition}
+                    >
+                      <PlayerProgress
+                        songId={nowPlaying.id}
+                        durationInMillis={nowPlaying.durationInMillis}
+                      />
+                    </motion.div>
+                  )}
+                </AnimatePresence>
               </div>
-              <div className="shrink-0">
-                <Button variant="ghost" size="icon">
-                  <HugeiconsIcon icon={Playlist03Icon} size={16} strokeWidth={2} />
-                </Button>
-              </div>
+              <AnimatePresence initial={false}>
+                {isMobile ? (
+                  <motion.div
+                    key="compact-controls"
+                    className="shrink-0 overflow-hidden"
+                    initial={GROUP_AT_START}
+                    animate={GROUP_AFTER_START}
+                    exit={GROUP_AT_START}
+                    transition={shapeTransition}
+                  >
+                    <div className="flex items-center w-max">
+                      <PlayButton size="icon-lg" />
+                      <NextButton size="icon-lg" />
+                    </div>
+                  </motion.div>
+                ) : (
+                  <motion.div
+                    key="queue"
+                    className="shrink-0 overflow-hidden"
+                    initial={GROUP_AT_START}
+                    animate={GROUP_AFTER_START}
+                    exit={GROUP_AT_START}
+                    transition={shapeTransition}
+                  >
+                    <div className="w-max">
+                      <Button variant="ghost" size="icon" aria-label="Queue">
+                        <HugeiconsIcon icon={Playlist03Icon} size={16} strokeWidth={2} />
+                      </Button>
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
             </div>
           </motion.div>
         </div>

@@ -25,11 +25,21 @@ function item(id: string, name: string, artwork = COVER, artistName = "The Band"
   return { id, attributes: { name, artistName, artwork } };
 }
 
+function setViewport(mobile: boolean) {
+  vi.stubGlobal("matchMedia", (query: string) => ({
+    matches: query.includes("max-width") ? mobile : !mobile,
+    media: query,
+    addEventListener() {},
+    removeEventListener() {},
+  }));
+}
+
 let music: FakeMusicKit;
 
 beforeEach(() => {
   resetPlayerState();
   resetPlaybackTime();
+  setViewport(false);
   stubMusicKitGlobals();
   music = fakeMusicKit();
   vi.mocked(getMusicKit).mockResolvedValue(music as unknown as MusicKit.MusicKitInstance);
@@ -384,5 +394,55 @@ describe("Player", () => {
     await waitForSeekBar();
 
     expect(screen.getByLabelText<HTMLInputElement>("Seek").disabled).toBe(true);
+  });
+
+  it("keeps every control and the queue on a wide viewport", async () => {
+    await renderPlayer();
+
+    loadQueue([item("1", "First")]);
+
+    expect(screen.getByLabelText("Shuffle")).toBeTruthy();
+    expect(screen.getByLabelText("Previous song")).toBeTruthy();
+    expect(screen.getByLabelText("Repeat off")).toBeTruthy();
+    expect(screen.getByLabelText("Queue")).toBeTruthy();
+  });
+
+  it("keeps only play and skip on a narrow viewport", async () => {
+    setViewport(true);
+    await renderPlayer();
+
+    loadQueue([item("1", "First")]);
+
+    expect(screen.queryByLabelText("Shuffle")).toBeNull();
+    expect(screen.queryByLabelText("Previous song")).toBeNull();
+    expect(screen.queryByLabelText("Repeat off")).toBeNull();
+    expect(screen.queryByLabelText("Queue")).toBeNull();
+
+    expect(screen.getByLabelText("Play")).toBeTruthy();
+    expect(screen.getByLabelText("Next song")).toBeTruthy();
+  });
+
+  it("still plays and skips from the narrow viewport", async () => {
+    setViewport(true);
+    await renderPlayer();
+
+    loadQueue([item("1", "First"), item("2", "Second")]);
+
+    start();
+    await waitFor(() => expect(music.play).toHaveBeenCalledOnce());
+
+    fireEvent.click(screen.getByLabelText("Next song"));
+    expect(screen.getByText("Second")).toBeTruthy();
+  });
+
+  it("shows the song but no progress bar on a narrow viewport", async () => {
+    setViewport(true);
+    await renderPlayer();
+
+    loadQueue([item("1", "First")]);
+
+    expect(screen.getByText("First")).toBeTruthy();
+    expect(screen.getByText("The Band")).toBeTruthy();
+    expect(screen.queryByLabelText("Seek")).toBeNull();
   });
 });
