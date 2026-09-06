@@ -66,7 +66,7 @@ export function ArtworkImage({
         draggable={false}
         onLoad={() => setStatus("loaded")}
         onError={() => setStatus("error")}
-        className="absolute inset-0 size-full object-cover"
+        className="absolute inset-0 size-full object-cover outline-neutral-50/50 outline-1 -outline-offset-1 dark:outline-neutral-900/50"
         initial={BLURRED}
         animate={isLoaded ? SHARP : BLURRED}
         transition={transition}
