@@ -17,6 +17,7 @@ export interface Song {
   durationInMillis?: number;
   contentRating?: string;
   previewUrl?: string;
+  playId?: string;
 }
 
 export function readSong(value: unknown): Song | undefined {
@@ -41,7 +42,19 @@ export function readSong(value: unknown): Song | undefined {
     durationInMillis: readNumber(attributes.durationInMillis),
     contentRating: readText(attributes.contentRating),
     previewUrl: readPreviewUrl(attributes.previews),
+    playId: readPlayId(attributes.playParams),
   };
+}
+
+// a song in the library plays from its catalog id when it has one
+function readPlayId(value: unknown): string | undefined {
+  if (typeof value !== "object" || value === null) {
+    return undefined;
+  }
+
+  const params = value as { id?: unknown; catalogId?: unknown };
+
+  return readText(params.catalogId) ?? readText(params.id);
 }
 
 function readPreviewUrl(value: unknown): string | undefined {

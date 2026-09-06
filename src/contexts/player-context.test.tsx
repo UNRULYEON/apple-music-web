@@ -1,20 +1,48 @@
 // @vitest-environment happy-dom
 import { PlayerProvider } from "@/contexts";
 import { usePlayer } from "@/hooks";
+import {
+  fakeMusicKit,
+  PLAYBACK_STATES,
+  REPEAT_MODES,
+  SHUFFLE_MODES,
+  songItem,
+  stubMusicKitGlobals,
+  type FakeMusicKit,
+} from "@/lib/music-kit/fake-music-kit";
+import { getMusicKit } from "@/lib/music-kit/instance";
+import { resetPlayerState } from "@/lib/music-kit/player-state";
 import type { Song } from "@/lib/music-kit/track";
-import { act, cleanup, render } from "@testing-library/react";
-import { afterEach, describe, expect, it, vi } from "vitest";
+import { act, cleanup, render, waitFor } from "@testing-library/react";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+
+vi.mock("@/lib/music-kit/instance", () => ({ getMusicKit: vi.fn() }));
+vi.mock("@/lib/music-kit/storefront", () => ({
+  fetchStorefront: vi.fn().mockResolvedValue({ id: "nl", name: "Netherlands" }),
+}));
+
+const SONGS: Song[] = [
+  { id: "i.one", name: "One", playId: "111" },
+  { id: "i.two", name: "Two", playId: "222" },
+];
+
+let music: FakeMusicKit;
+
+beforeEach(() => {
+  resetPlayerState();
+  stubMusicKitGlobals();
+  music = fakeMusicKit();
+  vi.mocked(getMusicKit).mockResolvedValue(music as unknown as MusicKit.MusicKitInstance);
+});
 
 afterEach(() => {
   cleanup();
-  vi.restoreAllMocks();
+  vi.useRealTimers();
+  vi.clearAllMocks();
+  vi.unstubAllGlobals();
 });
 
-function songs(count: number): Song[] {
-  return Array.from({ length: count }, (_, i) => ({ id: `s${i}`, name: `Song ${i}` }));
-}
-
-function renderProvider() {
+async function renderProvider() {
   const seen: { current?: ReturnType<typeof usePlayer> } = {};
 
   function Probe() {
@@ -28,271 +56,253 @@ function renderProvider() {
     </PlayerProvider>,
   );
 
+  await waitFor(() => expect(music.addEventListener).toHaveBeenCalled());
+
   return seen;
 }
 
 describe("PlayerProvider", () => {
-  it("plays nothing before a person starts a song", () => {
-    const seen = renderProvider();
+  it("plays nothing before a person starts a song", async () => {
+    const seen = await renderProvider();
 
     expect(seen.current?.nowPlaying).toBeUndefined();
     expect(seen.current?.isPlaying).toBe(false);
   });
 
-  it("puts the full album in the queue when a song starts", () => {
-    const seen = renderProvider();
+  it("hands the whole list to MusicKit when a person starts a song", async () => {
+    const seen = await renderProvider();
 
-    act(() => seen.current?.play(songs(3), { startAt: 1 }));
+    act(() => seen.current?.play(SONGS, { startAt: 1 }));
 
-    expect(seen.current?.nowPlaying?.id).toBe("s1");
-    expect(seen.current?.queue).toHaveLength(3);
-    expect(seen.current?.upNext.map((song) => song.id)).toEqual(["s2"]);
+    await waitFor(() =>
+      expect(music.setQueue).toHaveBeenCalledWith(
+        expect.objectContaining({ songs: ["111", "222"], startWith: 1 }),
+      ),
+    );
+  });
+
+  it("shows what MusicKit plays", async () => {
+    const seen = await renderProvider();
+
+    music.queue.items = [songItem("111", "One"), songItem("222", "Two")];
+    music.nowPlayingItemIndex = 1;
+    music.playbackState = PLAYBACK_STATES.playing;
+
+    act(() => music.emit("queueItemsDidChange", music.queue.items));
+    act(() => seen.current?.toggle());
+    act(() =>
+      music.emit("playbackStateDidChange", { oldState: 0, state: PLAYBACK_STATES.playing }),
+    );
+
+    expect(seen.current?.nowPlaying?.name).toBe("Two");
+    expect(seen.current?.queue).toHaveLength(2);
     expect(seen.current?.isPlaying).toBe(true);
   });
 
-  it("randomises the album but keeps the selected song first", () => {
-    vi.spyOn(Math, "random").mockReturnValue(0);
-    const seen = renderProvider();
+  it("moves through the queue that MusicKit holds", async () => {
+    const seen = await renderProvider();
 
-    act(() => seen.current?.play(songs(4), { startAt: 3, shuffle: true }));
+    music.queue.items = [songItem("1", "One"), songItem("2", "Two"), songItem("3", "Three")];
+    act(() => music.emit("queueItemsDidChange", music.queue.items));
 
-    expect(seen.current?.nowPlaying?.id).toBe("s3");
-    expect(seen.current?.queue).toHaveLength(4);
-  });
-
-  it("stays quiet for an empty collection", () => {
-    const seen = renderProvider();
-
-    act(() => seen.current?.play([]));
-
-    expect(seen.current?.isPlaying).toBe(false);
-  });
-
-  it("plays a queued song when nothing plays now", () => {
-    const seen = renderProvider();
-
-    act(() => seen.current?.addToQueue(songs(2)));
-
-    expect(seen.current?.nowPlaying?.id).toBe("s0");
-    expect(seen.current?.isPlaying).toBe(true);
-  });
-
-  it("keeps the current song when a person queues more", () => {
-    const seen = renderProvider();
-
-    act(() => seen.current?.play(songs(2)));
-    act(() => seen.current?.playNext([{ id: "next", name: "Next" }]));
-    act(() => seen.current?.addToQueue([{ id: "last", name: "Last" }]));
-
-    expect(seen.current?.nowPlaying?.id).toBe("s0");
-    expect(seen.current?.upNext.map((song) => song.id)).toEqual(["next", "s1", "last"]);
-  });
-
-  it("moves through the queue", () => {
-    const seen = renderProvider();
-
-    act(() => seen.current?.play(songs(2)));
     act(() => seen.current?.next());
 
-    expect(seen.current?.nowPlaying?.id).toBe("s1");
+    await waitFor(() => expect(music.changeToMediaAtIndex).toHaveBeenCalledWith(1));
+  });
+
+  it("asks Apple for one song only, however fast a person skips", async () => {
+    const seen = await renderProvider();
+
+    vi.useFakeTimers();
+
+    try {
+      music.queue.items = [
+        songItem("1", "One"),
+        songItem("2", "Two"),
+        songItem("3", "Three"),
+        songItem("4", "Four"),
+      ];
+      act(() => music.emit("queueItemsDidChange", music.queue.items));
+
+      // three taps while MusicKit is still on the first song
+      act(() => seen.current?.next());
+      act(() => seen.current?.next());
+      act(() => seen.current?.next());
+
+      expect(music.changeToMediaAtIndex).not.toHaveBeenCalled();
+
+      // the bar has already moved on, so the taps feel answered
+      expect(seen.current?.nowPlaying?.name).toBe("Four");
+
+      await act(async () => {
+        vi.advanceTimersByTime(200);
+        await Promise.resolve();
+      });
+
+      expect(music.changeToMediaAtIndex).toHaveBeenCalledOnce();
+      expect(music.changeToMediaAtIndex).toHaveBeenCalledWith(3);
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
+  it("stays on the last song when nothing repeats", async () => {
+    const seen = await renderProvider();
+
+    music.queue.items = [songItem("1", "One"), songItem("2", "Two")];
+    music.nowPlayingItemIndex = 1;
+    act(() => music.emit("queueItemsDidChange", music.queue.items));
+
+    act(() => seen.current?.next());
+
+    expect(music.changeToMediaAtIndex).not.toHaveBeenCalled();
+  });
+
+  it("goes round to the first song when the queue repeats", async () => {
+    const seen = await renderProvider();
+
+    music.queue.items = [songItem("1", "One"), songItem("2", "Two")];
+    music.nowPlayingItemIndex = 1;
+    music.repeatMode = REPEAT_MODES.all;
+    act(() => music.emit("queueItemsDidChange", music.queue.items));
+
+    act(() => seen.current?.next());
+
+    await waitFor(() => expect(music.changeToMediaAtIndex).toHaveBeenCalledWith(0));
+  });
+
+  it("goes back a song", async () => {
+    const seen = await renderProvider();
+
+    music.queue.items = [songItem("1", "One"), songItem("2", "Two")];
+    music.nowPlayingItemIndex = 1;
+    act(() => music.emit("queueItemsDidChange", music.queue.items));
 
     act(() => seen.current?.previous());
 
-    expect(seen.current?.nowPlaying?.id).toBe("s0");
+    await waitFor(() => expect(music.changeToMediaAtIndex).toHaveBeenCalledWith(0));
   });
 
-  it("stops at the end of the queue", () => {
-    const seen = renderProvider();
+  it("pauses and plays again", async () => {
+    const seen = await renderProvider();
 
-    act(() => seen.current?.play(songs(1)));
-    act(() => seen.current?.next());
-
-    expect(seen.current?.nowPlaying?.id).toBe("s0");
-    expect(seen.current?.isPlaying).toBe(false);
-  });
-
-  it("stays at the first song before the start of the queue", () => {
-    const seen = renderProvider();
-
-    act(() => seen.current?.play(songs(2)));
-    act(() => seen.current?.previous());
-
-    expect(seen.current?.nowPlaying?.id).toBe("s0");
-  });
-
-  it("pauses and starts again", () => {
-    const seen = renderProvider();
-
-    act(() => seen.current?.play(songs(1)));
-    act(() => seen.current?.toggle());
-
-    expect(seen.current?.isPlaying).toBe(false);
+    music.playbackState = PLAYBACK_STATES.playing;
+    act(() =>
+      music.emit("playbackStateDidChange", { oldState: 0, state: PLAYBACK_STATES.playing }),
+    );
 
     act(() => seen.current?.toggle());
+    await waitFor(() => expect(music.pause).toHaveBeenCalledOnce());
 
-    expect(seen.current?.isPlaying).toBe(true);
+    music.playbackState = PLAYBACK_STATES.paused;
+    act(() => music.emit("playbackStateDidChange", { oldState: 2, state: PLAYBACK_STATES.paused }));
+
+    act(() => seen.current?.toggle());
+    await waitFor(() => expect(music.play).toHaveBeenCalledOnce());
   });
 
-  it("does not start with an empty queue", () => {
-    const seen = renderProvider();
+  it("gives up on a song that is still loading when a person taps again", async () => {
+    const seen = await renderProvider();
+
+    music.queue.items = [songItem("1", "One")];
+    act(() => music.emit("queueItemsDidChange", music.queue.items));
+    act(() => seen.current?.toggle());
+
+    music.playbackState = PLAYBACK_STATES.loading;
+    act(() =>
+      music.emit("playbackStateDidChange", { oldState: 0, state: PLAYBACK_STATES.loading }),
+    );
+
+    expect(seen.current?.isLoading).toBe(true);
 
     act(() => seen.current?.toggle());
 
-    expect(seen.current?.isPlaying).toBe(false);
+    expect(seen.current?.isLoading).toBe(false);
+    await waitFor(() => expect(music.pause).toHaveBeenCalledOnce());
   });
 
-  it("starts again from the song that stopped at the end of the queue", () => {
-    const seen = renderProvider();
+  it("keeps a paused player paused when the song finishes loading behind it", async () => {
+    const seen = await renderProvider();
 
-    act(() => seen.current?.play(songs(2)));
-    act(() => seen.current?.next());
-    act(() => seen.current?.next());
+    music.queue.items = [songItem("1", "One")];
+    act(() => music.emit("queueItemsDidChange", music.queue.items));
+    act(() => seen.current?.toggle());
     act(() => seen.current?.toggle());
 
-    expect(seen.current?.isPlaying).toBe(true);
-    expect(seen.current?.nowPlaying?.id).toBe("s1");
-  });
+    // MusicKit loaded the song and started it, though nobody asked
+    music.playbackState = PLAYBACK_STATES.playing;
+    act(() =>
+      music.emit("playbackStateDidChange", { oldState: 1, state: PLAYBACK_STATES.playing }),
+    );
 
-  it("empties the queue", () => {
-    const seen = renderProvider();
-
-    act(() => seen.current?.play(songs(3)));
-    act(() => seen.current?.clear());
-
-    expect(seen.current?.queue).toEqual([]);
-    expect(seen.current?.nowPlaying).toBeUndefined();
     expect(seen.current?.isPlaying).toBe(false);
-  });
-});
-
-describe("shuffle mode", () => {
-  it("is off at the start", () => {
-    expect(renderProvider().current?.isShuffled).toBe(false);
+    expect(seen.current?.isLoading).toBe(false);
+    await waitFor(() => expect(music.pause).toHaveBeenCalledTimes(2));
   });
 
-  it("randomises the queue but keeps the song that plays now", () => {
-    vi.spyOn(Math, "random").mockReturnValue(0);
-    const seen = renderProvider();
+  it("turns the shuffle mode of MusicKit on and off", async () => {
+    const seen = await renderProvider();
 
-    act(() => seen.current?.play(songs(4), { startAt: 2 }));
     act(() => seen.current?.toggleShuffle());
+    await waitFor(() => expect(music.shuffleMode).toBe(SHUFFLE_MODES.songs));
 
+    music.shuffleMode = SHUFFLE_MODES.songs;
+    act(() => music.emit("shuffleModeDidChange", SHUFFLE_MODES.songs));
     expect(seen.current?.isShuffled).toBe(true);
-    expect(seen.current?.nowPlaying?.id).toBe("s2");
-    expect(seen.current?.queue).toHaveLength(4);
+
+    act(() => seen.current?.toggleShuffle());
+    await waitFor(() => expect(music.shuffleMode).toBe(SHUFFLE_MODES.off));
   });
 
-  it("gives back the album order when it stops", () => {
-    const seen = renderProvider();
-
-    act(() => seen.current?.play(songs(4), { startAt: 2 }));
-    act(() => seen.current?.toggleShuffle());
-    act(() => seen.current?.toggleShuffle());
-
-    expect(seen.current?.isShuffled).toBe(false);
-    expect(seen.current?.queue.map((song) => song.id)).toEqual(["s0", "s1", "s2", "s3"]);
-    expect(seen.current?.nowPlaying?.id).toBe("s2");
-  });
-
-  it("randomises the next album that a person starts", () => {
-    const seen = renderProvider();
-
-    act(() => seen.current?.play(songs(2)));
-    act(() => seen.current?.toggleShuffle());
-    act(() => seen.current?.play(songs(3), { startAt: 1 }));
-
-    expect(seen.current?.isShuffled).toBe(true);
-    expect(seen.current?.nowPlaying?.id).toBe("s1");
-  });
-
-  it("keeps a queued song when the mode stops", () => {
-    const seen = renderProvider();
-
-    act(() => seen.current?.play(songs(2)));
-    act(() => seen.current?.addToQueue([{ id: "new", name: "New" }]));
-    act(() => seen.current?.toggleShuffle());
-    act(() => seen.current?.toggleShuffle());
-
-    expect(seen.current?.queue.map((song) => song.id)).toEqual(["s0", "s1", "new"]);
-  });
-
-  it("starts the mode when a person plays a randomised album", () => {
-    const seen = renderProvider();
-
-    act(() => seen.current?.play(songs(3), { shuffle: true }));
-
-    expect(seen.current?.isShuffled).toBe(true);
-  });
-});
-
-describe("repeat mode", () => {
-  it("cycles off, queue, song, off", () => {
-    const seen = renderProvider();
-
-    expect(seen.current?.repeat).toBe("off");
+  it("cycles the repeat mode of MusicKit", async () => {
+    const seen = await renderProvider();
 
     act(() => seen.current?.cycleRepeat());
+    await waitFor(() => expect(music.repeatMode).toBe(REPEAT_MODES.all));
+
+    music.repeatMode = REPEAT_MODES.all;
+    act(() => music.emit("repeatModeDidChange", REPEAT_MODES.all));
     expect(seen.current?.repeat).toBe("queue");
 
     act(() => seen.current?.cycleRepeat());
-    expect(seen.current?.repeat).toBe("song");
-
-    act(() => seen.current?.cycleRepeat());
-    expect(seen.current?.repeat).toBe("off");
+    await waitFor(() => expect(music.repeatMode).toBe(REPEAT_MODES.one));
   });
 
-  it("goes back to the first song at the end of the queue", () => {
-    const seen = renderProvider();
+  it("puts songs next and last through MusicKit", async () => {
+    const seen = await renderProvider();
 
-    act(() => seen.current?.play(songs(2)));
-    act(() => seen.current?.cycleRepeat());
-    act(() => seen.current?.next());
-    act(() => seen.current?.next());
+    act(() => seen.current?.playNext(SONGS));
+    act(() => seen.current?.addToQueue(SONGS));
 
-    expect(seen.current?.nowPlaying?.id).toBe("s0");
-    expect(seen.current?.isPlaying).toBe(true);
+    await waitFor(() => expect(music.playNext).toHaveBeenCalledWith({ songs: ["111", "222"] }));
+    expect(music.playLater).toHaveBeenCalledWith({ songs: ["111", "222"] });
   });
 
-  it("goes to the last song before the first song", () => {
-    const seen = renderProvider();
+  it("builds the queue again when a key session breaks, so a person is not stuck", async () => {
+    const seen = await renderProvider();
 
-    act(() => seen.current?.play(songs(3)));
-    act(() => seen.current?.cycleRepeat());
-    act(() => seen.current?.previous());
+    music.queue.items = [songItem("1", "One"), songItem("2", "Two")];
+    music.nowPlayingItemIndex = 1;
+    act(() => music.emit("queueItemsDidChange", music.queue.items));
+    expect(seen.current?.nowPlaying?.name).toBe("Two");
 
-    expect(seen.current?.nowPlaying?.id).toBe("s2");
+    act(() => music.emit("playbackSessionError", { error: { name: "MEDIA_KEY" } }));
+
+    await waitFor(() =>
+      expect(music.setQueue).toHaveBeenCalledWith(expect.objectContaining({ startWith: 1 })),
+    );
   });
 
-  it("plays the same song again instead of moving on", () => {
-    const seen = renderProvider();
+  it("does not build the queue again over and over", async () => {
+    await renderProvider();
 
-    act(() => seen.current?.play(songs(3), { startAt: 1 }));
-    act(() => seen.current?.cycleRepeat());
-    act(() => seen.current?.cycleRepeat());
-    act(() => seen.current?.next());
+    music.queue.items = [songItem("1", "One")];
+    act(() => music.emit("queueItemsDidChange", music.queue.items));
 
-    expect(seen.current?.repeat).toBe("song");
-    expect(seen.current?.nowPlaying?.id).toBe("s1");
-    expect(seen.current?.isPlaying).toBe(true);
-  });
+    act(() => music.emit("playbackSessionError", { error: { name: "MEDIA_KEY" } }));
+    act(() => music.emit("playbackSessionError", { error: { name: "MEDIA_KEY" } }));
+    act(() => music.emit("playbackSessionError", { error: { name: "MEDIA_KEY" } }));
 
-  it("plays the same song again instead of going back", () => {
-    const seen = renderProvider();
-
-    act(() => seen.current?.play(songs(3), { startAt: 1 }));
-    act(() => seen.current?.cycleRepeat());
-    act(() => seen.current?.cycleRepeat());
-    act(() => seen.current?.previous());
-
-    expect(seen.current?.nowPlaying?.id).toBe("s1");
-  });
-
-  it("moves to the next song when repeat is off", () => {
-    const seen = renderProvider();
-
-    act(() => seen.current?.play(songs(2)));
-    act(() => seen.current?.next());
-
-    expect(seen.current?.nowPlaying?.id).toBe("s1");
+    await waitFor(() => expect(music.setQueue).toHaveBeenCalledOnce());
   });
 });

@@ -1,0 +1,230 @@
+import {
+  fakeMusicKit,
+  REPEAT_MODES,
+  SHUFFLE_MODES,
+  stubMusicKitGlobals,
+  type FakeMusicKit,
+} from "@/lib/music-kit/fake-music-kit";
+import { getMusicKit } from "@/lib/music-kit/instance";
+import {
+  describeError,
+  pausePlayback,
+  playSongs,
+  queueLast,
+  queueNext,
+  resumePlayback,
+  setRepeatMode,
+  setShuffleMode,
+  silenceKnownRejections,
+  changeToIndex,
+  subscribeToPlaybackErrors,
+} from "@/lib/music-kit/playback";
+import type { Song } from "@/lib/music-kit/track";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+
+vi.mock("@/lib/music-kit/instance", () => ({ getMusicKit: vi.fn() }));
+vi.mock("@/lib/music-kit/storefront", () => ({
+  fetchStorefront: vi.fn().mockResolvedValue({ id: "nl", name: "Netherlands" }),
+}));
+
+let music: FakeMusicKit;
+
+beforeEach(() => {
+  stubMusicKitGlobals();
+  music = fakeMusicKit();
+  vi.mocked(getMusicKit).mockResolvedValue(music as unknown as MusicKit.MusicKitInstance);
+});
+
+afterEach(() => {
+  vi.clearAllMocks();
+  vi.unstubAllGlobals();
+});
+
+const SONGS: Song[] = [
+  { id: "i.one", name: "One", playId: "111" },
+  { id: "i.two", name: "Two", playId: "222" },
+];
+
+describe("playSongs", () => {
+  it("gives the whole list to MusicKit and starts at the chosen song", async () => {
+    await playSongs(SONGS, { startAt: 1 });
+
+    expect(music.setQueue).toHaveBeenCalledWith({
+      songs: ["111", "222"],
+      startWith: 1,
+      startPlaying: true,
+      shuffleMode: SHUFFLE_MODES.off,
+    });
+  });
+
+  it("asks MusicKit to shuffle rather than shuffling itself", async () => {
+    await playSongs(SONGS, { shuffle: true });
+
+    expect(music.setQueue).toHaveBeenCalledWith(
+      expect.objectContaining({ shuffleMode: SHUFFLE_MODES.songs }),
+    );
+  });
+
+  it("falls back to the id of a song that has no catalog id", async () => {
+    await playSongs([{ id: "i.only", name: "Only" }]);
+
+    expect(music.setQueue).toHaveBeenCalledWith(expect.objectContaining({ songs: ["i.only"] }));
+  });
+
+  it("says nothing to MusicKit about an empty list", async () => {
+    await playSongs([]);
+
+    expect(music.setQueue).not.toHaveBeenCalled();
+  });
+
+  it("complains, with what the catalog says, when MusicKit keeps no song", async () => {
+    music.queueIsEmpty = true;
+    music.api.music.mockResolvedValue({
+      data: { data: [{ id: "111", attributes: { name: "One", playParams: {} } }] },
+    });
+
+    await expect(playSongs(SONGS)).rejects.toThrow('The nl catalog holds it as "One"');
+  });
+});
+
+describe("the queue", () => {
+  it("puts songs after the one that plays now", async () => {
+    await queueNext(SONGS);
+
+    expect(music.playNext).toHaveBeenCalledWith({ songs: ["111", "222"] });
+  });
+
+  it("puts songs at the end", async () => {
+    await queueLast(SONGS);
+
+    expect(music.playLater).toHaveBeenCalledWith({ songs: ["111", "222"] });
+  });
+});
+
+describe("the controls", () => {
+  it("hands every action to MusicKit", async () => {
+    await resumePlayback();
+    await pausePlayback();
+    await changeToIndex(4);
+
+    expect(music.play).toHaveBeenCalledOnce();
+    expect(music.pause).toHaveBeenCalledOnce();
+    expect(music.changeToMediaAtIndex).toHaveBeenCalledWith(4);
+  });
+
+  it("sets the shuffle mode on MusicKit", async () => {
+    await setShuffleMode(true);
+    expect(music.shuffleMode).toBe(SHUFFLE_MODES.songs);
+
+    await setShuffleMode(false);
+    expect(music.shuffleMode).toBe(SHUFFLE_MODES.off);
+  });
+
+  it("sets the repeat mode on MusicKit", async () => {
+    await setRepeatMode("song");
+    expect(music.repeatMode).toBe(REPEAT_MODES.one);
+
+    await setRepeatMode("queue");
+    expect(music.repeatMode).toBe(REPEAT_MODES.all);
+
+    await setRepeatMode("off");
+    expect(music.repeatMode).toBe(REPEAT_MODES.none);
+  });
+});
+
+describe("describeError", () => {
+  it("says in words what Apple Music calls the error", () => {
+    expect(describeError({ name: "SUBSCRIPTION_ERROR" })).toBe(
+      "This Apple Music account has no subscription that plays songs. (SUBSCRIPTION_ERROR)",
+    );
+  });
+
+  it("gives back the message when the name is not one it knows", () => {
+    expect(describeError({ name: "SOMETHING_NEW", message: "It broke." })).toBe("It broke.");
+  });
+});
+
+describe("subscribeToPlaybackErrors", () => {
+  it("passes on what MusicKit says went wrong", async () => {
+    const onError = vi.fn();
+    const onSessionBroken = vi.fn();
+    const stop = await subscribeToPlaybackErrors({ onError, onSessionBroken });
+
+    music.emit("mediaPlaybackError", { error: { name: "CONTENT_UNAVAILABLE" } });
+
+    expect(onError).toHaveBeenCalledWith(
+      "Apple Music does not have that song here. (CONTENT_UNAVAILABLE)",
+    );
+
+    stop();
+    music.emit("mediaPlaybackError", { error: { name: "CONTENT_UNAVAILABLE" } });
+
+    expect(onError).toHaveBeenCalledOnce();
+  });
+
+  it.each(["MEDIA_KEY", "MEDIA_SESSION", "MEDIA_LICENSE"])(
+    "asks for the queue to be built again after a %s error, without a word to a person",
+    async (name) => {
+      const onError = vi.fn();
+      const onSessionBroken = vi.fn();
+
+      await subscribeToPlaybackErrors({ onError, onSessionBroken });
+      music.emit("playbackSessionError", { error: { name } });
+
+      expect(onSessionBroken).toHaveBeenCalledOnce();
+      expect(onError).not.toHaveBeenCalled();
+    },
+  );
+});
+
+describe("resumePlayback", () => {
+  it("says nothing to MusicKit when it plays already", async () => {
+    music.isPlaying = true;
+
+    await resumePlayback();
+
+    expect(music.play).not.toHaveBeenCalled();
+  });
+});
+
+describe("silenceKnownRejections", () => {
+  function reject(message: string): boolean {
+    let prevented = false;
+    const event = {
+      reason: new Error(message),
+      preventDefault: () => {
+        prevented = true;
+      },
+    };
+
+    for (const listener of handlers) {
+      listener(event as unknown as PromiseRejectionEvent);
+    }
+
+    return prevented;
+  }
+
+  let handlers: ((event: PromiseRejectionEvent) => void)[] = [];
+
+  beforeEach(() => {
+    handlers = [];
+    vi.stubGlobal("addEventListener", (_name: string, listener: unknown) => {
+      handlers.push(listener as (event: PromiseRejectionEvent) => void);
+    });
+    vi.stubGlobal("removeEventListener", () => {});
+  });
+
+  it("keeps the complaint of MusicKit about a second play out of the console", () => {
+    silenceKnownRejections();
+
+    expect(reject("The play() method was called without a previous stop() or pause() call.")).toBe(
+      true,
+    );
+  });
+
+  it("lets every other complaint through", () => {
+    silenceKnownRejections();
+
+    expect(reject("Something else broke")).toBe(false);
+  });
+});
