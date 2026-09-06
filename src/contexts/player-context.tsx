@@ -263,6 +263,7 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
     [
       addToQueue,
       cycleRepeat,
+      isStarting,
       next,
       play,
       playNext,

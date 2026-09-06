@@ -16,6 +16,10 @@ import { act, cleanup, fireEvent, render, screen, waitFor } from "@testing-libra
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 vi.mock("@/lib/music-kit/instance", () => ({ getMusicKit: vi.fn() }));
+vi.mock("@/lib/music-kit/drm", async (importOriginal) => ({
+  ...(await importOriginal<typeof import("@/lib/music-kit/drm")>()),
+  hasDrm: vi.fn(async () => true),
+}));
 
 const ARTWORK = '[data-slot="player-artwork"]';
 const COVER = { url: "https://example.com/{w}x{h}{c}.{f}", width: 300, height: 300 };
