@@ -31,7 +31,12 @@ export function PlaylistDetails({ type, id }: { type: PlaylistType; id: string }
               )
             }
           />
-          <TrackList songs={playlist.songs} showTrackNumber={false} showArtwork />
+          <TrackList
+            songs={playlist.songs}
+            showTrackNumber={false}
+            showArtwork
+            source={{ type, id }}
+          />
           <DetailsFooter songs={playlist.songs}>
             {modified && <span>Updated {relativeDate(modified)}</span>}
           </DetailsFooter>

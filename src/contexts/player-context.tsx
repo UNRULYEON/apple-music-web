@@ -11,6 +11,7 @@ import {
   silenceKnownRejections,
   subscribeToPlaybackErrors,
   type PlayOptions,
+  type QueueSource,
 } from "@/lib/music-kit/playback";
 import {
   nextRepeatMode,
@@ -32,6 +33,7 @@ import {
 } from "react";
 
 export type PlayerContextType = PlayerState & {
+  source?: QueueSource;
   play: (songs: Song[], options?: PlayOptions) => void;
   playNext: (songs: Song[]) => void;
   addToQueue: (songs: Song[]) => void;
@@ -65,6 +67,9 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
   // what the person asked for. MusicKit keeps loading a song after a pause and plays
   // it when it is ready, so the app holds the wish itself and puts MusicKit back.
   const [wantsSound, setWantsSound] = useState(false);
+
+  // the album or the playlist the queue was built from, which MusicKit does not keep
+  const [source, setSource] = useState<QueueSource | undefined>(undefined);
 
   // a song was asked for and has not started yet. MusicKit passes through stopped on
   // the way, where it is neither playing nor loading, and the button must not read
@@ -157,6 +162,7 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
 
   const play: PlayerContextType["play"] = useCallback(
     (songs, options) => {
+      setSource(options?.from);
       setWantsSound(true);
       startsSoon();
 
@@ -244,6 +250,7 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
   const value = useMemo<PlayerContextType>(
     () => ({
       ...state,
+      source,
       index: shown,
       nowPlaying: queue[shown] ?? state.nowPlaying,
       upNext: queue.slice(shown + 1),
@@ -270,6 +277,7 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
       previous,
       queue,
       shown,
+      source,
       state,
       toggle,
       toggleShuffle,
