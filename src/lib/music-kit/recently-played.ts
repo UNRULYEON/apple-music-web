@@ -84,3 +84,16 @@ function readItem(value: unknown): RecentlyPlayedItem | undefined {
 function isKnownType(value: unknown): value is RecentlyPlayedType {
   return TYPES.includes(value as RecentlyPlayedType);
 }
+
+export const RECENTLY_PLAYED_LIMIT = 100;
+export const RECENTLY_PLAYED_STALE = 5 * 60 * 1000;
+
+// one place for the query, so the view that shows it and the view that fetches it
+// early cannot drift into asking two different questions
+export function recentlyPlayedQuery() {
+  return {
+    queryKey: ["music-kit", "recently-played", RECENTLY_PLAYED_LIMIT],
+    queryFn: () => fetchRecentlyPlayed(RECENTLY_PLAYED_LIMIT),
+    staleTime: RECENTLY_PLAYED_STALE,
+  };
+}

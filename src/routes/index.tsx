@@ -1,10 +1,10 @@
 import { ArtworkImage, DetailsView, ErrorStates, LoadingState } from "@/components";
 import { EmptyStates } from "@/components/empty-states";
-import { useView } from "@/hooks";
+import { useIsHydrated, useView } from "@/hooks";
 import { TRANSITION, TRANSITION_REVEAL } from "@/lib/motion";
 import { useAuthStatus } from "@/lib/music-kit/auth";
 import {
-  fetchRecentlyPlayed,
+  recentlyPlayedQuery,
   type RecentlyPlayedItem,
   type RecentlyPlayedType,
 } from "@/lib/music-kit/recently-played";
@@ -35,6 +35,13 @@ export const Route = createFileRoute("/")({ component: Home });
 
 function Home() {
   const { view } = useView();
+  const isHydrated = useIsHydrated();
+
+  // the shell holds an empty place for the route and the browser fills it in, so the
+  // first render here has to be as empty as the one the server sent
+  if (!isHydrated) {
+    return null;
+  }
 
   if (view.name === "detail") {
     return <DetailsView id={view.id} type={view.type} />;
@@ -50,12 +57,7 @@ function RecentlyPlayed() {
     data: played,
     isPending,
     isError,
-  } = useQuery({
-    queryKey: ["music-kit", "recently-played", 100],
-    queryFn: () => fetchRecentlyPlayed(100),
-    enabled: status === "signed-in",
-    staleTime: 5 * 60 * 1000,
-  });
+  } = useQuery({ ...recentlyPlayedQuery(), enabled: status === "signed-in" });
 
   return (
     <div className="flex flex-col grow px-4 pb-4">
