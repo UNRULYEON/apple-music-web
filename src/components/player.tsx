@@ -16,6 +16,7 @@ import {
 import { HugeiconsIcon } from "@hugeicons/react";
 import { AnimatePresence, motion, useReducedMotion } from "motion/react";
 import { ArtworkImage } from "./artwork";
+import { PlayerProgress } from "./player-progress";
 import { Button } from "./ui/button";
 
 const ARTWORK_SIZE = 64;
@@ -24,7 +25,7 @@ const ARTWORK_SIZE = 64;
 const META_WIDTH = 256;
 
 // The room the bar needs at the end of the scrolled content.
-export const PLAYER_SPACE = 72;
+export const PLAYER_SPACE = 96;
 
 const HIDDEN = { opacity: 0, y: 16, scale: 0.97, filter: "blur(2px)" };
 const SHOWN = { opacity: 1, y: 0, scale: 1, filter: "blur(0px)" };
@@ -93,7 +94,7 @@ export function Player() {
             <div
               className={cn(
                 "pointer-events-auto",
-                "flex items-center gap-4 px-4 py-2 max-w-full",
+                "flex items-center gap-4 px-4 pt-1 pb-0 max-w-full",
                 "bg-neutral-100 dark:bg-neutral-950",
                 "border border-neutral-100/10",
                 "rounded-full",
@@ -174,61 +175,68 @@ export function Player() {
                   />
                 </Button>
               </div>
-              <div
-                className="flex items-center gap-2 min-w-0"
-                style={{ width: META_WIDTH, maxWidth: META_WIDTH }}
-              >
-                <div className="relative size-8 shrink-0">
-                  <AnimatePresence initial={false}>
-                    <motion.div
-                      key={nowPlaying.artwork?.url ?? "no-artwork"}
-                      data-slot="player-artwork"
-                      className="absolute inset-0"
-                      initial={artHidden}
-                      animate={artShown}
-                      exit={artHidden}
-                      transition={swapTransition}
-                    >
-                      <ArtworkImage
-                        artwork={nowPlaying.artwork}
-                        size={ARTWORK_SIZE}
-                        iconSize={16}
-                        className="size-8 rounded-sm"
-                      />
-                    </motion.div>
-                  </AnimatePresence>
-                </div>
+              <div className="flex flex-col items-start min-w-0">
+                <div
+                  className="flex items-center gap-2"
+                  style={{ width: META_WIDTH, maxWidth: META_WIDTH }}
+                >
+                  <div className="relative size-8 shrink-0">
+                    <AnimatePresence initial={false}>
+                      <motion.div
+                        key={nowPlaying.artwork?.url ?? "no-artwork"}
+                        data-slot="player-artwork"
+                        className="absolute inset-0"
+                        initial={artHidden}
+                        animate={artShown}
+                        exit={artHidden}
+                        transition={swapTransition}
+                      >
+                        <ArtworkImage
+                          artwork={nowPlaying.artwork}
+                          size={ARTWORK_SIZE}
+                          iconSize={16}
+                          className="size-8 rounded-sm"
+                        />
+                      </motion.div>
+                    </AnimatePresence>
+                  </div>
 
-                <div className="flex flex-col grow min-w-0">
-                  <div className="relative min-w-0">
-                    <AnimatePresence mode="popLayout" initial={false}>
-                      <motion.span
-                        key={nowPlaying.name}
-                        className="block truncate text-sm font-bold"
-                        initial={blurred}
-                        animate={sharp}
-                        exit={blurred}
-                        transition={swapTransition}
-                      >
-                        {nowPlaying.name}
-                      </motion.span>
-                    </AnimatePresence>
-                  </div>
-                  <div className="relative min-w-0">
-                    <AnimatePresence mode="popLayout" initial={false}>
-                      <motion.span
-                        key={nowPlaying.artist?.name ?? "no-artist"}
-                        className="block truncate text-xs text-neutral-500 dark:text-neutral-400"
-                        initial={blurred}
-                        animate={sharp}
-                        exit={blurred}
-                        transition={swapTransition}
-                      >
-                        {nowPlaying.artist?.name}
-                      </motion.span>
-                    </AnimatePresence>
+                  <div className="flex flex-col grow min-w-0">
+                    <div className="relative min-w-0">
+                      <AnimatePresence mode="popLayout" initial={false}>
+                        <motion.span
+                          key={nowPlaying.name}
+                          className="block truncate text-sm font-bold"
+                          initial={blurred}
+                          animate={sharp}
+                          exit={blurred}
+                          transition={swapTransition}
+                        >
+                          {nowPlaying.name}
+                        </motion.span>
+                      </AnimatePresence>
+                    </div>
+                    <div className="relative min-w-0">
+                      <AnimatePresence mode="popLayout" initial={false}>
+                        <motion.span
+                          key={nowPlaying.artist?.name ?? "no-artist"}
+                          className="block truncate text-xs text-neutral-500 dark:text-neutral-400"
+                          initial={blurred}
+                          animate={sharp}
+                          exit={blurred}
+                          transition={swapTransition}
+                        >
+                          {nowPlaying.artist?.name}
+                        </motion.span>
+                      </AnimatePresence>
+                    </div>
                   </div>
                 </div>
+                <PlayerProgress
+                  songId={nowPlaying.id}
+                  durationInMillis={nowPlaying.durationInMillis}
+                  style={{ width: META_WIDTH, maxWidth: META_WIDTH }}
+                />
               </div>
               <div className="shrink-0">
                 <Button variant="ghost" size="icon">

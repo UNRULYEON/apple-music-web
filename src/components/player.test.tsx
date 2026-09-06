@@ -10,6 +10,7 @@ import {
   type FakeMusicKit,
 } from "@/lib/music-kit/fake-music-kit";
 import { getMusicKit } from "@/lib/music-kit/instance";
+import { resetPlaybackTime } from "@/lib/music-kit/playback-time";
 import { resetPlayerState } from "@/lib/music-kit/player-state";
 import { act, cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
@@ -28,6 +29,7 @@ let music: FakeMusicKit;
 
 beforeEach(() => {
   resetPlayerState();
+  resetPlaybackTime();
   stubMusicKitGlobals();
   music = fakeMusicKit();
   vi.mocked(getMusicKit).mockResolvedValue(music as unknown as MusicKit.MusicKitInstance);
@@ -58,6 +60,28 @@ function loadQueue(items: MusicKit.MediaItem[], index = 0) {
 // a person pressing play is what makes the app want sound at all
 function start() {
   fireEvent.click(screen.getByLabelText("Play"));
+}
+
+// the progress bar reaches MusicKit only once the bar itself is on screen
+async function waitForSeekBar() {
+  await waitFor(() =>
+    expect(music.addEventListener).toHaveBeenCalledWith(
+      "playbackTimeDidChange",
+      expect.any(Function),
+    ),
+  );
+}
+
+function setTime(position: number, duration: number) {
+  music.currentPlaybackTime = position;
+  music.currentPlaybackDuration = duration;
+  act(() =>
+    music.emit("playbackTimeDidChange", {
+      currentPlaybackTime: position,
+      currentPlaybackDuration: duration,
+      currentPlaybackTimeRemaining: duration - position,
+    }),
+  );
 }
 
 function setState(state: number) {
@@ -253,5 +277,112 @@ describe("Player", () => {
     setState(PLAYBACK_STATES.playing);
 
     expect(screen.getByLabelText("Pause")).toBeTruthy();
+  });
+
+  it("shows how far the song has come and how long it is", async () => {
+    await renderPlayer();
+
+    loadQueue([item("1", "First")]);
+    await waitForSeekBar();
+    setTime(42, 210);
+
+    expect(screen.getByText("0:42")).toBeTruthy();
+    expect(screen.getByText("3:30")).toBeTruthy();
+  });
+
+  it("cycles the end of the bar between the length and what is left", async () => {
+    await renderPlayer();
+
+    loadQueue([item("1", "First")]);
+    await waitForSeekBar();
+    setTime(42, 210);
+
+    fireEvent.click(screen.getByText("3:30"));
+    expect(screen.getByText("-2:48")).toBeTruthy();
+
+    fireEvent.click(screen.getByText("-2:48"));
+    expect(screen.getByText("3:30")).toBeTruthy();
+  });
+
+  it("drops a place asked for in the song before this one", async () => {
+    await renderPlayer();
+
+    loadQueue([item("1", "First"), item("2", "Second")]);
+    await waitForSeekBar();
+    setTime(42, 210);
+
+    fireEvent.keyDown(screen.getByLabelText("Seek"), { key: "PageUp" });
+    expect(screen.getByText("0:57")).toBeTruthy();
+
+    music.nowPlayingItemIndex = 1;
+    act(() => music.emit("queuePositionDidChange", { position: 1 }));
+    setTime(0, 180);
+
+    expect(screen.getByText("0:00")).toBeTruthy();
+  });
+
+  it("keeps the time a person picked through the next song", async () => {
+    await renderPlayer();
+
+    loadQueue([item("1", "First"), item("2", "Second")]);
+    await waitForSeekBar();
+    setTime(42, 210);
+
+    fireEvent.click(screen.getByText("3:30"));
+
+    music.nowPlayingItemIndex = 1;
+    act(() => music.emit("queuePositionDidChange", { position: 1 }));
+    setTime(0, 180);
+
+    expect(screen.getByText("-3:00")).toBeTruthy();
+  });
+
+  it("shows the length from the catalog before MusicKit opens the song", async () => {
+    await renderPlayer();
+
+    loadQueue([{ id: "1", attributes: { name: "First", durationInMillis: 180_000 } }]);
+    await waitForSeekBar();
+
+    expect(screen.getByText("3:00")).toBeTruthy();
+  });
+
+  it("seeks in the song when a person moves the bar", async () => {
+    await renderPlayer();
+
+    loadQueue([item("1", "First")]);
+    await waitForSeekBar();
+    setTime(42, 210);
+
+    fireEvent.keyDown(screen.getByLabelText("Seek"), { key: "ArrowRight" });
+
+    await waitFor(() => expect(music.seekToTime).toHaveBeenCalledWith(43));
+  });
+
+  it("holds the bar where a person put it until MusicKit gets there", async () => {
+    await renderPlayer();
+
+    loadQueue([item("1", "First")]);
+    await waitForSeekBar();
+    setTime(42, 210);
+
+    fireEvent.keyDown(screen.getByLabelText("Seek"), { key: "PageUp" });
+
+    expect(screen.getByText("0:57")).toBeTruthy();
+
+    // MusicKit is still back where the song was
+    setTime(43, 210);
+    expect(screen.getByText("0:57")).toBeTruthy();
+
+    setTime(57, 210);
+    await waitFor(() => expect(screen.getByText("0:57")).toBeTruthy());
+  });
+
+  it("turns the bar off while nothing knows how long the song is", async () => {
+    await renderPlayer();
+
+    loadQueue([item("1", "First")]);
+    await waitForSeekBar();
+
+    expect(screen.getByLabelText<HTMLInputElement>("Seek").disabled).toBe(true);
   });
 });

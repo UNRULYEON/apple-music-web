@@ -20,9 +20,13 @@ export function relativeDate(value: string): string {
 }
 
 export function songDuration(durationInMillis: number): string {
-  const seconds = Math.round(durationInMillis / MILLIS_PER_SECOND);
-  const minutes = Math.floor(seconds / SECONDS_PER_MINUTE);
-  const rest = String(seconds % SECONDS_PER_MINUTE).padStart(2, "0");
+  return clockTime(durationInMillis / MILLIS_PER_SECOND);
+}
+
+export function clockTime(seconds: number): string {
+  const whole = Math.max(Math.round(seconds), 0);
+  const minutes = Math.floor(whole / SECONDS_PER_MINUTE);
+  const rest = String(whole % SECONDS_PER_MINUTE).padStart(2, "0");
 
   return `${minutes}:${rest}`;
 }

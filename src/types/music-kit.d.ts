@@ -27,6 +27,16 @@ declare namespace MusicKit {
     state: number;
   }
 
+  interface PlaybackTimeEvent {
+    currentPlaybackTime: number;
+    currentPlaybackDuration: number;
+    currentPlaybackTimeRemaining: number;
+  }
+
+  interface PlaybackDurationEvent {
+    duration: number;
+  }
+
   interface MediaError {
     name?: string;
     message?: string;
@@ -38,6 +48,8 @@ declare namespace MusicKit {
 
   interface EventMap {
     playbackStateDidChange: PlaybackStateEvent;
+    playbackTimeDidChange: PlaybackTimeEvent;
+    playbackDurationDidChange: PlaybackDurationEvent;
     nowPlayingItemDidChange: { item?: MediaItem };
     queueItemsDidChange: MediaItem[];
     queuePositionDidChange: { position: number };
@@ -63,6 +75,8 @@ declare namespace MusicKit {
     musicUserToken: string;
     playbackState: number;
     isPlaying: boolean;
+    currentPlaybackTime: number;
+    currentPlaybackDuration: number;
     queue?: Queue;
     queueIsEmpty: boolean;
     nowPlayingItem?: MediaItem;
