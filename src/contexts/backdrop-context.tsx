@@ -1,4 +1,4 @@
-import { TRANSITION_SLOW } from "@/lib/motion";
+import { EASE } from "@/lib/motion";
 import { MeshGradient } from "@paper-design/shaders-react";
 import { AnimatePresence, motion } from "motion/react";
 import { createContext, useState, type ReactNode } from "react";
@@ -18,9 +18,8 @@ export function BackdropProvider({ children }: { children: ReactNode }) {
             key="backdrop"
             className="fixed inset-0 -z-10 pointer-events-none"
             initial={{ opacity: 0 }}
-            animate={{ opacity: 0.2 }}
+            animate={{ opacity: 0.2, transition: { duration: 10, ease: EASE, delay: 2 } }}
             exit={{ opacity: 0 }}
-            transition={TRANSITION_SLOW}
           >
             <MeshGradient
               className="size-full"
