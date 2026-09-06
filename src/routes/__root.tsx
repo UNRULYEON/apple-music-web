@@ -77,7 +77,7 @@ function RootDocument({ children }: { children: React.ReactNode }) {
                 <PlayerProvider>
                   <MusicKitGate>
                     <Nav />
-                    <div className="relative flex flex-col grow min-h-0">
+                    <div className="relative flex flex-col grow min-w-0 min-h-0">
                       <div className="flex p-2 gap-2 bg-transparent">
                         <SidebarToggle />
                         <BackButton />

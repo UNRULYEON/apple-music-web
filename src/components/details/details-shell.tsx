@@ -50,7 +50,7 @@ export function DetailsShell({
       {children && !isPending && (
         <motion.div
           key={`${id}-loaded`}
-          className="flex flex-col grow gap-8 px-4 py-4 sm:py-8 sm:px-4 sm:gap-8"
+          className="flex flex-col grow min-w-0 gap-8 px-4 py-4 sm:py-8 sm:px-4 sm:gap-8"
           initial={BLURRED}
           animate={SHARP}
           exit={BLURRED}
