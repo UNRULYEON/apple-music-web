@@ -42,7 +42,11 @@ describe("getMusicKit", () => {
     const { getMusicKit } = await loadModule();
 
     await expect(getMusicKit()).resolves.toBe(music);
-    expect(configure).toHaveBeenCalledWith({ developerToken: "test-developer-token", app: APP });
+    expect(configure).toHaveBeenCalledWith({
+      developerToken: "test-developer-token",
+      app: APP,
+      suppressErrorDialog: true,
+    });
   });
 
   it("waits for the musickitloaded event while the script has no configure", async () => {

@@ -4,23 +4,32 @@ import { TanStackDevtools } from "@tanstack/react-devtools";
 
 import TanStackQueryDevtools from "@/integrations/tanstack-query/devtools";
 import { MusicKitDevtools } from "@/components/music-kit-devtools";
+import { PlayerDevtools } from "@/components/player-devtools";
 import { MusicKitGate } from "@/components/music-kit-gate";
 
 import appCss from "../styles.css?url";
 
 import type { QueryClient } from "@tanstack/react-query";
 import type { TanStackDevtoolsReactPlugin } from "@tanstack/react-devtools";
-import { BackButton, MainContent, Nav, Player, SidebarToggle } from "@/components";
+import { BackButton, DrmNotice, MainContent, Nav, Player, SidebarToggle } from "@/components";
 import { BackdropProvider, PlayerProvider, SidebarProvider, ThemeProvider } from "@/contexts";
 import { preHydrationScript as sidebarPreHydrationScript } from "@/lib/sidebar-storage";
 import { preHydrationScript as themePreHydrationScript } from "@/lib/theme-storage";
+import { preHydrationScript as nodeShimPreHydrationScript } from "@/lib/music-kit/node-shim";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { ToastProvider } from "@/components/ui/toast";
 import { hotkeysDevtoolsPlugin } from "@tanstack/react-hotkeys-devtools";
 
 const appleAuthDevtools: TanStackDevtoolsReactPlugin = {
   id: "apple-auth",
   name: "Apple Authentication",
   render: (_element, props) => <MusicKitDevtools theme={props.theme} />,
+};
+
+const playerDevtools: TanStackDevtoolsReactPlugin = {
+  id: "player",
+  name: "Player",
+  render: (_element, props) => <PlayerDevtools theme={props.theme} />,
 };
 
 interface MyRouterContext {
@@ -55,6 +64,9 @@ export const Route = createRootRouteWithContext<MyRouterContext>()({
         children: sidebarPreHydrationScript,
       },
       {
+        children: nodeShimPreHydrationScript,
+      },
+      {
         src: "https://js-cdn.music.apple.com/musickit/v3/musickit.js",
         async: true,
       },
@@ -74,39 +86,42 @@ function RootDocument({ children }: { children: React.ReactNode }) {
           <BackdropProvider>
             <ThemeProvider>
               <SidebarProvider>
-                <PlayerProvider>
-                  <MusicKitGate>
-                    <Nav />
-                    <div className="relative flex flex-col grow min-w-0 min-h-0">
-                      <div className="flex p-2 gap-2 bg-transparent">
-                        <SidebarToggle />
-                        <BackButton />
+                <ToastProvider position="top-center">
+                  <PlayerProvider>
+                    <DrmNotice />
+                    <MusicKitGate>
+                      <Nav />
+                      <div className="relative flex flex-col grow min-w-0 min-h-0">
+                        <div className="flex p-2 gap-2 bg-transparent">
+                          <SidebarToggle />
+                          <BackButton />
+                        </div>
+                        <ScrollArea className="flex-1 min-w-0" fill scrollFade>
+                          <MainContent>{children}</MainContent>
+                        </ScrollArea>
+                        <Player />
                       </div>
-                      <ScrollArea className="flex-1 min-w-0" fill scrollFade>
-                        <MainContent>{children}</MainContent>
-                      </ScrollArea>
-                      <Player />
-                    </div>
-                  </MusicKitGate>
-                </PlayerProvider>
+                    </MusicKitGate>
+                    <TanStackDevtools
+                      config={{
+                        position: "bottom-right",
+                      }}
+                      plugins={[
+                        {
+                          name: "Tanstack Router",
+                          render: <TanStackRouterDevtoolsPanel />,
+                        },
+                        TanStackQueryDevtools,
+                        hotkeysDevtoolsPlugin(),
+                        ...(import.meta.env.DEV ? [appleAuthDevtools, playerDevtools] : []),
+                      ]}
+                    />
+                  </PlayerProvider>
+                </ToastProvider>
               </SidebarProvider>
             </ThemeProvider>
           </BackdropProvider>
         </div>
-        <TanStackDevtools
-          config={{
-            position: "bottom-right",
-          }}
-          plugins={[
-            {
-              name: "Tanstack Router",
-              render: <TanStackRouterDevtoolsPanel />,
-            },
-            TanStackQueryDevtools,
-            hotkeysDevtoolsPlugin(),
-            ...(import.meta.env.DEV ? [appleAuthDevtools] : []),
-          ]}
-        />
         <Scripts />
       </body>
     </html>

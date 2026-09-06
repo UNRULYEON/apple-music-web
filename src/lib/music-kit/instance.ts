@@ -1,4 +1,5 @@
 import { getDeveloperToken } from "@/lib/music-kit/developer-token";
+import { insistOnBrowser, withoutNodeMark } from "@/lib/music-kit/node-shim";
 
 let instance: Promise<MusicKit.MusicKitInstance> | undefined;
 
@@ -14,12 +15,25 @@ export function getMusicKit(): Promise<MusicKit.MusicKitInstance> {
 async function configure(): Promise<MusicKit.MusicKitInstance> {
   await waitForScript();
 
-  await MusicKit.configure({
-    developerToken: await getDeveloperToken(),
-    app: { name: "Apple Music Web", build: "1.0.0" },
-  });
+  const developerToken = await getDeveloperToken();
 
-  return MusicKit.getInstance();
+  // MusicKit reads the runtime while it configures, and playback stays off if it sees
+  // a process global, so it must not see one for that moment
+  await withoutNodeMark(() =>
+    MusicKit.configure({
+      developerToken,
+      app: { name: "Apple Music Web", build: "1.0.0" },
+      // this app says what went wrong in its own words, so MusicKit must not
+      // put its own dialog over the page
+      suppressErrorDialog: true,
+    }),
+  );
+
+  const music = MusicKit.getInstance();
+
+  insistOnBrowser(music);
+
+  return music;
 }
 
 function waitForScript(): Promise<void> {
