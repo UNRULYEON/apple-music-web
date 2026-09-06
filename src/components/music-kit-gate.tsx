@@ -14,9 +14,9 @@ import { loadAuthorization, signIn, useAuthStatus } from "@/lib/music-kit/auth";
 import { TRANSITION } from "@/lib/motion";
 
 const SWAP = {
-  initial: { opacity: 0, scale: 0.96, filter: "blur(8px)" },
+  initial: { opacity: 0, scale: 0.96, filter: "blur(2px)" },
   animate: { opacity: 1, scale: 1, filter: "blur(0px)" },
-  exit: { opacity: 0, scale: 0.96, filter: "blur(8px)" },
+  exit: { opacity: 0, scale: 0.96, filter: "blur(2px)" },
 };
 
 export function MusicKitGate({ children }: { children: React.ReactNode }): React.ReactElement {

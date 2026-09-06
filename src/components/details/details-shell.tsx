@@ -1,9 +1,12 @@
 import { LoadingState } from "@/components/loading-state";
 import { useBackdrop } from "@/hooks";
-import { TRANSITION_SLOW } from "@/lib/motion";
+import { TRANSITION_REVEAL } from "@/lib/motion";
 import type { Artwork } from "@/lib/music-kit/resource";
 import { AnimatePresence, motion } from "motion/react";
 import { useMemo, type ReactNode } from "react";
+
+const BLURRED = { opacity: 0, filter: "blur(2px)" };
+const SHARP = { opacity: 1, filter: "blur(0px)" };
 
 export function DetailsShell({
   id,
@@ -36,10 +39,10 @@ export function DetailsShell({
         <motion.div
           key={`${id}-loading`}
           className="flex grow"
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          exit={{ opacity: 0 }}
-          transition={TRANSITION_SLOW}
+          initial={BLURRED}
+          animate={SHARP}
+          exit={BLURRED}
+          transition={TRANSITION_REVEAL}
         >
           <LoadingState />
         </motion.div>
@@ -48,10 +51,10 @@ export function DetailsShell({
         <motion.div
           key={`${id}-loaded`}
           className="flex flex-col grow gap-8 px-4 py-4 sm:py-8 sm:px-4 sm:gap-8"
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          exit={{ opacity: 0 }}
-          transition={TRANSITION_SLOW}
+          initial={BLURRED}
+          animate={SHARP}
+          exit={BLURRED}
+          transition={TRANSITION_REVEAL}
         >
           {children}
         </motion.div>
