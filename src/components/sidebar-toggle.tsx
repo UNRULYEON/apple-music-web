@@ -1,9 +1,11 @@
 import { Button } from "@/components/ui/button";
 import { useIsHydrated, useSidebar } from "@/hooks";
+import { TRANSITION_SLOW } from "@/lib/motion";
 import { cn } from "@/lib/utils";
 import { PanelLeftCloseIcon, PanelLeftOpenIcon } from "@hugeicons/core-free-icons";
 import { HugeiconsIcon } from "@hugeicons/react";
 import { motion } from "motion/react";
+import { useEffect, useState } from "react";
 
 export function SidebarToggle() {
   const { isOpen, isPeeking, isMobile, setOpen, setPeeking } = useSidebar();
@@ -11,11 +13,25 @@ export function SidebarToggle() {
 
   const showsOpen = isHydrated ? isOpen : true;
   const showsMobile = isHydrated && isMobile;
+  const [canPeek, setCanPeek] = useState(false);
+
+  // the hot zone must not catch the cursor while the sidebar is still sliding shut
+  useEffect(() => {
+    if (showsOpen) {
+      setCanPeek(false);
+      return;
+    }
+
+    const timer = setTimeout(() => setCanPeek(true), TRANSITION_SLOW.duration * 1000);
+
+    return () => clearTimeout(timer);
+  }, [showsOpen]);
 
   return (
     <div>
-      {!showsOpen && (
+      {canPeek && (
         <motion.div
+          data-slot="sidebar-peek"
           className={cn(
             "absolute top-0 left-0",
             "h-12",
