@@ -5,7 +5,10 @@ import { hasDrm } from "@/lib/music-kit/drm";
 import { act, cleanup, render, screen } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
-vi.mock("@/lib/music-kit/drm", () => ({ hasDrm: vi.fn() }));
+vi.mock("@/lib/music-kit/drm", async (importOriginal) => ({
+  ...(await importOriginal<typeof import("@/lib/music-kit/drm")>()),
+  hasDrm: vi.fn(),
+}));
 
 const check = vi.mocked(hasDrm);
 

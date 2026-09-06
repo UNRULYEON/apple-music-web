@@ -1,3 +1,4 @@
+import { hasDrm, MissingDrmError } from "@/lib/music-kit/drm";
 import { getMusicKit } from "@/lib/music-kit/instance";
 import { toMusicKitRepeat, type RepeatMode } from "@/lib/music-kit/player-state";
 import { readItems } from "@/lib/music-kit/resource";
@@ -46,7 +47,15 @@ export function describeError(error?: MusicKit.MediaError): string {
   return error?.message ?? name ?? "Apple Music gave no reason.";
 }
 
+async function requireDrm(): Promise<void> {
+  if (!(await hasDrm())) {
+    throw new MissingDrmError();
+  }
+}
+
 export async function playSongs(songs: Song[], options: PlayOptions = {}): Promise<void> {
+  await requireDrm();
+
   const music = await getMusicKit();
   const ids = songs.map((song) => song.playId ?? song.id);
 
@@ -71,18 +80,24 @@ export async function playSongs(songs: Song[], options: PlayOptions = {}): Promi
 }
 
 export async function queueNext(songs: Song[]): Promise<void> {
+  await requireDrm();
+
   const music = await getMusicKit();
 
   await music.playNext({ songs: songs.map((song) => song.playId ?? song.id) });
 }
 
 export async function queueLast(songs: Song[]): Promise<void> {
+  await requireDrm();
+
   const music = await getMusicKit();
 
   await music.playLater({ songs: songs.map((song) => song.playId ?? song.id) });
 }
 
 export async function resumePlayback(): Promise<void> {
+  await requireDrm();
+
   const music = await getMusicKit();
 
   // MusicKit turns a second play() down, so only ask when it is not playing already

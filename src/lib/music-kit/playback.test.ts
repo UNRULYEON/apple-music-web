@@ -5,6 +5,7 @@ import {
   stubMusicKitGlobals,
   type FakeMusicKit,
 } from "@/lib/music-kit/fake-music-kit";
+import { hasDrm, MissingDrmError } from "@/lib/music-kit/drm";
 import { getMusicKit } from "@/lib/music-kit/instance";
 import {
   describeError,
@@ -23,6 +24,10 @@ import type { Song } from "@/lib/music-kit/track";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 vi.mock("@/lib/music-kit/instance", () => ({ getMusicKit: vi.fn() }));
+vi.mock("@/lib/music-kit/drm", async (importOriginal) => ({
+  ...(await importOriginal<typeof import("@/lib/music-kit/drm")>()),
+  hasDrm: vi.fn(async () => true),
+}));
 vi.mock("@/lib/music-kit/storefront", () => ({
   fetchStorefront: vi.fn().mockResolvedValue({ id: "nl", name: "Netherlands" }),
 }));
@@ -226,5 +231,35 @@ describe("silenceKnownRejections", () => {
     silenceKnownRejections();
 
     expect(reject("Something else broke")).toBe(false);
+  });
+});
+
+describe("a browser without DRM", () => {
+  beforeEach(() => {
+    vi.mocked(hasDrm).mockResolvedValue(false);
+  });
+
+  it("plays nothing, so Apple Music cannot fall back to a preview", async () => {
+    await expect(playSongs(SONGS)).rejects.toBeInstanceOf(MissingDrmError);
+
+    expect(music.setQueue).not.toHaveBeenCalled();
+  });
+
+  it("does not start a song that is already loaded", async () => {
+    await expect(resumePlayback()).rejects.toBeInstanceOf(MissingDrmError);
+
+    expect(music.play).not.toHaveBeenCalled();
+  });
+
+  it("takes nothing into the queue either", async () => {
+    await expect(queueNext(SONGS)).rejects.toBeInstanceOf(MissingDrmError);
+    await expect(queueLast(SONGS)).rejects.toBeInstanceOf(MissingDrmError);
+
+    expect(music.playNext).not.toHaveBeenCalled();
+    expect(music.playLater).not.toHaveBeenCalled();
+  });
+
+  it("says what is wrong and what a person can do", async () => {
+    await expect(playSongs(SONGS)).rejects.toThrow(/DRM/);
   });
 });

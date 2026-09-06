@@ -10,6 +10,7 @@ import {
   stubMusicKitGlobals,
   type FakeMusicKit,
 } from "@/lib/music-kit/fake-music-kit";
+import { hasDrm } from "@/lib/music-kit/drm";
 import { getMusicKit } from "@/lib/music-kit/instance";
 import { resetPlaybackTime } from "@/lib/music-kit/playback-time";
 import { resetPlayerState } from "@/lib/music-kit/player-state";
@@ -18,6 +19,10 @@ import { act, cleanup, render, waitFor } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 vi.mock("@/lib/music-kit/instance", () => ({ getMusicKit: vi.fn() }));
+vi.mock("@/lib/music-kit/drm", async (importOriginal) => ({
+  ...(await importOriginal<typeof import("@/lib/music-kit/drm")>()),
+  hasDrm: vi.fn(async () => true),
+}));
 vi.mock("@/lib/music-kit/storefront", () => ({
   fetchStorefront: vi.fn().mockResolvedValue({ id: "nl", name: "Netherlands" }),
 }));
@@ -35,6 +40,7 @@ beforeEach(() => {
   stubMusicKitGlobals();
   music = fakeMusicKit();
   vi.mocked(getMusicKit).mockResolvedValue(music as unknown as MusicKit.MusicKitInstance);
+  vi.mocked(hasDrm).mockResolvedValue(true);
 });
 
 afterEach(() => {
@@ -306,5 +312,20 @@ describe("PlayerProvider", () => {
     act(() => music.emit("playbackSessionError", { error: { name: "MEDIA_KEY" } }));
 
     await waitFor(() => expect(music.setQueue).toHaveBeenCalledOnce());
+  });
+
+  it("plays nothing at all when the browser gives no DRM", async () => {
+    vi.mocked(hasDrm).mockResolvedValue(false);
+
+    const seen = await renderProvider();
+
+    act(() => seen.current?.play(SONGS));
+
+    expect(seen.current?.isLoading).toBe(true);
+
+    await waitFor(() => expect(seen.current?.isLoading).toBe(false));
+
+    expect(music.setQueue).not.toHaveBeenCalled();
+    expect(seen.current?.isPlaying).toBe(false);
   });
 });
