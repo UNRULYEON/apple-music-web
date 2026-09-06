@@ -1,7 +1,7 @@
 import { usePlaybackTime } from "@/hooks";
 import { clockTime } from "@/lib/format";
 import { cn } from "@/lib/utils";
-import { useEffect, useState, type CSSProperties } from "react";
+import { useEffect, useState } from "react";
 import { SliderPrimitive } from "./ui/slider";
 
 const MILLIS_PER_SECOND = 1000;
@@ -18,15 +18,9 @@ interface PlayerProgressProps {
   songId: string;
   durationInMillis?: number;
   className?: string;
-  style?: CSSProperties;
 }
 
-export function PlayerProgress({
-  songId,
-  durationInMillis,
-  className,
-  style,
-}: PlayerProgressProps) {
+export function PlayerProgress({ songId, durationInMillis, className }: PlayerProgressProps) {
   const { position, duration, seek } = usePlaybackTime();
 
   // where a person has put the thumb, which runs ahead of where MusicKit has arrived
@@ -57,10 +51,7 @@ export function PlayerProgress({
   }, [position, wanted]);
 
   return (
-    <div
-      className={cn("flex items-center gap-1 text-[10px] tabular-nums", className)}
-      style={style}
-    >
+    <div className={cn("flex items-center gap-1 min-w-0 text-[10px] tabular-nums", className)}>
       <span className="w-9 shrink-0 text-neutral-500 dark:text-neutral-400">{clockTime(at)}</span>
       <SliderPrimitive.Root
         className="grow min-w-0"

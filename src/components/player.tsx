@@ -21,7 +21,9 @@ import { Button } from "./ui/button";
 
 const ARTWORK_SIZE = 64;
 
-// The room the artwork and the text take, when the viewport gives it.
+// The room the artwork, the text and the bar take, when the viewport gives it.
+// It sits on the column itself, so a narrow viewport can take room back from it
+// and the text inside truncates instead of spilling out of the bar.
 const META_WIDTH = 256;
 
 // The room the bar needs at the end of the scrolled content.
@@ -175,11 +177,8 @@ export function Player() {
                   />
                 </Button>
               </div>
-              <div className="flex flex-col items-start min-w-0">
-                <div
-                  className="flex items-center gap-2"
-                  style={{ width: META_WIDTH, maxWidth: META_WIDTH }}
-                >
+              <div className="flex flex-col min-w-0" style={{ width: META_WIDTH }}>
+                <div className="flex items-center gap-2 min-w-0">
                   <div className="relative size-8 shrink-0">
                     <AnimatePresence initial={false}>
                       <motion.div
@@ -235,7 +234,6 @@ export function Player() {
                 <PlayerProgress
                   songId={nowPlaying.id}
                   durationInMillis={nowPlaying.durationInMillis}
-                  style={{ width: META_WIDTH, maxWidth: META_WIDTH }}
                 />
               </div>
               <div className="shrink-0">
