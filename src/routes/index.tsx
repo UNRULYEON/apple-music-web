@@ -11,6 +11,7 @@ import {
 import { useQuery } from "@tanstack/react-query";
 import { createFileRoute } from "@tanstack/react-router";
 import { AnimatePresence, motion } from "motion/react";
+import { Suspense } from "react";
 
 const ARTWORK_SIZE = 256;
 
@@ -33,12 +34,22 @@ function Credit({ item }: { item: RecentlyPlayedItem }) {
 
 export const Route = createFileRoute("/")({ component: Home });
 
+// The shell keeps two places open for the route, one inside the other, and writes
+// nothing in either. A route that is split off is not loaded when the server writes
+// them, which is why there are two. React counts these places while it takes the page
+// over, so the browser has to keep the same number and leave them as empty.
 function Home() {
+  return (
+    <Suspense fallback={null}>
+      <HomeView />
+    </Suspense>
+  );
+}
+
+function HomeView() {
   const { view } = useView();
   const isHydrated = useIsHydrated();
 
-  // the shell holds an empty place for the route and the browser fills it in, so the
-  // first render here has to be as empty as the one the server sent
   if (!isHydrated) {
     return null;
   }
