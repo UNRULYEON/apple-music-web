@@ -2,43 +2,58 @@
 import { MainContent } from "@/components/main-content";
 import { PLAYER_SPACE } from "@/components/player";
 import { PlayerProvider } from "@/contexts";
-import { usePlayer } from "@/hooks";
+import {
+  fakeMusicKit,
+  songItem,
+  stubMusicKitGlobals,
+  type FakeMusicKit,
+} from "@/lib/music-kit/fake-music-kit";
+import { getMusicKit } from "@/lib/music-kit/instance";
+import { resetPlayerState } from "@/lib/music-kit/player-state";
 import { act, cleanup, render, screen, waitFor } from "@testing-library/react";
-import { afterEach, describe, expect, it } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
-afterEach(cleanup);
+vi.mock("@/lib/music-kit/instance", () => ({ getMusicKit: vi.fn() }));
 
-function renderContent() {
-  const seen: { current?: ReturnType<typeof usePlayer> } = {};
+let music: FakeMusicKit;
 
-  function Probe() {
-    seen.current = usePlayer();
-    return null;
-  }
+beforeEach(() => {
+  resetPlayerState();
+  stubMusicKitGlobals();
+  music = fakeMusicKit();
+  vi.mocked(getMusicKit).mockResolvedValue(music as unknown as MusicKit.MusicKitInstance);
+});
 
+afterEach(() => {
+  cleanup();
+  vi.clearAllMocks();
+  vi.unstubAllGlobals();
+});
+
+async function renderContent() {
   render(
     <PlayerProvider>
-      <Probe />
       <MainContent>
         <p>Content</p>
       </MainContent>
     </PlayerProvider>,
   );
 
-  return seen;
+  await waitFor(() => expect(music.addEventListener).toHaveBeenCalled());
 }
 
 describe("MainContent", () => {
-  it("keeps no room at the end while nothing plays", () => {
-    renderContent();
+  it("keeps no room at the end while nothing plays", async () => {
+    await renderContent();
 
     expect(screen.getByRole("main").style.paddingBottom).not.toBe(`${PLAYER_SPACE}px`);
   });
 
   it("makes room for the bar, so the last song can scroll above it", async () => {
-    const seen = renderContent();
+    await renderContent();
 
-    act(() => seen.current?.play([{ id: "s0", name: "First" }]));
+    music.queue.items = [songItem("1", "First")];
+    act(() => music.emit("queueItemsDidChange", music.queue.items));
 
     await waitFor(() =>
       expect(screen.getByRole("main").style.paddingBottom).toBe(`${PLAYER_SPACE}px`),

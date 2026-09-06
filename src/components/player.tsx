@@ -1,8 +1,9 @@
 import { usePlayer } from "@/hooks";
 import { TRANSITION, TRANSITION_REVEAL, TRANSITION_SWAP } from "@/lib/motion";
-import type { RepeatMode } from "@/lib/player/queue";
+import type { RepeatMode } from "@/lib/music-kit/player-state";
 import { cn } from "@/lib/utils";
 import {
+  Loading03Icon,
   NextIcon,
   PauseIcon,
   PlayIcon,
@@ -51,8 +52,11 @@ export function Player() {
   const {
     nowPlaying,
     isPlaying,
+    isLoading,
     isShuffled,
     repeat,
+    canSkipNext,
+    canSkipPrevious,
     toggle,
     toggleShuffle,
     cycleRepeat,
@@ -111,36 +115,45 @@ export function Player() {
                     className={cn("transition-opacity", isShuffled ? "opacity-100" : "opacity-40")}
                   />
                 </Button>
-                <Button onClick={previous} variant="ghost" size="icon-xs">
+                <Button
+                  onClick={previous}
+                  disabled={!canSkipPrevious}
+                  variant="ghost"
+                  size="icon-xs"
+                  aria-label="Previous song"
+                >
                   <HugeiconsIcon icon={PreviousIcon} size={16} strokeWidth={2} />
                 </Button>
-                <Button onClick={toggle} variant="ghost" size="icon">
+                <Button
+                  onClick={toggle}
+                  variant="ghost"
+                  size="icon"
+                  aria-label={isLoading ? "Stop loading" : isPlaying ? "Pause" : "Play"}
+                >
                   <AnimatePresence mode="popLayout">
-                    {!isPlaying && (
-                      <motion.div
-                        key="player-pause"
-                        initial={ICON_HIDDEN}
-                        animate={ICON_SHOWN}
-                        exit={ICON_HIDDEN}
-                        transition={iconTransition}
-                      >
-                        <HugeiconsIcon icon={PlayIcon} size={16} strokeWidth={2} />
-                      </motion.div>
-                    )}
-                    {isPlaying && (
-                      <motion.div
-                        key="player-play"
-                        initial={ICON_HIDDEN}
-                        animate={ICON_SHOWN}
-                        exit={ICON_HIDDEN}
-                        transition={iconTransition}
-                      >
-                        <HugeiconsIcon icon={PauseIcon} size={16} strokeWidth={2} />
-                      </motion.div>
-                    )}
+                    <motion.div
+                      key={isLoading ? "loading" : isPlaying ? "pause" : "play"}
+                      initial={ICON_HIDDEN}
+                      animate={ICON_SHOWN}
+                      exit={ICON_HIDDEN}
+                      transition={iconTransition}
+                    >
+                      <HugeiconsIcon
+                        icon={isLoading ? Loading03Icon : isPlaying ? PauseIcon : PlayIcon}
+                        size={16}
+                        strokeWidth={2}
+                        className={cn(isLoading && "animate-spin")}
+                      />
+                    </motion.div>
                   </AnimatePresence>
                 </Button>
-                <Button onClick={next} variant="ghost" size="icon-xs">
+                <Button
+                  onClick={next}
+                  disabled={!canSkipNext}
+                  variant="ghost"
+                  size="icon-xs"
+                  aria-label="Next song"
+                >
                   <HugeiconsIcon icon={NextIcon} size={16} strokeWidth={2} />
                 </Button>
                 <Button
