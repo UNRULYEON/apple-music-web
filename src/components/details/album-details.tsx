@@ -26,7 +26,7 @@ export function AlbumDetails({ type, id }: { type: AlbumType; id: string }) {
             subtitle={album.artist?.name}
             meta={album.releaseDate && <span>{releaseYear(album.releaseDate)}</span>}
           />
-          <TrackList songs={album.songs} primaryArtist={album.artist?.name} />
+          <TrackList songs={album.songs} primaryArtist={album.artist?.name} source={{ type, id }} />
           <DetailsFooter songs={album.songs} trackCount={album.trackCount}>
             {album.releaseDate && <span>{intlFormat(album.releaseDate)}</span>}
             {album.copyright && <span className="text-center">{album.copyright}</span>}

@@ -328,4 +328,27 @@ describe("PlayerProvider", () => {
     expect(music.setQueue).not.toHaveBeenCalled();
     expect(seen.current?.isPlaying).toBe(false);
   });
+
+  it("remembers the album or the playlist the queue was built from", async () => {
+    const seen = await renderProvider();
+
+    act(() => seen.current?.play(SONGS, { startAt: 0, from: { type: "albums", id: "a1" } }));
+
+    await waitFor(() => expect(seen.current?.source).toEqual({ type: "albums", id: "a1" }));
+
+    act(() => seen.current?.play(SONGS, { startAt: 0, from: { type: "playlists", id: "p1" } }));
+
+    await waitFor(() => expect(seen.current?.source).toEqual({ type: "playlists", id: "p1" }));
+  });
+
+  it("forgets the source when a list is played without one", async () => {
+    const seen = await renderProvider();
+
+    act(() => seen.current?.play(SONGS, { from: { type: "albums", id: "a1" } }));
+    await waitFor(() => expect(seen.current?.source).toBeDefined());
+
+    act(() => seen.current?.play(SONGS));
+
+    await waitFor(() => expect(seen.current?.source).toBeUndefined());
+  });
 });

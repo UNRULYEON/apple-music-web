@@ -1,13 +1,25 @@
+import type { AlbumType } from "@/lib/music-kit/album";
 import { hasDrm, MissingDrmError } from "@/lib/music-kit/drm";
 import { getMusicKit } from "@/lib/music-kit/instance";
 import { toMusicKitRepeat, type RepeatMode } from "@/lib/music-kit/player-state";
 import { readItems } from "@/lib/music-kit/resource";
 import { fetchStorefront } from "@/lib/music-kit/storefront";
+import type { PlaylistType } from "@/lib/music-kit/playlists";
 import type { Song } from "@/lib/music-kit/track";
+
+export interface QueueSource {
+  type: AlbumType | PlaylistType;
+  id: string;
+}
 
 export interface PlayOptions {
   startAt?: number;
   shuffle?: boolean;
+  from?: QueueSource;
+}
+
+export function isSameSource(one?: QueueSource, other?: QueueSource): boolean {
+  return one !== undefined && other !== undefined && one.type === other.type && one.id === other.id;
 }
 
 // what Apple calls the error tells a person more than the message behind it
