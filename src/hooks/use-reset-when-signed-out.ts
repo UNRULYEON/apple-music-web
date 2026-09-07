@@ -2,6 +2,7 @@ import { useView } from "@/hooks/use-view";
 import { removeStoredCache } from "@/integrations/tanstack-query/persister";
 import { useAuthStatus } from "@/lib/music-kit/auth";
 import { HOME } from "@/lib/views/view";
+import { forgetStoredQueue } from "@/lib/now-playing-storage";
 import { forgetStoredVolume } from "@/lib/volume-storage";
 import { useQueryClient } from "@tanstack/react-query";
 import { useEffect } from "react";
@@ -28,6 +29,7 @@ export function useResetWhenSignedOut(): void {
     if (status === "signed-out") {
       removeStoredCache();
       forgetStoredVolume();
+      forgetStoredQueue();
       open(HOME);
     }
   }, [client, open, status]);
