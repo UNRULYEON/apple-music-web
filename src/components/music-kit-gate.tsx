@@ -10,7 +10,8 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Spinner } from "@/components/ui/spinner";
-import { loadAuthorization, signIn, useAuthStatus } from "@/lib/music-kit/auth";
+import { fireConfetti } from "@/lib/confetti";
+import { loadAuthorization, readAuthStatus, signIn, useAuthStatus } from "@/lib/music-kit/auth";
 import { TRANSITION } from "@/lib/motion";
 
 const SWAP = {
@@ -34,6 +35,10 @@ export function MusicKitGate({ children }: { children: React.ReactNode }): React
 
     try {
       await signIn();
+
+      if (readAuthStatus() === "signed-in") {
+        fireConfetti();
+      }
     } catch (cause) {
       setError(cause instanceof Error ? cause.message : "Sign in failed. Try again.");
     } finally {
