@@ -51,8 +51,8 @@ export function PlayerProgress({ songId, durationInMillis, className }: PlayerPr
   }, [position, wanted]);
 
   return (
-    <div className={cn("flex items-center gap-1 min-w-0 text-[10px] tabular-nums", className)}>
-      <span className="w-9 shrink-0 text-neutral-500 dark:text-neutral-400">{clockTime(at)}</span>
+    <div className={cn("flex items-center gap-1 min-w-0 text-[9px] tabular-nums", className)}>
+      <span className="w-6 shrink-0 text-neutral-500 dark:text-neutral-400">{clockTime(at)}</span>
       <SliderPrimitive.Root
         className="grow min-w-0"
         value={at}
@@ -92,7 +92,7 @@ export function PlayerProgress({ songId, durationInMillis, className }: PlayerPr
             : `The song is ${clockTime(length)} long. Show what is left of it.`
         }
         className={cn(
-          "w-9 shrink-0 text-right tabular-nums",
+          "w-6 shrink-0 text-right tabular-nums",
           "text-neutral-500 dark:text-neutral-400",
           "transition-colors hover:text-neutral-900 dark:hover:text-neutral-100",
           "rounded-sm outline-none focus-visible:ring-2 focus-visible:ring-neutral-500",
