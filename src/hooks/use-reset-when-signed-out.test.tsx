@@ -2,6 +2,7 @@
 import { useResetWhenSignedOut, useSignedInQuery } from "@/hooks";
 import { setAuthStatus } from "@/lib/music-kit/auth";
 import { HOME } from "@/lib/views/view";
+import { readStoredVolume, writeStoredVolume } from "@/lib/volume-storage";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { act, cleanup, render, screen, waitFor } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
@@ -20,6 +21,7 @@ beforeEach(() => {
 afterEach(() => {
   cleanup();
   act(() => setAuthStatus("checking"));
+  localStorage.clear();
   vi.clearAllMocks();
 });
 
@@ -85,6 +87,25 @@ describe("useResetWhenSignedOut", () => {
     act(() => setAuthStatus("signed-out"));
 
     expect(open).toHaveBeenCalledWith(HOME);
+  });
+
+  it("takes the volume out of the browser when the session ends", async () => {
+    writeStoredVolume(0.3);
+    renderProbe();
+    await screen.findByText("an album");
+
+    act(() => setAuthStatus("signed-out"));
+
+    expect(readStoredVolume()).toBeUndefined();
+  });
+
+  it("keeps the volume of a page that starts alone", () => {
+    writeStoredVolume(0.3);
+
+    act(() => setAuthStatus("checking"));
+    renderProbe();
+
+    expect(readStoredVolume()).toBe(0.3);
   });
 
   it("empties the cache while the status is not known", async () => {
