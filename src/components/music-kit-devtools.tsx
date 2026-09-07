@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { fireConfetti } from "@/lib/confetti";
 import { cn } from "@/lib/utils";
 import { useAuthStatus } from "@/lib/music-kit/auth";
 import {
@@ -71,6 +72,9 @@ export function MusicKitDevtools({ theme }: { theme: "light" | "dark" }): React.
           variant="destructive-outline"
         >
           Sign out and remove from local storage
+        </Button>
+        <Button onClick={fireConfetti} size="sm" variant="outline">
+          Fire confetti
         </Button>
       </div>
 
