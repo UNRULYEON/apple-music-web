@@ -2,13 +2,16 @@
 import { act, cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { MusicKitGate } from "@/components/music-kit-gate";
+import { fireConfetti } from "@/lib/confetti";
 import { setAuthStatus } from "@/lib/music-kit/auth";
 import { dropToken, restoreToken } from "@/lib/music-kit/dev-session";
 import { getMusicKit } from "@/lib/music-kit/instance";
 
 vi.mock("@/lib/music-kit/instance", () => ({ getMusicKit: vi.fn() }));
+vi.mock("@/lib/confetti", () => ({ fireConfetti: vi.fn() }));
 
 const loadMusicKit = vi.mocked(getMusicKit);
+const confetti = vi.mocked(fireConfetti);
 
 function mockMusic(token = "") {
   let current = token;
@@ -115,6 +118,35 @@ describe("MusicKitGate", () => {
     await waitFor(() => expect(gate.gate()).toBeNull());
     expect(music.authorize).toHaveBeenCalledOnce();
     expect(gate.appIsBlocked()).toBe(false);
+  });
+
+  it("shows confetti after a successful sign in", async () => {
+    mockMusic();
+
+    renderGate();
+    fireEvent.click(await screen.findByRole("button", { name: "Continue with Apple Music" }));
+
+    await waitFor(() => expect(confetti).toHaveBeenCalledOnce());
+  });
+
+  it("shows no confetti for a visitor who is already signed in", async () => {
+    mockMusic("a-music-user-token");
+
+    const gate = renderGate();
+
+    await waitFor(() => expect(gate.gate()).toBeNull());
+    expect(confetti).not.toHaveBeenCalled();
+  });
+
+  it("shows no confetti when sign in fails", async () => {
+    const music = mockMusic();
+    music.authorize.mockRejectedValue(new Error("The user closed the window."));
+
+    renderGate();
+    fireEvent.click(await screen.findByRole("button", { name: "Continue with Apple Music" }));
+
+    await screen.findByRole("alert");
+    expect(confetti).not.toHaveBeenCalled();
   });
 
   it("keeps the dialog and says why when sign in fails", async () => {
