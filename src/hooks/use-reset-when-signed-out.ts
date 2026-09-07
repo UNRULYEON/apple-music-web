@@ -2,6 +2,7 @@ import { useView } from "@/hooks/use-view";
 import { removeStoredCache } from "@/integrations/tanstack-query/persister";
 import { useAuthStatus } from "@/lib/music-kit/auth";
 import { HOME } from "@/lib/views/view";
+import { forgetStoredVolume } from "@/lib/volume-storage";
 import { useQueryClient } from "@tanstack/react-query";
 import { useEffect } from "react";
 
@@ -26,6 +27,7 @@ export function useResetWhenSignedOut(): void {
     // on must stay and the cache in the browser is there to be put back
     if (status === "signed-out") {
       removeStoredCache();
+      forgetStoredVolume();
       open(HOME);
     }
   }, [client, open, status]);

@@ -2,6 +2,7 @@
 import { PlayerVolume } from "@/components/player-volume";
 import { fakeMusicKit, type FakeMusicKit } from "@/lib/music-kit/fake-music-kit";
 import { getMusicKit } from "@/lib/music-kit/instance";
+import { readStoredVolume, writeStoredVolume } from "@/lib/volume-storage";
 import { cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
@@ -10,12 +11,14 @@ vi.mock("@/lib/music-kit/instance", () => ({ getMusicKit: vi.fn() }));
 let music: FakeMusicKit;
 
 beforeEach(() => {
+  localStorage.clear();
   music = fakeMusicKit();
   vi.mocked(getMusicKit).mockResolvedValue(music as unknown as MusicKit.MusicKitInstance);
 });
 
 afterEach(() => {
   cleanup();
+  localStorage.clear();
   vi.clearAllMocks();
 });
 
@@ -70,6 +73,30 @@ describe("PlayerVolume", () => {
     fireEvent.keyDown(thumb, { key: "ArrowDown" });
 
     await waitFor(() => expect(music.volume).toBeCloseTo(0.99));
+  });
+
+  it("takes the level a person left behind, and puts it on the player", async () => {
+    music.volume = 1;
+    writeStoredVolume(0.3);
+
+    render(<PlayerVolume />);
+
+    await waitFor(() => expect(trigger().getAttribute("aria-label")).toBe("Volume, 30 percent"));
+    expect(music.volume).toBe(0.3);
+  });
+
+  it("keeps a new level for the next time", async () => {
+    render(<PlayerVolume />);
+    await openPopover();
+
+    const thumb = slider();
+    if (!thumb) {
+      throw new Error("The slider is not there.");
+    }
+
+    fireEvent.keyDown(thumb, { key: "ArrowDown" });
+
+    await waitFor(() => expect(readStoredVolume()).toBeCloseTo(0.99));
   });
 
   it("closes when a person presses outside it", async () => {
