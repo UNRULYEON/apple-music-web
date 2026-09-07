@@ -20,10 +20,12 @@ vi.mock("@/lib/music-kit/playback", async (importOriginal) => ({
   playSongs: vi.fn().mockResolvedValue(undefined),
 }));
 
+const ARTWORK = { url: "https://example.test/{w}x{h}{c}.{f}", width: 600, height: 600 };
+
 const SONGS: Song[] = [
-  { id: "s0", name: "First" },
-  { id: "s1", name: "Second" },
-  { id: "s2", name: "Third" },
+  { id: "s0", name: "First", artwork: ARTWORK },
+  { id: "s1", name: "Second", artwork: ARTWORK },
+  { id: "s2", name: "Third", artwork: ARTWORK },
 ];
 
 let music: FakeMusicKit;
@@ -96,7 +98,52 @@ describe("TrackList", () => {
 
     expect(screen.getByLabelText("Playing now")).toBeTruthy();
     expect(screen.getByText("1")).toBeTruthy();
-    expect(screen.queryByText("2")).toBeNull();
+    // the number leaves with the swap, so it stays until the motion ends
+    await waitFor(() => expect(screen.queryByText("2")).toBeNull());
+  });
+
+  it("marks the song that plays over its artwork, when the list shows artwork", async () => {
+    renderList({ source: ALBUM, showTrackNumber: false, showArtwork: true });
+
+    fireEvent.click(screen.getByText("Second"));
+    await waitFor(() => expect(vi.mocked(playSongs)).toHaveBeenCalled());
+
+    nowPlaying(1);
+
+    const artwork = screen.getByText("Second").closest("button")?.firstElementChild;
+
+    expect(artwork?.contains(screen.getByLabelText("Playing now"))).toBe(true);
+  });
+
+  it("puts the number back when a different song starts", async () => {
+    renderList({ source: ALBUM });
+
+    fireEvent.click(screen.getByText("Second"));
+    await waitFor(() => expect(vi.mocked(playSongs)).toHaveBeenCalled());
+
+    nowPlaying(1);
+    await waitFor(() => expect(screen.queryByText("2")).toBeNull());
+
+    nowPlaying(2);
+
+    await waitFor(() => expect(screen.getByText("2")).toBeTruthy());
+    await waitFor(() => expect(screen.queryByText("3")).toBeNull());
+  });
+
+  it("moves the mark on the artwork to the song that plays next", async () => {
+    renderList({ source: ALBUM, showTrackNumber: false, showArtwork: true });
+
+    fireEvent.click(screen.getByText("Second"));
+    await waitFor(() => expect(vi.mocked(playSongs)).toHaveBeenCalled());
+
+    nowPlaying(1);
+    nowPlaying(2);
+
+    await waitFor(() => {
+      const third = screen.getByText("Third").closest("button")?.firstElementChild;
+
+      expect(third?.contains(screen.getByLabelText("Playing now"))).toBe(true);
+    });
   });
 
   it("leaves the same song alone in a list it does not play from", async () => {
