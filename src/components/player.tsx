@@ -17,6 +17,7 @@ import { HugeiconsIcon } from "@hugeicons/react";
 import { AnimatePresence, motion, useReducedMotion } from "motion/react";
 import { ArtworkImage } from "./artwork";
 import { PlayerProgress } from "./player-progress";
+import { PlayerVolume } from "./player-volume";
 import { Button } from "./ui/button";
 
 const ARTWORK_SIZE = 64;
@@ -148,7 +149,7 @@ export function Player() {
                 "flex items-center max-w-full",
                 isMobile ? "pl-4 pr-4 py-1" : "px-4 pt-0 pb-0",
                 "bg-neutral-100 dark:bg-neutral-950",
-                "border border-neutral-100/10",
+                "border border-neutral-50 dark:border-neutral-800",
                 "rounded-full",
                 "select-none",
               )}
@@ -311,10 +312,11 @@ export function Player() {
                     exit={GROUP_AT_START}
                     transition={shapeTransition}
                   >
-                    <div className="w-max">
+                    <div className="flex items-center w-max">
                       <Button variant="ghost" size="icon" aria-label="Queue">
                         <HugeiconsIcon icon={Playlist03Icon} size={16} strokeWidth={2} />
                       </Button>
+                      <PlayerVolume />
                     </div>
                   </motion.div>
                 )}

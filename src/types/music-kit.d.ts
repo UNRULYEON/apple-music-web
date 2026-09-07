@@ -83,6 +83,7 @@ declare namespace MusicKit {
     nowPlayingItemIndex: number;
     shuffleMode: number;
     repeatMode: number;
+    volume: number;
     authorize(): Promise<string>;
     unauthorize(): Promise<void>;
     setQueue(options: QueueOptions): Promise<Queue | undefined>;

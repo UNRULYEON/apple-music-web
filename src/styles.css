@@ -204,6 +204,14 @@ body {
   --code: var(--color-white);
   --code-foreground: var(--foreground);
   --code-highlight: --alpha(var(--color-black) / 4%);
+
+  /* a surface that grows out of the button it belongs to. The close is quicker and
+     quieter than the open, so leaving takes less notice than arriving. */
+  --dropdown-open-dur: 250ms;
+  --dropdown-close-dur: 150ms;
+  --dropdown-pre-scale: 0.97;
+  --dropdown-closing-scale: 0.99;
+  --dropdown-ease: cubic-bezier(0.22, 1, 0.36, 1);
 }
 
 .dark {
