@@ -1,3 +1,4 @@
+import { useAuthStatus } from "@/lib/music-kit/auth";
 import { reportPlaybackProblem } from "@/lib/player/report";
 import {
   changeToIndex,
@@ -5,6 +6,7 @@ import {
   playSongs,
   queueLast,
   queueNext,
+  queueWithoutPlaying,
   resumePlayback,
   setRepeatMode,
   setShuffleMode,
@@ -20,6 +22,7 @@ import {
   subscribeToPlayer,
   type PlayerState,
 } from "@/lib/music-kit/player-state";
+import { forgetStoredQueue, readStoredQueue, writeStoredQueue } from "@/lib/now-playing-storage";
 import type { Song } from "@/lib/music-kit/track";
 import {
   createContext,
@@ -59,6 +62,7 @@ export const PlayerContext = createContext<PlayerContextType | undefined>(undefi
 export function PlayerProvider({ children }: { children: ReactNode }) {
   const state = useSyncExternalStore(subscribeToPlayer, readPlayerState, readInitialPlayerState);
   const { index, queue, isPlaying, isLoading, isShuffled, repeat } = state;
+  const status = useAuthStatus();
 
   // where the taps have asked to go, which runs ahead of where MusicKit has arrived
   const [wanted, setWanted] = useState<number | undefined>(undefined);
@@ -108,6 +112,43 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
       setWanted(undefined);
     }
   }, [index, wanted]);
+
+  // the queue a person left behind comes back as it was, at the same song and from the
+  // same album or playlist, but with nothing playing. It happens once, and only while
+  // the player holds nothing, so it never takes a song away from a person who is
+  // quicker than the sign in.
+  const hasRestored = useRef(false);
+
+  useEffect(() => {
+    if (status !== "signed-in" || hasRestored.current || queue.length > 0) {
+      return;
+    }
+
+    hasRestored.current = true;
+
+    const stored = readStoredQueue();
+
+    if (!stored) {
+      return;
+    }
+
+    setSource(stored.source);
+
+    void queueWithoutPlaying(stored.songs, stored.index).catch(() => {
+      setSource(undefined);
+      forgetStoredQueue();
+    });
+  }, [queue.length, status]);
+
+  // what the player holds is kept for the next time. An empty player writes nothing,
+  // so what a person left behind stays until they sign out.
+  useEffect(() => {
+    if (queue.length === 0) {
+      return;
+    }
+
+    writeStoredQueue({ songs: queue.map((song) => song.playId ?? song.id), index, source });
+  }, [index, queue, source]);
 
   useEffect(() => () => clearTimeout(timer.current), []);
 

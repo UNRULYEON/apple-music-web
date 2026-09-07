@@ -107,6 +107,14 @@ export async function queueLast(songs: Song[]): Promise<void> {
   await music.playLater({ songs: songs.map((song) => song.playId ?? song.id) });
 }
 
+// the queue a person left behind is built again the way it was built the first time,
+// only without a song starting. Nothing is played, so this asks for no DRM.
+export async function queueWithoutPlaying(songs: string[], startAt: number): Promise<void> {
+  const music = await getMusicKit();
+
+  await music.setQueue({ songs, startWith: startAt, startPlaying: false });
+}
+
 export async function resumePlayback(): Promise<void> {
   await requireDrm();
 

@@ -14,6 +14,8 @@ import { hasDrm } from "@/lib/music-kit/drm";
 import { getMusicKit } from "@/lib/music-kit/instance";
 import { resetPlaybackTime } from "@/lib/music-kit/playback-time";
 import { resetPlayerState } from "@/lib/music-kit/player-state";
+import { readStoredQueue, writeStoredQueue } from "@/lib/now-playing-storage";
+import { setAuthStatus } from "@/lib/music-kit/auth";
 import type { Song } from "@/lib/music-kit/track";
 import { act, cleanup, render, waitFor } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
@@ -35,6 +37,7 @@ const SONGS: Song[] = [
 let music: FakeMusicKit;
 
 beforeEach(() => {
+  localStorage.clear();
   resetPlayerState();
   resetPlaybackTime();
   stubMusicKitGlobals();
@@ -45,6 +48,8 @@ beforeEach(() => {
 
 afterEach(() => {
   cleanup();
+  act(() => setAuthStatus("checking"));
+  localStorage.clear();
   vi.useRealTimers();
   vi.clearAllMocks();
   vi.unstubAllGlobals();
@@ -350,5 +355,63 @@ describe("PlayerProvider", () => {
     act(() => seen.current?.play(SONGS));
 
     await waitFor(() => expect(seen.current?.source).toBeUndefined());
+  });
+
+  it("keeps the queue and the list it came from for the next time", async () => {
+    const seen = await renderProvider();
+
+    act(() => seen.current?.play(SONGS, { startAt: 1, from: { type: "albums", id: "a1" } }));
+
+    music.queue.items = [songItem("111", "One"), songItem("222", "Two")];
+    music.nowPlayingItemIndex = 1;
+    act(() => music.emit("queueItemsDidChange", music.queue.items));
+
+    await waitFor(() =>
+      expect(readStoredQueue()).toEqual({
+        songs: ["111", "222"],
+        index: 1,
+        source: { type: "albums", id: "a1" },
+      }),
+    );
+  });
+
+  it("builds the queue a person left behind again, with nothing playing", async () => {
+    writeStoredQueue({ songs: ["111", "222"], index: 1, source: { type: "albums", id: "a1" } });
+
+    const seen = await renderProvider();
+    act(() => setAuthStatus("signed-in"));
+
+    await waitFor(() =>
+      expect(music.setQueue).toHaveBeenCalledWith({
+        songs: ["111", "222"],
+        startWith: 1,
+        startPlaying: false,
+      }),
+    );
+    expect(seen.current?.isPlaying).toBe(false);
+    expect(seen.current?.isLoading).toBe(false);
+    await waitFor(() => expect(seen.current?.source).toEqual({ type: "albums", id: "a1" }));
+  });
+
+  it("leaves the queue alone while nobody is signed in", async () => {
+    writeStoredQueue({ songs: ["111"], index: 0 });
+
+    await renderProvider();
+
+    await waitFor(() => expect(music.addEventListener).toHaveBeenCalled());
+    expect(music.setQueue).not.toHaveBeenCalled();
+  });
+
+  it("keeps the hands off a person who was quicker than the sign in", async () => {
+    writeStoredQueue({ songs: ["111", "222"], index: 1 });
+
+    const seen = await renderProvider();
+
+    music.queue.items = [songItem("333", "Three")];
+    act(() => music.emit("queueItemsDidChange", music.queue.items));
+    act(() => setAuthStatus("signed-in"));
+
+    await waitFor(() => expect(seen.current?.nowPlaying?.name).toBe("Three"));
+    expect(music.setQueue).not.toHaveBeenCalled();
   });
 });
