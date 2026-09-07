@@ -45,6 +45,14 @@ afterEach(() => {
 
 const ALBUM = { type: "albums", id: "a1" } as const;
 const OTHER_ALBUM = { type: "albums", id: "a2" } as const;
+const LIBRARY_PLAYLIST = { type: "library-playlists", id: "p1" } as const;
+
+// a song in the library keeps a library id and plays by its catalog id
+const LIBRARY_SONGS: Song[] = SONGS.map((song, i) => ({
+  ...song,
+  id: `i.${song.id}`,
+  playId: `c${i}`,
+}));
 
 function renderList(props: Partial<ComponentProps<typeof TrackList>> = {}) {
   render(
@@ -54,9 +62,13 @@ function renderList(props: Partial<ComponentProps<typeof TrackList>> = {}) {
   );
 }
 
-// the queue MusicKit reports, so the list can tell which song plays
-function nowPlaying(index: number) {
-  music.queue.items = SONGS.map((song) => ({ id: song.id, attributes: { name: song.name } }));
+// the queue MusicKit reports, so the list can tell which song plays. It holds the
+// id every song plays by, which is the catalog id of a song in the library
+function nowPlaying(index: number, songs: Song[] = SONGS) {
+  music.queue.items = songs.map((song) => ({
+    id: song.playId ?? song.id,
+    attributes: { name: song.name },
+  }));
   music.nowPlayingItemIndex = index;
   act(() => music.emit("queueItemsDidChange", music.queue.items));
 }
@@ -144,6 +156,24 @@ describe("TrackList", () => {
 
       expect(third?.contains(screen.getByLabelText("Playing now"))).toBe(true);
     });
+  });
+
+  it("marks the song of a library playlist, which plays under its catalog id", async () => {
+    renderList({
+      songs: LIBRARY_SONGS,
+      source: LIBRARY_PLAYLIST,
+      showTrackNumber: false,
+      showArtwork: true,
+    });
+
+    fireEvent.click(screen.getByText("Second"));
+    await waitFor(() => expect(vi.mocked(playSongs)).toHaveBeenCalled());
+
+    nowPlaying(1, LIBRARY_SONGS);
+
+    const artwork = screen.getByText("Second").closest("button")?.firstElementChild;
+
+    expect(artwork?.contains(screen.getByLabelText("Playing now"))).toBe(true);
   });
 
   it("leaves the same song alone in a list it does not play from", async () => {
