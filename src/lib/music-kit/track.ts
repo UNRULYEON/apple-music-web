@@ -20,6 +20,20 @@ export interface Song {
   playId?: string;
 }
 
+// a song in the library and the song the player queues from the catalog
+// hold the same music under two ids
+export function isSameSong(one?: Song, other?: Song): boolean {
+  if (!one || !other) {
+    return false;
+  }
+
+  return songIds(one).some((id) => songIds(other).includes(id));
+}
+
+function songIds(song: Song): string[] {
+  return song.playId ? [song.id, song.playId] : [song.id];
+}
+
 export function readSong(value: unknown): Song | undefined {
   if (typeof value !== "object" || value === null) {
     return undefined;

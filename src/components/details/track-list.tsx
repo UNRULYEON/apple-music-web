@@ -3,7 +3,7 @@ import { usePlayer } from "@/hooks";
 import { songDuration } from "@/lib/format";
 import { TRANSITION } from "@/lib/motion";
 import { isSameSource, type QueueSource } from "@/lib/music-kit/playback";
-import type { Song } from "@/lib/music-kit/track";
+import { isSameSong, type Song } from "@/lib/music-kit/track";
 import { PlayIcon } from "@hugeicons/core-free-icons";
 import { HugeiconsIcon } from "@hugeicons/react";
 import { AnimatePresence, motion, useReducedMotion } from "motion/react";
@@ -42,7 +42,7 @@ export function TrackList({
   return (
     <div className="flex flex-col">
       {songs.map((song, i) => {
-        const playsNow = playsThisList && nowPlaying?.id === song.id;
+        const playsNow = playsThisList && isSameSong(nowPlaying, song);
 
         return (
           <button
