@@ -9,4 +9,5 @@ export { usePlaybackTime } from "./use-playback-time";
 export { usePrefetchRecentlyPlayed } from "./use-prefetch-recently-played";
 export { useSignedInQuery } from "./use-signed-in-query";
 export { useResetWhenSignedOut } from "./use-reset-when-signed-out";
+export { usePersistedCache } from "./use-persisted-cache";
 export { useVolume } from "./use-volume";
