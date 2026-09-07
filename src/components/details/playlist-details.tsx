@@ -3,16 +3,13 @@ import { DetailsHeader } from "@/components/details/details-header";
 import { DetailsShell } from "@/components/details/details-shell";
 import { TrackList } from "@/components/details/track-list";
 import { relativeDate } from "@/lib/format";
-import { useAuthStatus } from "@/lib/music-kit/auth";
+import { useSignedInQuery } from "@/hooks";
 import { fetchPlaylist, type PlaylistType } from "@/lib/music-kit/playlists";
-import { useQuery } from "@tanstack/react-query";
 
 export function PlaylistDetails({ type, id }: { type: PlaylistType; id: string }) {
-  const status = useAuthStatus();
-  const { data: playlist, isPending } = useQuery({
+  const { data: playlist, isPending } = useSignedInQuery({
     queryKey: ["music-kit", "playlist", type, id],
     queryFn: () => fetchPlaylist(type, id),
-    enabled: status === "signed-in",
   });
 
   const modified = playlist?.lastModifiedDate ?? playlist?.dateAdded;

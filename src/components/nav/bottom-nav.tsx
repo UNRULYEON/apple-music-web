@@ -1,5 +1,4 @@
 import { signOut } from "@/lib/music-kit/auth";
-import { useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { HugeiconsIcon } from "@hugeicons/react";
@@ -21,7 +20,6 @@ const itemClassName = segmentedControlItemVariants({
 
 export function BottomNav() {
   const { theme, setTheme } = useTheme();
-  const queryClient = useQueryClient();
   const [isSigningOut, setIsSigningOut] = useState(false);
 
   async function handleSignOut(): Promise<void> {
@@ -29,7 +27,6 @@ export function BottomNav() {
 
     try {
       await signOut();
-      queryClient.clear();
     } finally {
       setIsSigningOut(false);
     }

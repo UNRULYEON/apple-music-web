@@ -1,14 +1,12 @@
 import { ArtworkImage, DetailsView, ErrorStates, LoadingState } from "@/components";
 import { EmptyStates } from "@/components/empty-states";
-import { useIsHydrated, useView } from "@/hooks";
+import { useIsHydrated, useSignedInQuery, useView } from "@/hooks";
 import { TRANSITION, TRANSITION_REVEAL } from "@/lib/motion";
-import { useAuthStatus } from "@/lib/music-kit/auth";
 import {
   recentlyPlayedQuery,
   type RecentlyPlayedItem,
   type RecentlyPlayedType,
 } from "@/lib/music-kit/recently-played";
-import { useQuery } from "@tanstack/react-query";
 import { createFileRoute } from "@tanstack/react-router";
 import { AnimatePresence, motion } from "motion/react";
 import { Suspense } from "react";
@@ -62,13 +60,8 @@ function HomeView() {
 }
 
 function RecentlyPlayed() {
-  const status = useAuthStatus();
   const { open } = useView();
-  const {
-    data: played,
-    isPending,
-    isError,
-  } = useQuery({ ...recentlyPlayedQuery(), enabled: status === "signed-in" });
+  const { data: played, isPending, isError } = useSignedInQuery(recentlyPlayedQuery());
 
   return (
     <div className="flex flex-col grow px-4 pb-4">

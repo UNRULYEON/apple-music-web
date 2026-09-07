@@ -3,17 +3,14 @@ import { DetailsHeader } from "@/components/details/details-header";
 import { DetailsShell } from "@/components/details/details-shell";
 import { TrackList } from "@/components/details/track-list";
 import { releaseYear } from "@/lib/format";
+import { useSignedInQuery } from "@/hooks";
 import { fetchAlbum, type AlbumType } from "@/lib/music-kit/album";
-import { useAuthStatus } from "@/lib/music-kit/auth";
-import { useQuery } from "@tanstack/react-query";
 import { intlFormat } from "date-fns";
 
 export function AlbumDetails({ type, id }: { type: AlbumType; id: string }) {
-  const status = useAuthStatus();
-  const { data: album, isPending } = useQuery({
+  const { data: album, isPending } = useSignedInQuery({
     queryKey: ["music-kit", "album", type, id],
     queryFn: () => fetchAlbum(type, id),
-    enabled: status === "signed-in",
   });
 
   return (
