@@ -22,6 +22,36 @@ vi.mock("@/lib/music-kit/drm", async (importOriginal) => ({
 }));
 
 const ARTWORK = '[data-slot="player-artwork"]';
+const ELAPSED = '[data-slot="player-elapsed"]';
+const LENGTH = '[data-slot="player-length"]';
+
+const TEXT_NODE = 3;
+
+function clock(selector: string): HTMLElement {
+  const found = document.querySelector<HTMLElement>(selector);
+
+  if (!found) {
+    throw new Error(`The player shows no ${selector}.`);
+  }
+
+  return found;
+}
+
+// a rolling number keeps the text a person reads in one span of its own and a copy of
+// it out of sight, which it measures against, so only the first one is read here
+function reads(selector: string): string {
+  return [...clock(selector).childNodes]
+    .map((node) =>
+      node.nodeType === TEXT_NODE
+        ? node.textContent
+        : (node as Element).querySelector(".rn-value")?.textContent,
+    )
+    .join("");
+}
+
+function elapsed(): string {
+  return reads(ELAPSED);
+}
 const COVER = { url: "https://example.com/{w}x{h}{c}.{f}", width: 300, height: 300 };
 const OTHER_COVER = { ...COVER, url: "https://example.com/other-{w}x{h}{c}.{f}" };
 
@@ -300,8 +330,8 @@ describe("Player", () => {
     await waitForSeekBar();
     setTime(42, 210);
 
-    expect(screen.getByText("0:42")).toBeTruthy();
-    expect(screen.getByText("3:30")).toBeTruthy();
+    expect(elapsed()).toBe("0:42");
+    expect(reads(LENGTH)).toBe("3:30");
   });
 
   it("cycles the end of the bar between the length and what is left", async () => {
@@ -311,11 +341,11 @@ describe("Player", () => {
     await waitForSeekBar();
     setTime(42, 210);
 
-    fireEvent.click(screen.getByText("3:30"));
-    expect(screen.getByText("-2:48")).toBeTruthy();
+    fireEvent.click(clock(LENGTH));
+    expect(reads(LENGTH)).toBe("-2:48");
 
-    fireEvent.click(screen.getByText("-2:48"));
-    expect(screen.getByText("3:30")).toBeTruthy();
+    fireEvent.click(clock(LENGTH));
+    expect(reads(LENGTH)).toBe("3:30");
   });
 
   it("drops a place asked for in the song before this one", async () => {
@@ -326,13 +356,13 @@ describe("Player", () => {
     setTime(42, 210);
 
     fireEvent.keyDown(screen.getByLabelText("Seek"), { key: "PageUp" });
-    expect(screen.getByText("0:57")).toBeTruthy();
+    expect(elapsed()).toBe("0:57");
 
     music.nowPlayingItemIndex = 1;
     act(() => music.emit("queuePositionDidChange", { position: 1 }));
     setTime(0, 180);
 
-    expect(screen.getByText("0:00")).toBeTruthy();
+    expect(elapsed()).toBe("0:00");
   });
 
   it("keeps the time a person picked through the next song", async () => {
@@ -342,13 +372,13 @@ describe("Player", () => {
     await waitForSeekBar();
     setTime(42, 210);
 
-    fireEvent.click(screen.getByText("3:30"));
+    fireEvent.click(clock(LENGTH));
 
     music.nowPlayingItemIndex = 1;
     act(() => music.emit("queuePositionDidChange", { position: 1 }));
     setTime(0, 180);
 
-    expect(screen.getByText("-3:00")).toBeTruthy();
+    expect(reads(LENGTH)).toBe("-3:00");
   });
 
   it("shows the length from the catalog before MusicKit opens the song", async () => {
@@ -357,7 +387,7 @@ describe("Player", () => {
     loadQueue([{ id: "1", attributes: { name: "First", durationInMillis: 180_000 } }]);
     await waitForSeekBar();
 
-    expect(screen.getByText("3:00")).toBeTruthy();
+    expect(reads(LENGTH)).toBe("3:00");
   });
 
   it("seeks in the song when a person moves the bar", async () => {
@@ -381,14 +411,14 @@ describe("Player", () => {
 
     fireEvent.keyDown(screen.getByLabelText("Seek"), { key: "PageUp" });
 
-    expect(screen.getByText("0:57")).toBeTruthy();
+    expect(elapsed()).toBe("0:57");
 
     // MusicKit is still back where the song was
     setTime(43, 210);
-    expect(screen.getByText("0:57")).toBeTruthy();
+    expect(elapsed()).toBe("0:57");
 
     setTime(57, 210);
-    await waitFor(() => expect(screen.getByText("0:57")).toBeTruthy());
+    await waitFor(() => expect(elapsed()).toBe("0:57"));
   });
 
   it("turns the bar off while nothing knows how long the song is", async () => {

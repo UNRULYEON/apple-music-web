@@ -1,10 +1,33 @@
 import { usePlaybackTime } from "@/hooks";
 import { clockTime } from "@/lib/format";
 import { cn } from "@/lib/utils";
+import { RollingNumber } from "@kitlangton/rolling-number/react";
 import { useEffect, useState } from "react";
 import { SliderPrimitive } from "./ui/slider";
 
 const MILLIS_PER_SECOND = 1000;
+const SECONDS_PER_MINUTE = 60;
+
+// as long as the rest of the player takes to move, and short enough that a second is
+// over before the next one arrives
+const ROLL = 240;
+
+// the seconds keep both places, so 0:07 does not turn into 0:7
+const SECONDS_FORMAT = { minimumIntegerDigits: 2 } as const;
+
+// the minutes and the seconds roll on their own, so a minute that does not change
+// stands still while the seconds move under it
+function RollingClock({ seconds, sign, slot }: { seconds: number; sign?: string; slot: string }) {
+  const whole = Math.max(Math.round(seconds), 0);
+
+  return (
+    <span data-slot={slot}>
+      {sign}
+      <RollingNumber value={Math.floor(whole / SECONDS_PER_MINUTE)} duration={ROLL} />:
+      <RollingNumber value={whole % SECONDS_PER_MINUTE} format={SECONDS_FORMAT} duration={ROLL} />
+    </span>
+  );
+}
 
 // arrow keys move a second, page keys a quarter minute
 const LARGE_STEP = 15;
@@ -52,9 +75,11 @@ export function PlayerProgress({ songId, durationInMillis, className }: PlayerPr
 
   return (
     <div className={cn("flex items-center gap-1 min-w-0 text-[9px] tabular-nums", className)}>
-      <span className="w-6 shrink-0 text-neutral-500 dark:text-neutral-400">{clockTime(at)}</span>
+      <span className="shrink-0 text-neutral-500 dark:text-neutral-400">
+        <RollingClock seconds={at} slot="player-elapsed" />
+      </span>
       <SliderPrimitive.Root
-        className="grow min-w-0"
+        className="grow min-w-0 px-1"
         value={at}
         min={0}
         max={length || 1}
@@ -92,13 +117,17 @@ export function PlayerProgress({ songId, durationInMillis, className }: PlayerPr
             : `The song is ${clockTime(length)} long. Show what is left of it.`
         }
         className={cn(
-          "w-6 shrink-0 text-right tabular-nums",
+          "shrink-0 text-right tabular-nums",
           "text-neutral-500 dark:text-neutral-400",
           "transition-colors hover:text-neutral-900 dark:hover:text-neutral-100",
-          "rounded-sm outline-none focus-visible:ring-2 focus-visible:ring-neutral-500",
+          "outline-none focus-visible:ring-2 focus-visible:ring-neutral-500",
         )}
       >
-        {showsLeft ? `-${clockTime(left)}` : clockTime(length)}
+        <RollingClock
+          seconds={showsLeft ? left : length}
+          sign={showsLeft ? "-" : undefined}
+          slot="player-length"
+        />
       </button>
     </div>
   );
