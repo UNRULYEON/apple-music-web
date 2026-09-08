@@ -20,6 +20,9 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { ToastProvider } from "@/components/ui/toast";
 import { hotkeysDevtoolsPlugin } from "@tanstack/react-hotkeys-devtools";
 
+const DEV_NAME_SUFFIX = import.meta.env.DEV ? " [dev]" : "";
+const DEV_ASSET_SUFFIX = import.meta.env.DEV ? "-dev" : "";
+
 const appleAuthDevtools: TanStackDevtoolsReactPlugin = {
   id: "apple-auth",
   name: "Apple Authentication",
@@ -47,13 +50,43 @@ export const Route = createRootRouteWithContext<MyRouterContext>()({
         content: "width=device-width, initial-scale=1",
       },
       {
-        title: "TanStack Start Starter",
+        title: `Music${DEV_NAME_SUFFIX}`,
+      },
+      {
+        name: "description",
+        content: "Listen to music from Apple Music in your browser.",
+      },
+      {
+        name: "apple-mobile-web-app-capable",
+        content: "yes",
+      },
+      {
+        name: "mobile-web-app-capable",
+        content: "yes",
+      },
+      {
+        name: "apple-mobile-web-app-title",
+        content: `Music Web${DEV_NAME_SUFFIX}`,
       },
     ],
     links: [
       {
         rel: "stylesheet",
         href: appCss,
+      },
+      {
+        rel: "manifest",
+        href: `/manifest${DEV_ASSET_SUFFIX}.webmanifest`,
+      },
+      {
+        rel: "apple-touch-icon",
+        href: `/apple-touch-icon${DEV_ASSET_SUFFIX}.png`,
+      },
+      {
+        rel: "icon",
+        type: "image/png",
+        sizes: "192x192",
+        href: `/icon${DEV_ASSET_SUFFIX}-192.png`,
       },
     ],
     scripts: [

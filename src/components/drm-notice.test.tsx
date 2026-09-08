@@ -1,7 +1,7 @@
 // @vitest-environment happy-dom
 import { DrmNotice, NOTICE_DELAY } from "@/components/drm-notice";
 import { ToastProvider } from "@/components/ui/toast";
-import { hasDrm } from "@/lib/music-kit/drm";
+import { NO_DRM_TITLE, hasDrm } from "@/lib/music-kit/drm";
 import { act, cleanup, render, screen } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
@@ -46,7 +46,7 @@ describe("DrmNotice", () => {
     act(() => vi.advanceTimersByTime(NOTICE_DELAY));
 
     expect(check).toHaveBeenCalled();
-    expect(screen.queryByText(/cannot play Apple Music/)).toBeNull();
+    expect(screen.queryByText(NO_DRM_TITLE)).toBeNull();
   });
 
   it("waits before it tells a person that the browser gives no DRM", async () => {
@@ -55,11 +55,11 @@ describe("DrmNotice", () => {
     renderNotice();
     await settle();
 
-    expect(screen.queryByText("This browser cannot play Apple Music")).toBeNull();
+    expect(screen.queryByText(NO_DRM_TITLE)).toBeNull();
 
     act(() => vi.advanceTimersByTime(NOTICE_DELAY));
 
-    expect(screen.getByText("This browser cannot play Apple Music")).toBeTruthy();
+    expect(screen.getByText(NO_DRM_TITLE)).toBeTruthy();
     expect(screen.getByText(/DRM/)).toBeTruthy();
   });
 });

@@ -1,0 +1,60 @@
+{
+  "fill-specializations": [
+    {
+      "value": {
+        "automatic-gradient": "display-p3:0.34451,0.09244,0.81863,1.00000"
+      }
+    },
+    {
+      "appearance": "dark",
+      "value": {
+        "automatic-gradient": "display-p3:0.18108,0.08743,0.40625,1.00000"
+      }
+    }
+  ],
+  "groups": [
+    {
+      "blur-material": null,
+      "hidden": false,
+      "layers": [
+        {
+          "blend-mode": "normal",
+          "fill-specializations": [
+            {
+              "value": {
+                "automatic-gradient": "display-p3:0.62891,0.62500,0.89648,1.00000"
+              }
+            },
+            {
+              "appearance": "dark",
+              "value": {
+                "automatic-gradient": "display-p3:0.56763,0.45618,0.88037,1.00000"
+              }
+            }
+          ],
+          "image-name": "music-note 2.svg",
+          "name": "music-note",
+          "position": {
+            "scale": 0.64,
+            "translation-in-points": [35.25414510831047, -15.06647524705113]
+          }
+        }
+      ],
+      "lighting": "individual",
+      "name": "music-note",
+      "shadow": {
+        "kind": "neutral",
+        "opacity": 0.5
+      },
+      "specular": true,
+      "translucency": {
+        "enabled": true,
+        "value": 0.5
+      }
+    }
+  ],
+  "supported-platforms": {
+    "circles": ["watchOS"],
+    "squares": "shared"
+  }
+}

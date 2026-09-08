@@ -90,9 +90,9 @@ export function MusicKitGate({ children }: { children: React.ReactNode }): React
                 >
                   <Card>
                     <CardHeader>
-                      <CardTitle>Sign in to Apple Music</CardTitle>
+                      <CardTitle>Sign in with Apple Music</CardTitle>
                       <CardDescription>
-                        You need an Apple Music subscription to play music and to read your library.
+                        You need an Apple Music subscription to play music from your library.
                       </CardDescription>
                     </CardHeader>
                     <CardPanel className="flex flex-col">
