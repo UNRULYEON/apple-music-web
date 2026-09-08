@@ -49,7 +49,7 @@ function renderGate() {
     ...view,
     gate: () => screen.queryByRole("dialog"),
     spinner: () => screen.queryByRole("status"),
-    signInCard: () => screen.queryByText("Sign in to Apple Music"),
+    signInCard: () => screen.queryByText("Sign in with Apple Music"),
     appIsBlocked: () => Boolean(view.container.firstElementChild?.hasAttribute("inert")),
   };
 }
@@ -80,7 +80,7 @@ describe("MusicKitGate", () => {
 
     const gate = renderGate();
 
-    expect(await screen.findByText("Sign in to Apple Music")).not.toBeNull();
+    expect(await screen.findByText("Sign in with Apple Music")).not.toBeNull();
     await waitFor(() => expect(gate.spinner()).toBeNull());
     expect(gate.appIsBlocked()).toBe(true);
   });
@@ -108,7 +108,7 @@ describe("MusicKitGate", () => {
 
     answer({ isAuthorized: false } as MusicKit.MusicKitInstance);
 
-    expect(await screen.findByText("Sign in to Apple Music")).not.toBeNull();
+    expect(await screen.findByText("Sign in with Apple Music")).not.toBeNull();
   });
 
   it("takes the gate away after a successful sign in", async () => {
@@ -170,7 +170,7 @@ describe("MusicKitGate", () => {
     const music = mockMusic();
 
     renderGate();
-    await screen.findByText("Sign in to Apple Music");
+    await screen.findByText("Sign in with Apple Music");
 
     expect(music.authorize).not.toHaveBeenCalled();
   });
@@ -185,7 +185,7 @@ describe("MusicKitGate", () => {
       await dropToken();
     });
 
-    expect(await screen.findByText("Sign in to Apple Music")).not.toBeNull();
+    expect(await screen.findByText("Sign in with Apple Music")).not.toBeNull();
     expect(gate.appIsBlocked()).toBe(true);
   });
 
@@ -202,7 +202,7 @@ describe("MusicKitGate", () => {
     await act(async () => {
       await dropToken();
     });
-    await screen.findByText("Sign in to Apple Music");
+    await screen.findByText("Sign in with Apple Music");
 
     await act(async () => {
       await restoreToken();

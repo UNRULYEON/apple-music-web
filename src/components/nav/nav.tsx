@@ -88,7 +88,7 @@ export function Nav() {
               "bg-sidebar/75",
               "backdrop-blur-2xl",
               "border border-sidebar-border",
-              "rounded-lg safari:rounded-bl-2xl",
+              "rounded-lg",
             )}
           >
             <div className="flex flex-col grow">

@@ -6,10 +6,10 @@ export interface DrmSupport {
   supported: boolean;
 }
 
-export const NO_DRM_TITLE = "This browser cannot play Apple Music";
+export const NO_DRM_TITLE = "This browser cannot play music from Apple Music";
 
 export const NO_DRM_DESCRIPTION =
-  "To play music from Apple Music, a browser with DRM support is required. Please use a different browser that supports DRM.";
+  "To play music from Apple Music, a browser with DRM support is required. This browser does not support DRM. Please use a different browser that supports DRM.";
 
 export class MissingDrmError extends Error {
   constructor() {

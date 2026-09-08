@@ -1,0 +1,17 @@
+{
+  "id": "/",
+  "name": "Music [dev]",
+  "short_name": "Music [dev]",
+  "description": "Listen to music from Apple Music in your browser.",
+  "categories": ["music", "entertainment"],
+  "start_url": "/",
+  "scope": "/",
+  "orientation": "natural",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#b45309",
+  "icons": [
+    { "src": "/icon-dev-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "/icon-dev-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" }
+  ]
+}
