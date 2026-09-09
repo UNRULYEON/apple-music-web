@@ -4,8 +4,8 @@ import { cn } from "@/lib/utils";
 import { AnimatePresence, motion } from "motion/react";
 import { BottomNav } from "@/components";
 import { Button } from "@/components/ui/button";
-import { MusicNote02Icon } from "@hugeicons/core-free-icons";
-import { HugeiconsIcon } from "@hugeicons/react";
+import { DiscAlbumIcon, MusicNote02Icon } from "@hugeicons/core-free-icons";
+import { HugeiconsIcon, type IconSvgElement } from "@hugeicons/react";
 
 const SIDEBAR_WIDTH = 256;
 const SWIPE_CLOSE_DISTANCE = SIDEBAR_WIDTH * 0.1;
@@ -16,6 +16,7 @@ export function Nav() {
   const { view, open } = useView();
   const isRecentlyPlayed =
     view.name === "home" || (view.name === "list" && view.list === "recently-played");
+  const isAlbums = view.name === "list" && view.list === "albums";
 
   return (
     <div className="flex flex-col">
@@ -92,19 +93,18 @@ export function Nav() {
             )}
           >
             <div className="flex flex-col grow">
-              <Button
-                variant="ghost"
-                className={cn(
-                  "justify-start",
-                  isRecentlyPlayed &&
-                    "bg-sidebar-accent font-medium text-sidebar-accent-foreground",
-                )}
-                aria-current={isRecentlyPlayed ? "page" : undefined}
+              <NavItem
+                icon={MusicNote02Icon}
+                label="Recently played"
+                isCurrent={isRecentlyPlayed}
                 onClick={() => open({ name: "list", list: "recently-played" })}
-              >
-                <HugeiconsIcon icon={MusicNote02Icon} strokeWidth={2} aria-hidden="true" />
-                Recently played
-              </Button>
+              />
+              <NavItem
+                icon={DiscAlbumIcon}
+                label="Albums"
+                isCurrent={isAlbums}
+                onClick={() => open({ name: "list", list: "albums" })}
+              />
             </div>
             <div className="flex flex-col">
               <BottomNav />
@@ -113,5 +113,32 @@ export function Nav() {
         </motion.div>
       </motion.div>
     </div>
+  );
+}
+
+function NavItem({
+  icon,
+  label,
+  isCurrent,
+  onClick,
+}: {
+  icon: IconSvgElement;
+  label: string;
+  isCurrent: boolean;
+  onClick: () => void;
+}) {
+  return (
+    <Button
+      variant="ghost"
+      className={cn(
+        "justify-start",
+        isCurrent && "bg-sidebar-accent font-medium text-sidebar-accent-foreground",
+      )}
+      aria-current={isCurrent ? "page" : undefined}
+      onClick={onClick}
+    >
+      <HugeiconsIcon icon={icon} strokeWidth={2} aria-hidden="true" />
+      {label}
+    </Button>
   );
 }

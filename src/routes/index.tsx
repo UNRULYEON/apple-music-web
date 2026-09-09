@@ -1,33 +1,22 @@
-import { ArtworkImage, DetailsView, ErrorStates, LoadingState } from "@/components";
+import { DetailsView, ErrorStates, LibraryAlbums, LoadingState } from "@/components";
 import { EmptyStates } from "@/components/empty-states";
+import { MediaGrid } from "@/components/media-grid";
 import { useIsHydrated, useSignedInQuery, useView } from "@/hooks";
-import { TRANSITION, TRANSITION_REVEAL } from "@/lib/motion";
 import {
   recentlyPlayedQuery,
   type RecentlyPlayedItem,
   type RecentlyPlayedType,
 } from "@/lib/music-kit/recently-played";
 import { createFileRoute } from "@tanstack/react-router";
-import { AnimatePresence, motion } from "motion/react";
-import { Suspense } from "react";
-
-const ARTWORK_SIZE = 256;
-
-const BLURRED = { opacity: 0, filter: "blur(2px)" };
-const SHARP = { opacity: 1, filter: "blur(0px)" };
+import { AnimatePresence } from "motion/react";
+import { Suspense, useMemo } from "react";
 
 function isAlbum(type: RecentlyPlayedType): boolean {
   return type === "albums" || type === "library-albums";
 }
 
-function Credit({ item }: { item: RecentlyPlayedItem }) {
-  const name = isAlbum(item.type) ? item.artist?.name : item.curator?.name;
-
-  if (!name) {
-    return null;
-  }
-
-  return <div className="truncate text-muted-foreground text-xs select-none">{name}</div>;
+function credit(item: RecentlyPlayedItem): string | undefined {
+  return isAlbum(item.type) ? item.artist?.name : item.curator?.name;
 }
 
 export const Route = createFileRoute("/")({ component: Home });
@@ -56,12 +45,28 @@ function HomeView() {
     return <DetailsView id={view.id} type={view.type} />;
   }
 
+  if (view.name === "list" && view.list === "albums") {
+    return <LibraryAlbums />;
+  }
+
   return <RecentlyPlayed />;
 }
 
 function RecentlyPlayed() {
   const { open } = useView();
   const { data: played, isPending, isError } = useSignedInQuery(recentlyPlayedQuery());
+
+  const tiles = useMemo(
+    () =>
+      played?.map((item) => ({
+        id: item.id,
+        name: item.name,
+        credit: credit(item),
+        artwork: item.artwork,
+        onClick: () => open({ name: "detail", type: item.type, id: item.id }),
+      })) ?? [],
+    [played, open],
+  );
 
   return (
     <div className="flex flex-col grow px-4 pb-4">
@@ -71,34 +76,7 @@ function RecentlyPlayed() {
         {played && played.length === 0 && !isPending && (
           <EmptyStates.NoRecentlyPlayed key="recently-played-empty-state" />
         )}
-        {played && played.length > 0 && !isPending && (
-          <motion.div
-            key="recently-played-list"
-            className="grid grid-cols-[repeat(auto-fill,minmax(min(13rem,calc(50%_-_1rem)),1fr))] gap-4 md:gap-6"
-            initial={BLURRED}
-            animate={SHARP}
-            exit={BLURRED}
-            transition={TRANSITION_REVEAL}
-          >
-            {played.map((item) => (
-              <motion.div
-                key={item.id}
-                className="flex flex-col gap-2 cursor-pointer"
-                whileHover={{ scale: 1.01 }}
-                transition={TRANSITION}
-                onClick={() => open({ name: "detail", type: item.type, id: item.id })}
-              >
-                <ArtworkImage artwork={item.artwork} size={ARTWORK_SIZE} className="rounded-md" />
-                <div className="flex flex-col">
-                  <div className="truncate text-xs text-neutral-600 dark:text-neutral-300 select-none">
-                    {item.name}
-                  </div>
-                  <Credit item={item} />
-                </div>
-              </motion.div>
-            ))}
-          </motion.div>
-        )}
+        {tiles.length > 0 && !isPending && <MediaGrid key="recently-played-list" items={tiles} />}
       </AnimatePresence>
     </div>
   );

@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { fetchAlbum, isAlbumType } from "@/lib/music-kit/album";
+import { fetchAlbum, fetchLibraryAlbums, isAlbumType } from "@/lib/music-kit/album";
 import { getMusicKit } from "@/lib/music-kit/instance";
 import { fetchStorefront } from "@/lib/music-kit/storefront";
 
@@ -23,6 +23,10 @@ function albumResponse(overrides: Record<string, unknown> = {}) {
       ],
     },
   };
+}
+
+function libraryAlbum(id: string) {
+  return { id, type: "library-albums", attributes: { name: `Album ${id}` } };
 }
 
 function song(id: string, overrides: Record<string, unknown> = {}) {
@@ -171,6 +175,56 @@ describe("fetchAlbum", () => {
     music.mockResolvedValue({ data: { data: [] } });
 
     await expect(fetchAlbum("albums", "0")).rejects.toThrow("Apple Music returned no album for 0.");
+  });
+});
+
+describe("fetchLibraryAlbums", () => {
+  it("reads the name, the artist, and the artwork", async () => {
+    music.mockResolvedValueOnce({
+      data: {
+        data: [
+          {
+            id: "l.AbCdEf",
+            attributes: {
+              name: "The record",
+              artistName: "boygenius",
+              artwork: { url: "https://example.com/{w}x{h}bb.jpg", width: 3000, height: 3000 },
+            },
+          },
+        ],
+      },
+    });
+
+    await expect(fetchLibraryAlbums()).resolves.toEqual([
+      {
+        id: "l.AbCdEf",
+        name: "The record",
+        artist: { name: "boygenius" },
+        artwork: { url: "https://example.com/{w}x{h}bb.jpg", width: 3000, height: 3000 },
+      },
+    ]);
+    expect(music).toHaveBeenCalledWith("/v1/me/library/albums", { limit: 100, offset: 0 });
+  });
+
+  it("reads every page until a page is not full", async () => {
+    const full = Array.from({ length: 100 }, (_, index) => libraryAlbum(`l.${index}`));
+    music.mockResolvedValueOnce({
+      data: { data: full, next: "/v1/me/library/albums?offset=100" },
+    });
+    music.mockResolvedValueOnce({ data: { data: [libraryAlbum("l.100")] } });
+
+    const albums = await fetchLibraryAlbums();
+
+    expect(albums).toHaveLength(101);
+    expect(music).toHaveBeenLastCalledWith("/v1/me/library/albums", { limit: 100, offset: 100 });
+  });
+
+  it("drops an album that carries no name", async () => {
+    music.mockResolvedValueOnce({
+      data: { data: [{ id: "l.1", attributes: {} }, libraryAlbum("l.2")] },
+    });
+
+    await expect(fetchLibraryAlbums()).resolves.toMatchObject([{ id: "l.2" }]);
   });
 });
 

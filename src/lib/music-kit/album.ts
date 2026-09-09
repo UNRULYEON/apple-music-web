@@ -1,5 +1,6 @@
 import { getMusicKit } from "@/lib/music-kit/instance";
 import {
+  hasNextPage,
   readArtist,
   readArtwork,
   readItems,
@@ -15,12 +16,21 @@ import { fetchStorefront } from "@/lib/music-kit/storefront";
 
 const TYPES = ["albums", "library-albums"] as const;
 const INCLUDE = "tracks,artists";
+const LIBRARY_PATH = "/v1/me/library/albums";
+const PAGE_SIZE = 100;
 
 export type AlbumType = (typeof TYPES)[number];
 
 export interface AlbumArtist {
   id: string;
   name: string;
+  artwork?: Artwork;
+}
+
+export interface LibraryAlbum {
+  id: string;
+  name: string;
+  artist?: Artist;
   artwork?: Artwork;
 }
 
@@ -62,12 +72,55 @@ export async function fetchAlbum(type: AlbumType, id: string): Promise<Album> {
 
 async function albumPath(type: AlbumType, id: string): Promise<string> {
   if (type === "library-albums") {
-    return `/v1/me/library/albums/${encodeURIComponent(id)}`;
+    return `${LIBRARY_PATH}/${encodeURIComponent(id)}`;
   }
 
   const storefront = await fetchStorefront();
 
   return `/v1/catalog/${storefront.id}/albums/${encodeURIComponent(id)}`;
+}
+
+export async function fetchLibraryAlbums(): Promise<LibraryAlbum[]> {
+  const music = await getMusicKit();
+  const albums: LibraryAlbum[] = [];
+
+  for (let offset = 0; ; offset += PAGE_SIZE) {
+    // oxlint-disable-next-line no-await-in-loop
+    const { data } = await music.api.music(LIBRARY_PATH, { limit: PAGE_SIZE, offset });
+    const items = readItems(data);
+
+    for (const item of items) {
+      const album = readLibraryAlbum(item);
+
+      if (album) {
+        albums.push(album);
+      }
+    }
+
+    if (!hasNextPage(data) || items.length < PAGE_SIZE) {
+      return albums;
+    }
+  }
+}
+
+function readLibraryAlbum(value: unknown): LibraryAlbum | undefined {
+  if (typeof value !== "object" || value === null) {
+    return undefined;
+  }
+
+  const candidate = value as { id?: unknown; attributes?: Record<string, unknown> };
+  const attributes = candidate.attributes;
+
+  if (typeof candidate.id !== "string" || typeof attributes?.name !== "string") {
+    return undefined;
+  }
+
+  return {
+    id: candidate.id,
+    name: attributes.name,
+    artist: readArtist(attributes.artistName),
+    artwork: readArtwork(attributes.artwork),
+  };
 }
 
 function readAlbum(type: AlbumType, value: unknown): Album | undefined {
@@ -126,4 +179,15 @@ function readAlbumArtist(value: unknown): AlbumArtist | undefined {
 
 function readGenres(value: unknown): string[] {
   return Array.isArray(value) ? value.filter((genre) => typeof genre === "string") : [];
+}
+
+export const LIBRARY_ALBUMS_STALE = 5 * 60 * 1000;
+
+// one place for the query, so the view and any early fetch cannot drift apart
+export function libraryAlbumsQuery() {
+  return {
+    queryKey: ["music-kit", "library-albums"],
+    queryFn: fetchLibraryAlbums,
+    staleTime: LIBRARY_ALBUMS_STALE,
+  };
 }
