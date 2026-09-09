@@ -1,6 +1,7 @@
 import { useView } from "@/hooks";
+import { useAuthStatus } from "@/lib/music-kit/auth";
 import { viewKey } from "@/lib/views/view";
-import { createContext, useMemo, useState, type ReactNode } from "react";
+import { createContext, useCallback, useEffect, useMemo, useState, type ReactNode } from "react";
 
 export interface SearchContextType {
   term: string;
@@ -11,18 +12,29 @@ export const SearchContext = createContext<SearchContextType | undefined>(undefi
 
 export function SearchProvider({ children }: { children: ReactNode }) {
   const { view } = useView();
+  const status = useAuthStatus();
   const key = viewKey(view);
 
-  const [term, setTerm] = useState("");
-  const [seen, setSeen] = useState(key);
+  // one search for each screen, so a person who opens an album and comes back finds the
+  // list as they left it. Home and recently played share a name, and so a search too.
+  const [terms, setTerms] = useState<Record<string, string>>({});
 
-  // a search belongs to the screen it was typed on, so another screen starts clean
-  if (seen !== key) {
-    setSeen(key);
-    setTerm("");
-  }
+  // a search belongs to the person who signed in, the way the queue and the cache do
+  useEffect(() => {
+    if (status === "signed-out") {
+      setTerms({});
+    }
+  }, [status]);
 
-  const value = useMemo<SearchContextType>(() => ({ term, setTerm }), [term]);
+  const setTerm = useCallback(
+    (next: string) => setTerms((current) => ({ ...current, [key]: next })),
+    [key],
+  );
+
+  const value = useMemo<SearchContextType>(
+    () => ({ term: terms[key] ?? "", setTerm }),
+    [key, setTerm, terms],
+  );
 
   return <SearchContext.Provider value={value}>{children}</SearchContext.Provider>;
 }

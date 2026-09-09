@@ -1,6 +1,7 @@
 // @vitest-environment happy-dom
 import { SearchProvider } from "@/contexts";
 import { useSearch } from "@/hooks";
+import { setAuthStatus } from "@/lib/music-kit/auth";
 import { act, cleanup, render } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import type { View } from "@/lib/views/view";
@@ -15,6 +16,7 @@ vi.mock("@/hooks/use-view", () => ({
 afterEach(() => {
   cleanup();
   view = { name: "home" };
+  act(() => setAuthStatus("checking"));
   vi.clearAllMocks();
 });
 
@@ -59,6 +61,47 @@ describe("SearchProvider", () => {
 
     view = { name: "list", list: "albums" };
     act(rerender);
+
+    expect(seen.current?.term).toBe("");
+  });
+
+  it("gives the search back when a person comes back to the screen", () => {
+    const { seen, rerender } = renderProvider();
+
+    act(() => seen.current?.setTerm("boygenius"));
+
+    // open an album, then go back
+    view = { name: "detail", type: "albums", id: "a.1" };
+    act(rerender);
+    view = { name: "home" };
+    act(rerender);
+
+    expect(seen.current?.term).toBe("boygenius");
+  });
+
+  it("keeps a search of its own for every screen", () => {
+    const { seen, rerender } = renderProvider();
+
+    act(() => seen.current?.setTerm("boygenius"));
+
+    view = { name: "list", list: "albums" };
+    act(rerender);
+    act(() => seen.current?.setTerm("nirvana"));
+
+    view = { name: "home" };
+    act(rerender);
+    expect(seen.current?.term).toBe("boygenius");
+
+    view = { name: "list", list: "albums" };
+    act(rerender);
+    expect(seen.current?.term).toBe("nirvana");
+  });
+
+  it("lets every search go when a person signs out", () => {
+    const { seen } = renderProvider();
+
+    act(() => seen.current?.setTerm("boygenius"));
+    act(() => setAuthStatus("signed-out"));
 
     expect(seen.current?.term).toBe("");
   });
