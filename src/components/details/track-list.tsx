@@ -164,7 +164,11 @@ export function TrackList({
                       />
                     </motion.span>
                   ) : (
-                    showTrackNumber && (
+                    // the number Apple Music gives the song on its album. A library
+                    // album shows only the songs a person added, which can be some of
+                    // the album, so counting the rows would name them wrongly.
+                    showTrackNumber &&
+                    song.trackNumber !== undefined && (
                       <motion.span
                         key="number"
                         className="col-start-1 row-start-1"
@@ -173,7 +177,7 @@ export function TrackList({
                         exit={hidden}
                         transition={transition}
                       >
-                        {i + 1}
+                        {song.trackNumber}
                       </motion.span>
                     )
                   )}

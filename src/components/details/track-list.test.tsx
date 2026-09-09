@@ -22,10 +22,11 @@ vi.mock("@/lib/music-kit/playback", async (importOriginal) => ({
 
 const ARTWORK = { url: "https://example.test/{w}x{h}{c}.{f}", width: 600, height: 600 };
 
+// three songs a person kept from one album, which is not its first three songs
 const SONGS: Song[] = [
-  { id: "s0", name: "First", artwork: ARTWORK },
-  { id: "s1", name: "Second", artwork: ARTWORK },
-  { id: "s2", name: "Third", artwork: ARTWORK },
+  { id: "s0", name: "First", artwork: ARTWORK, trackNumber: 2 },
+  { id: "s1", name: "Second", artwork: ARTWORK, trackNumber: 5 },
+  { id: "s2", name: "Third", artwork: ARTWORK, trackNumber: 9 },
 ];
 
 let music: FakeMusicKit;
@@ -100,6 +101,25 @@ describe("TrackList", () => {
     );
   });
 
+  // a library album holds the songs a person added, not every song of the album, so
+  // counting the rows would name them wrongly
+  it("names a song by the number Apple Music gives it, not by its place in the list", () => {
+    renderList({ source: ALBUM });
+
+    expect(screen.getByText("2")).toBeTruthy();
+    expect(screen.getByText("5")).toBeTruthy();
+    expect(screen.getByText("9")).toBeTruthy();
+    expect(screen.queryByText("1")).toBeNull();
+    expect(screen.queryByText("3")).toBeNull();
+  });
+
+  it("shows no number for a song Apple Music gives none", () => {
+    renderList({ source: ALBUM, songs: [{ id: "s0", name: "First", artwork: ARTWORK }] });
+
+    expect(screen.getByText("First")).toBeTruthy();
+    expect(screen.queryByText("1")).toBeNull();
+  });
+
   it("marks the song that plays from this album", async () => {
     renderList({ source: ALBUM });
 
@@ -109,9 +129,9 @@ describe("TrackList", () => {
     nowPlaying(1);
 
     expect(screen.getByLabelText("Playing now")).toBeTruthy();
-    expect(screen.getByText("1")).toBeTruthy();
+    expect(screen.getByText("2")).toBeTruthy();
     // the number leaves with the swap, so it stays until the motion ends
-    await waitFor(() => expect(screen.queryByText("2")).toBeNull());
+    await waitFor(() => expect(screen.queryByText("5")).toBeNull());
   });
 
   it("marks the song that plays over its artwork, when the list shows artwork", async () => {
@@ -134,12 +154,12 @@ describe("TrackList", () => {
     await waitFor(() => expect(vi.mocked(playSongs)).toHaveBeenCalled());
 
     nowPlaying(1);
-    await waitFor(() => expect(screen.queryByText("2")).toBeNull());
+    await waitFor(() => expect(screen.queryByText("5")).toBeNull());
 
     nowPlaying(2);
 
-    await waitFor(() => expect(screen.getByText("2")).toBeTruthy());
-    await waitFor(() => expect(screen.queryByText("3")).toBeNull());
+    await waitFor(() => expect(screen.getByText("5")).toBeTruthy());
+    await waitFor(() => expect(screen.queryByText("9")).toBeNull());
   });
 
   it("moves the mark on the artwork to the song that plays next", async () => {
