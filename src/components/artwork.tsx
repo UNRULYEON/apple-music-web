@@ -5,11 +5,16 @@ import { cn } from "@/lib/utils";
 import { MusicNote02Icon } from "@hugeicons/core-free-icons";
 import { HugeiconsIcon } from "@hugeicons/react";
 import { AnimatePresence, motion, useReducedMotion } from "motion/react";
-import { useCallback, useState } from "react";
+import { useCallback, useRef, useState } from "react";
 
 const BOX = "relative aspect-square w-full overflow-hidden select-none";
 const BLURRED = { opacity: 0, filter: "blur(2px)" };
 const SHARP = { opacity: 1, filter: "blur(0px)" };
+
+// the pictures a person has already been shown. A long list keeps only the rows in
+// sight, so a row that comes back would reveal its picture again, which reads as the
+// list flashing while it scrolls.
+const shown = new Set<string>();
 
 export function ArtworkImage({
   artwork,
@@ -24,17 +29,39 @@ export function ArtworkImage({
   iconSize?: number;
   className?: string;
 }) {
-  const [status, setStatus] = useState<"loading" | "loaded" | "error">("loading");
+  const url = artwork ? artworkUrl(artwork, size) : undefined;
+  const wasShown = useRef(url !== undefined && shown.has(url)).current;
+  const [status, setStatus] = useState<"loading" | "loaded" | "error">(
+    wasShown ? "loaded" : "loading",
+  );
   const reduceMotion = useReducedMotion();
 
-  // a cached image can finish before react attaches onLoad
-  const settle = useCallback((img: HTMLImageElement | null) => {
-    if (img?.complete) {
-      setStatus(img.naturalWidth > 0 ? "loaded" : "error");
+  const load = useCallback(() => {
+    if (url) {
+      shown.add(url);
     }
-  }, []);
 
-  if (!artwork || status === "error") {
+    setStatus("loaded");
+  }, [url]);
+
+  // a cached image can finish before react attaches onLoad
+  const settle = useCallback(
+    (img: HTMLImageElement | null) => {
+      if (!img?.complete) {
+        return;
+      }
+
+      if (img.naturalWidth > 0) {
+        load();
+        return;
+      }
+
+      setStatus("error");
+    },
+    [load],
+  );
+
+  if (!artwork || !url || status === "error") {
     return (
       <div className={cn(BOX, "flex items-center justify-center bg-muted", className)}>
         <HugeiconsIcon icon={MusicNote02Icon} size={iconSize} className="text-muted-foreground" />
@@ -61,13 +88,13 @@ export function ArtworkImage({
       </AnimatePresence>
       <motion.img
         ref={settle}
-        src={artworkUrl(artwork, size)}
+        src={url}
         alt={alt}
         draggable={false}
-        onLoad={() => setStatus("loaded")}
+        onLoad={load}
         onError={() => setStatus("error")}
         className="absolute inset-0 size-full object-cover outline-neutral-50/50 outline-1 -outline-offset-1 dark:outline-neutral-900/50"
-        initial={BLURRED}
+        initial={wasShown ? SHARP : BLURRED}
         animate={isLoaded ? SHARP : BLURRED}
         transition={transition}
       />

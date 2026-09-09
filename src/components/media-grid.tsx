@@ -20,7 +20,9 @@ const WIDE_GRID = 768;
 const GAP = 16;
 const GAP_WIDE = 24;
 const TEXT_BLOCK = 40;
-const OVERSCAN = 2;
+// rows held ready above and below the window, so a fast scroll finds them drawn
+// already instead of leaving a gap while it catches up
+const OVERSCAN = 4;
 const VIEWPORT = '[data-slot="scroll-area-viewport"]';
 
 const BLURRED = { opacity: 0, filter: "blur(2px)" };
