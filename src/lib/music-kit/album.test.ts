@@ -1,5 +1,13 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { fetchAlbum, fetchLibraryAlbums, isAlbumType } from "@/lib/music-kit/album";
+import {
+  fetchAlbum,
+  fetchLibraryAlbums,
+  fetchLibraryAlbumSongs,
+  isAlbumInLibrary,
+  isAlbumType,
+  markInLibrary,
+} from "@/lib/music-kit/album";
+import type { Song } from "@/lib/music-kit/track";
 import { getMusicKit } from "@/lib/music-kit/instance";
 import { fetchStorefront } from "@/lib/music-kit/storefront";
 
@@ -178,6 +186,108 @@ describe("fetchAlbum", () => {
   });
 });
 
+function libraryResponse(songs: unknown[]) {
+  return {
+    data: {
+      data: [
+        {
+          id: "l.AbCdEf",
+          type: "library-albums",
+          attributes: { name: "The record", trackCount: 12 },
+          relationships: { tracks: { data: songs } },
+        },
+      ],
+    },
+  };
+}
+
+function catalogResponse(songs: unknown[]) {
+  return {
+    data: {
+      data: [
+        {
+          id: "1440857781",
+          type: "albums",
+          attributes: { name: "The record", trackCount: 12 },
+          relationships: { tracks: { data: songs } },
+        },
+      ],
+    },
+  };
+}
+
+describe("fetchAlbum for a library album", () => {
+  it("asks the catalog album for the whole track list", async () => {
+    music.mockResolvedValueOnce(libraryResponse([])).mockResolvedValueOnce(catalogResponse([]));
+
+    await fetchAlbum("library-albums", "l.AbCdEf");
+
+    expect(music).toHaveBeenCalledWith("/v1/me/library/albums/l.AbCdEf/catalog", {
+      include: "tracks,artists",
+    });
+  });
+
+  it("shows the whole catalog track list, and keeps the library id", async () => {
+    music
+      .mockResolvedValueOnce(libraryResponse([song("i.one", { playParams: { catalogId: "1" } })]))
+      .mockResolvedValueOnce(catalogResponse([song("1"), song("2")]));
+
+    const album = await fetchAlbum("library-albums", "l.AbCdEf");
+
+    expect(album.id).toBe("l.AbCdEf");
+    expect(album.type).toBe("library-albums");
+    expect(album.songs.map((track) => track.id)).toEqual(["1", "2"]);
+  });
+
+  it("keeps the library songs when the album has no catalog", async () => {
+    music
+      .mockResolvedValueOnce(libraryResponse([song("i.one")]))
+      .mockRejectedValueOnce(new Error("404"));
+
+    const album = await fetchAlbum("library-albums", "l.AbCdEf");
+
+    expect(album.songs.map((track) => track.id)).toEqual(["i.one"]);
+  });
+});
+
+describe("fetchLibraryAlbumSongs", () => {
+  it("reads the songs the library holds", async () => {
+    music.mockResolvedValue(libraryResponse([song("i.one"), song("i.two")]));
+
+    await expect(fetchLibraryAlbumSongs("l.AbCdEf")).resolves.toMatchObject([
+      { id: "i.one" },
+      { id: "i.two" },
+    ]);
+    expect(music).toHaveBeenCalledWith("/v1/me/library/albums/l.AbCdEf", { include: "tracks" });
+  });
+
+  it("gives no songs when the album is gone", async () => {
+    music.mockResolvedValue({ data: { data: [] } });
+
+    await expect(fetchLibraryAlbumSongs("l.AbCdEf")).resolves.toEqual([]);
+  });
+});
+
+describe("markInLibrary", () => {
+  it("marks a catalog song that the library holds under another id", () => {
+    const songs = markInLibrary(
+      [
+        { id: "1", name: "One", playId: "1" },
+        { id: "2", name: "Two", playId: "2" },
+      ],
+      [{ id: "i.one", name: "One", playId: "1" }],
+    );
+
+    expect(songs.map((track) => track.inLibrary)).toEqual([true, false]);
+  });
+
+  it("leaves the songs alone while the library is unknown", () => {
+    const songs: Song[] = [{ id: "1", name: "One" }];
+
+    expect(markInLibrary(songs, undefined)).toBe(songs);
+  });
+});
+
 describe("fetchLibraryAlbums", () => {
   it("reads the name, the artist, and the artwork", async () => {
     music.mockResolvedValueOnce({
@@ -228,6 +338,34 @@ describe("fetchLibraryAlbums", () => {
   });
 });
 
+describe("readLibraryAlbum", () => {
+  it("keeps the catalog album a library album stands for", async () => {
+    music.mockResolvedValue({
+      data: {
+        data: [
+          {
+            id: "l.1",
+            type: "library-albums",
+            attributes: { name: "The record", playParams: { id: "l.1", catalogId: "1440857781" } },
+          },
+        ],
+      },
+    });
+
+    await expect(fetchLibraryAlbums()).resolves.toMatchObject([{ catalogId: "1440857781" }]);
+  });
+
+  it("leaves the catalog album out when the library album has none", async () => {
+    music.mockResolvedValue({
+      data: { data: [{ id: "l.1", type: "library-albums", attributes: { name: "Home tape" } }] },
+    });
+
+    const [album] = await fetchLibraryAlbums();
+
+    expect(album?.catalogId).toBeUndefined();
+  });
+});
+
 describe("isAlbumType", () => {
   it.each(["albums", "library-albums"])("knows %s", (type) => {
     expect(isAlbumType(type)).toBe(true);
@@ -239,5 +377,27 @@ describe("isAlbumType", () => {
     ["no value", undefined],
   ])("does not take %s for an album", (_name, value) => {
     expect(isAlbumType(value)).toBe(false);
+  });
+});
+
+function songsOf(songs: { inLibrary?: boolean }[]): Song[] {
+  return songs.map((track, i) => ({ id: `s${i}`, name: `Song ${i}`, ...track }));
+}
+
+describe("isAlbumInLibrary", () => {
+  it("takes an album whose songs are all in the library", () => {
+    expect(isAlbumInLibrary(songsOf([{ inLibrary: true }, { inLibrary: true }]), 2)).toBe(true);
+  });
+
+  it("does not take an album with a song outside the library", () => {
+    expect(isAlbumInLibrary(songsOf([{ inLibrary: true }, {}]), 2)).toBe(false);
+  });
+
+  it("does not take an album that shows fewer songs than it has", () => {
+    expect(isAlbumInLibrary(songsOf([{ inLibrary: true }]), 12)).toBe(false);
+  });
+
+  it("does not take an album with no songs", () => {
+    expect(isAlbumInLibrary(songsOf([]))).toBe(false);
   });
 });

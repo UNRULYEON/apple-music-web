@@ -11,12 +11,13 @@ import {
   type Artist,
   type Artwork,
 } from "@/lib/music-kit/resource";
-import { readSong, type Song } from "@/lib/music-kit/track";
+import { isSameSong, readSong, type Song } from "@/lib/music-kit/track";
 import { fetchStorefront } from "@/lib/music-kit/storefront";
 
 const TYPES = ["albums", "library-albums"] as const;
 const INCLUDE = "tracks,artists";
 const LIBRARY_PATH = "/v1/me/library/albums";
+const CATALOG_PATH = "/catalog";
 const PAGE_SIZE = 100;
 
 export type AlbumType = (typeof TYPES)[number];
@@ -32,6 +33,7 @@ export interface LibraryAlbum {
   name: string;
   artist?: Artist;
   artwork?: Artwork;
+  catalogId?: string;
 }
 
 export interface Album {
@@ -56,6 +58,30 @@ export function isAlbumType(value: unknown): value is AlbumType {
   return TYPES.includes(value as AlbumType);
 }
 
+// the album counts as added only when the library holds every song on it. A part of an
+// album marks its songs one by one instead.
+export function isAlbumInLibrary(songs: Song[], trackCount?: number): boolean {
+  return (
+    songs.length > 0 &&
+    songs.length === (trackCount ?? songs.length) &&
+    songs.every((song) => song.inLibrary === true)
+  );
+}
+
+// which songs of an album the library holds. The library song and the catalog song of
+// the same music carry different ids, so the two lists join on the play id.
+export function markInLibrary(songs: Song[], added?: Song[]): Song[] {
+  if (!added) {
+    return songs;
+  }
+
+  // oxlint-disable-next-line no-map-spread -- an album holds few songs
+  return songs.map((song) => ({
+    ...song,
+    inLibrary: added.some((track) => isSameSong(track, song)),
+  }));
+}
+
 export async function fetchAlbum(type: AlbumType, id: string): Promise<Album> {
   const path = await albumPath(type, id);
   const music = await getMusicKit();
@@ -67,7 +93,59 @@ export async function fetchAlbum(type: AlbumType, id: string): Promise<Album> {
     throw new Error(`Apple Music returned no album for ${id}.`);
   }
 
-  return album;
+  return type === "library-albums" ? withCatalogSongs(album, id) : album;
+}
+
+// a library album holds only the songs a person added. The catalog album gives the whole
+// track list, so the view can show which songs are missing from the library.
+async function withCatalogSongs(album: Album, id: string): Promise<Album> {
+  const catalog = await fetchCatalogAlbum(id);
+
+  if (!catalog || catalog.songs.length === 0) {
+    return album;
+  }
+
+  return {
+    ...catalog,
+    // the library ids, so the queue and the screen keep the name they opened under
+    id: album.id,
+    type: album.type,
+    artwork: album.artwork ?? catalog.artwork,
+  };
+}
+
+// the songs the library holds from one library album
+export async function fetchLibraryAlbumSongs(id: string): Promise<Song[]> {
+  const music = await getMusicKit();
+  const path = `${LIBRARY_PATH}/${encodeURIComponent(id)}`;
+  const { data } = await music.api.music(path, { include: "tracks" });
+  const [first] = readItems(data);
+
+  return readAlbum("library-albums", first)?.songs ?? [];
+}
+
+export function libraryAlbumSongsQuery(id?: string) {
+  return {
+    queryKey: ["music-kit", "library-album-songs", id],
+    queryFn: () => fetchLibraryAlbumSongs(id ?? ""),
+    enabled: id !== undefined,
+    staleTime: LIBRARY_ALBUMS_STALE,
+  };
+}
+
+async function fetchCatalogAlbum(id: string): Promise<Album | undefined> {
+  const music = await getMusicKit();
+  const path = `${LIBRARY_PATH}/${encodeURIComponent(id)}${CATALOG_PATH}`;
+
+  try {
+    const { data } = await music.api.music(path, { include: INCLUDE });
+    const [first] = readItems(data);
+
+    return readAlbum("albums", first);
+  } catch {
+    // music a person uploaded has no album in the catalog
+    return undefined;
+  }
 }
 
 async function albumPath(type: AlbumType, id: string): Promise<string> {
@@ -120,7 +198,17 @@ function readLibraryAlbum(value: unknown): LibraryAlbum | undefined {
     name: attributes.name,
     artist: readArtist(attributes.artistName),
     artwork: readArtwork(attributes.artwork),
+    catalogId: readCatalogId(attributes.playParams),
   };
+}
+
+// the album in the catalog that a library album stands for
+function readCatalogId(value: unknown): string | undefined {
+  if (typeof value !== "object" || value === null) {
+    return undefined;
+  }
+
+  return readText((value as { catalogId?: unknown }).catalogId);
 }
 
 function readAlbum(type: AlbumType, value: unknown): Album | undefined {

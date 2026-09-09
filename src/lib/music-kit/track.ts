@@ -18,6 +18,7 @@ export interface Song {
   contentRating?: string;
   previewUrl?: string;
   playId?: string;
+  inLibrary?: boolean;
 }
 
 // a song in the library and the song the player queues from the catalog
@@ -57,6 +58,7 @@ export function readSong(value: unknown): Song | undefined {
     contentRating: readText(attributes.contentRating),
     previewUrl: readPreviewUrl(attributes.previews),
     playId: readPlayId(attributes.playParams),
+    inLibrary: attributes.inLibrary === true ? true : undefined,
   };
 }
 

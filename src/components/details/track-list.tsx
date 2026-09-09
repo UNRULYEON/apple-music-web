@@ -1,4 +1,5 @@
 import { ArtworkImage } from "@/components/artwork";
+import { LibraryMark } from "@/components/details/library-mark";
 import { usePlayer } from "@/hooks";
 import { songDuration } from "@/lib/format";
 import { TRANSITION } from "@/lib/motion";
@@ -59,17 +60,21 @@ export function TrackList({
   primaryArtist,
   showTrackNumber = true,
   showArtwork = false,
+  showLibraryMark = true,
   source,
 }: {
   songs: Song[];
   primaryArtist?: string;
   showTrackNumber?: boolean;
   showArtwork?: boolean;
+  showLibraryMark?: boolean;
   source?: QueueSource;
 }) {
   const { play, source: playingFrom, nowPlaying } = usePlayer();
   const reduceMotion = useReducedMotion();
   const playsThisList = isSameSource(source, playingFrom);
+  // the column stays on every row, or the durations of the marked rows move
+  const marksLibrary = showLibraryMark && songs.some((song) => song.inLibrary);
   const list = useRef<HTMLDivElement>(null);
   const hasShown = useRef(false);
 
@@ -164,9 +169,9 @@ export function TrackList({
                       />
                     </motion.span>
                   ) : (
-                    // the number Apple Music gives the song on its album. A library
-                    // album shows only the songs a person added, which can be some of
-                    // the album, so counting the rows would name them wrongly.
+                    // the number Apple Music gives the song on its album, because a
+                    // list can leave songs out and counting the rows would name the
+                    // rest wrongly
                     showTrackNumber &&
                     song.trackNumber !== undefined && (
                       <motion.span
@@ -190,6 +195,11 @@ export function TrackList({
                 {song.artist?.name !== primaryArtist ? song.artist?.name : ""}
               </span>
             </div>
+            {marksLibrary && (
+              <span className="grid w-4 shrink-0 place-items-center text-neutral-600 dark:text-neutral-400">
+                {song.inLibrary && <LibraryMark label="This song is in your library" />}
+              </span>
+            )}
             <div className="text-sm tabular-nums text-neutral-600 dark:text-neutral-400">
               {song.durationInMillis ? songDuration(song.durationInMillis) : null}
             </div>
