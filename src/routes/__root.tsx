@@ -129,7 +129,12 @@ function RootDocument({ children }: { children: React.ReactNode }) {
                           <SidebarToggle />
                           <BackButton />
                         </div>
-                        <ScrollArea className="flex-1 min-w-0" fill scrollFade>
+                        <ScrollArea
+                          className="flex-1 min-w-0"
+                          fill
+                          scrollFade
+                          scrollRestorationId="main"
+                        >
                           <MainContent>{children}</MainContent>
                         </ScrollArea>
                         <Player />

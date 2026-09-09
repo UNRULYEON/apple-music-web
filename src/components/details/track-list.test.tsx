@@ -1,5 +1,5 @@
 // @vitest-environment happy-dom
-import { TrackList } from "@/components/details/track-list";
+import { showPlayingSong, TrackList } from "@/components/details/track-list";
 import { PlayerProvider } from "@/contexts";
 import {
   fakeMusicKit,
@@ -195,5 +195,89 @@ describe("TrackList", () => {
 
     expect(within(screen.getByTestId("there")).getByLabelText("Playing now")).toBeTruthy();
     expect(within(screen.getByTestId("here")).queryByLabelText("Playing now")).toBeNull();
+  });
+});
+
+function box(top: number, bottom: number): DOMRect {
+  return { top, bottom, left: 0, right: 0, width: 0, height: bottom - top } as DOMRect;
+}
+
+const ROW_HEIGHT = 56;
+const VIEW_HEIGHT = 300;
+
+// a list of rows below a header, with the window looking at it from `scrolled`
+function listInViewport({
+  rowIndex,
+  listTop,
+  scrolled,
+}: {
+  rowIndex: number;
+  listTop: number;
+  scrolled: number;
+}) {
+  const viewport = document.createElement("div");
+  viewport.dataset.slot = "scroll-area-viewport";
+  viewport.scrollTop = scrolled;
+  viewport.scrollTo = vi.fn();
+  viewport.getBoundingClientRect = () => box(0, VIEW_HEIGHT);
+
+  const list = document.createElement("div");
+  list.getBoundingClientRect = () => box(listTop - scrolled, listTop - scrolled + 20 * ROW_HEIGHT);
+
+  const row = document.createElement("button");
+  row.dataset.playing = "";
+  const rowTop = listTop + rowIndex * ROW_HEIGHT - scrolled;
+  row.getBoundingClientRect = () => box(rowTop, rowTop + ROW_HEIGHT);
+
+  list.append(row);
+  viewport.append(list);
+  document.body.append(viewport);
+
+  return { list, viewport };
+}
+
+describe("showPlayingSong", () => {
+  it("brings a song far down the list to the middle", () => {
+    const { list, viewport } = listInViewport({ rowIndex: 39, listTop: 800, scrolled: 0 });
+
+    showPlayingSong(list);
+
+    // 800 + 39 * 56 + 28 - 150
+    expect(viewport.scrollTo).toHaveBeenCalledWith({ top: 2862 });
+  });
+
+  it("goes no further than the first song when the window is short", () => {
+    const { list, viewport } = listInViewport({ rowIndex: 0, listTop: 800, scrolled: 0 });
+
+    showPlayingSong(list);
+
+    expect(viewport.scrollTo).toHaveBeenCalledWith({ top: 800 });
+  });
+
+  it("opens at the top when the song fits on screen below the header", () => {
+    const { list, viewport } = listInViewport({ rowIndex: 1, listTop: 100, scrolled: 0 });
+
+    showPlayingSong(list);
+
+    expect(viewport.scrollTo).toHaveBeenCalledWith({ top: 0 });
+  });
+
+  // the view before it was left far down the page, and none of that may show here
+  it("reads the same place whatever the view before it was left at", () => {
+    const deep = listInViewport({ rowIndex: 39, listTop: 800, scrolled: 4000 });
+    const top = listInViewport({ rowIndex: 39, listTop: 800, scrolled: 0 });
+
+    showPlayingSong(deep.list);
+    showPlayingSong(top.list);
+
+    expect(deep.viewport.scrollTo).toHaveBeenCalledWith({ top: 2862 });
+    expect(top.viewport.scrollTo).toHaveBeenCalledWith({ top: 2862 });
+  });
+
+  it("does nothing when no song of the list is playing", () => {
+    const list = document.createElement("div");
+    document.body.append(list);
+
+    expect(() => showPlayingSong(list)).not.toThrow();
   });
 });

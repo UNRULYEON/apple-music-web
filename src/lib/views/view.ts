@@ -19,6 +19,21 @@ export type View =
 
 export const HOME: View = { name: "home" };
 
+// one name for the screen a view shows, so the place a person left it can be kept
+// under it. Home and recently played show the same screen, so they share a name.
+export function viewKey(view: View): string {
+  switch (view.name) {
+    case "home":
+      return "list:recently-played";
+    case "list":
+      return `list:${view.list}`;
+    case "detail":
+      return `detail:${view.type}:${view.id}`;
+    default:
+      return view.name;
+  }
+}
+
 export function isTopLevel(view: View): boolean {
   return view.name === "home" || view.name === "list";
 }

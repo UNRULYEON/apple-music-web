@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { isTopLevel, readView } from "@/lib/views/view";
+import { isTopLevel, readView, viewKey } from "@/lib/views/view";
 
 describe("readView", () => {
   it("reads the home view", () => {
@@ -59,5 +59,36 @@ describe("isTopLevel", () => {
     ["settings", { name: "settings" } as const],
   ])("says %s sits on top of a destination", (_name, view) => {
     expect(isTopLevel(view)).toBe(false);
+  });
+});
+
+describe("viewKey", () => {
+  it.each([
+    ["a list", { name: "list", list: "albums" } as const, "list:albums"],
+    [
+      "a destination",
+      { name: "detail", type: "library-albums", id: "l.1" } as const,
+      "detail:library-albums:l.1",
+    ],
+    ["the settings", { name: "settings" } as const, "settings"],
+  ])("names %s", (_name, view, key) => {
+    expect(viewKey(view)).toBe(key);
+  });
+
+  // both show the recently played songs, so both keep one place
+  it("gives home and recently played one name", () => {
+    expect(viewKey({ name: "home" })).toBe(viewKey({ name: "list", list: "recently-played" }));
+  });
+
+  it("keeps the lists apart", () => {
+    expect(viewKey({ name: "list", list: "albums" })).not.toBe(
+      viewKey({ name: "list", list: "recently-played" }),
+    );
+  });
+
+  it("keeps two destinations of one type apart", () => {
+    expect(viewKey({ name: "detail", type: "albums", id: "1" })).not.toBe(
+      viewKey({ name: "detail", type: "albums", id: "2" }),
+    );
   });
 });

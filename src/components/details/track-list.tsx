@@ -7,8 +7,12 @@ import { isSameSong, type Song } from "@/lib/music-kit/track";
 import { PlayIcon } from "@hugeicons/core-free-icons";
 import { HugeiconsIcon } from "@hugeicons/react";
 import { AnimatePresence, motion, useReducedMotion } from "motion/react";
+import { useEffect, useRef } from "react";
 
 const ARTWORK_SIZE = 48;
+
+const VIEWPORT = '[data-slot="scroll-area-viewport"]';
+const PLAYING_ROW = "[data-playing]";
 
 const NO_TRANSITION = { duration: 0 } as const;
 
@@ -17,6 +21,38 @@ const MARK_SHOWN = { opacity: 1, scale: 1, filter: "blur(0px)" };
 
 const FADED = { opacity: 0 };
 const OPAQUE = { opacity: 1 };
+
+// where the list opens. The song a person is on comes to the middle, but never further
+// up than the first song, so a short window does not carry a song near the start to the
+// end of the list. A song that fits on screen with the list at its top leaves the view
+// there, so the header above it stays in sight.
+export function showPlayingSong(list: HTMLElement): void {
+  const row = list.querySelector(PLAYING_ROW);
+  const viewport = list.closest(VIEWPORT);
+
+  if (!row || !viewport) {
+    return;
+  }
+
+  const rowBox = row.getBoundingClientRect();
+  const listBox = list.getBoundingClientRect();
+  const viewBox = viewport.getBoundingClientRect();
+
+  // the whole view, not the part of it on screen, so nothing here reads the scroll the
+  // view before it was left at
+  const scrolled = viewport.scrollTop;
+  const rowTop = scrolled + rowBox.top - viewBox.top;
+  const listTop = scrolled + listBox.top - viewBox.top;
+
+  if (rowTop + rowBox.height <= viewBox.height) {
+    viewport.scrollTo({ top: 0 });
+    return;
+  }
+
+  const middle = rowTop - (viewBox.height - rowBox.height) / 2;
+
+  viewport.scrollTo({ top: Math.max(middle, listTop) });
+}
 
 export function TrackList({
   songs,
@@ -34,13 +70,32 @@ export function TrackList({
   const { play, source: playingFrom, nowPlaying } = usePlayer();
   const reduceMotion = useReducedMotion();
   const playsThisList = isSameSource(source, playingFrom);
+  const list = useRef<HTMLDivElement>(null);
+  const hasShown = useRef(false);
+
+  useEffect(() => {
+    const node = list.current;
+
+    if (!playsThisList || hasShown.current || !node) {
+      return;
+    }
+
+    // after the paint, so the router has put the view where it opens first. The mark
+    // is set here, not before, so a frame that is dropped is asked for again.
+    const frame = requestAnimationFrame(() => {
+      hasShown.current = true;
+      showPlayingSong(node);
+    });
+
+    return () => cancelAnimationFrame(frame);
+  }, [playsThisList]);
 
   const hidden = reduceMotion ? FADED : MARK_HIDDEN;
   const shown = reduceMotion ? OPAQUE : MARK_SHOWN;
   const transition = reduceMotion ? NO_TRANSITION : TRANSITION;
 
   return (
-    <div className="flex flex-col">
+    <div ref={list} className="flex flex-col">
       {songs.map((song, i) => {
         const playsNow = playsThisList && isSameSong(nowPlaying, song);
 
@@ -48,6 +103,7 @@ export function TrackList({
           <button
             key={`${song.id}-${i}`}
             type="button"
+            data-playing={playsNow ? "" : undefined}
             onClick={() => play(songs, { startAt: i, from: source })}
             className="flex items-center text-left gap-4 px-2 sm:px-4 h-14 sm:h-16 hover:bg-neutral-600/15 hover:dark:bg-neutral-400/15 cursor-pointer rounded-xl backdrop-blur-3xl"
           >
