@@ -8,14 +8,18 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 const PEEK = '[data-slot="sidebar-peek"]';
 
-beforeEach(() => {
-  vi.useFakeTimers();
+function stubViewport({ mobile }: { mobile: boolean }) {
   vi.stubGlobal("matchMedia", (query: string) => ({
-    matches: query.includes("min-width"),
+    matches: mobile ? query.includes("max-width") : query.includes("min-width"),
     media: query,
     addEventListener() {},
     removeEventListener() {},
   }));
+}
+
+beforeEach(() => {
+  vi.useFakeTimers();
+  stubViewport({ mobile: false });
 });
 
 afterEach(() => {
@@ -63,6 +67,17 @@ describe("SidebarToggle", () => {
     runCloseAnimation();
 
     expect(document.querySelector(PEEK)).not.toBeNull();
+  });
+
+  it("keeps the peek zone away on a small screen", () => {
+    stubViewport({ mobile: true });
+
+    const seen = renderToggle();
+
+    act(() => seen.current?.setOpen(false));
+    runCloseAnimation();
+
+    expect(document.querySelector(PEEK)).toBeNull();
   });
 
   it("takes the peek zone away again when the sidebar opens", () => {

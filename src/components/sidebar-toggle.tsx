@@ -16,8 +16,9 @@ export function SidebarToggle() {
   const [canPeek, setCanPeek] = useState(false);
 
   // the hot zone must not catch the cursor while the sidebar is still sliding shut
+  // it is a pointer affordance, thus it must not show on a small screen
   useEffect(() => {
-    if (showsOpen) {
+    if (showsOpen || showsMobile) {
       setCanPeek(false);
       return;
     }
@@ -25,7 +26,7 @@ export function SidebarToggle() {
     const timer = setTimeout(() => setCanPeek(true), TRANSITION_SLOW.duration * 1000);
 
     return () => clearTimeout(timer);
-  }, [showsOpen]);
+  }, [showsOpen, showsMobile]);
 
   return (
     <div>
@@ -37,7 +38,7 @@ export function SidebarToggle() {
             "h-12",
             "hover:cursor-pointer",
             isPeeking ? "w-48" : "w-12",
-            showsMobile ? "z-0" : "z-50",
+            "z-50",
           )}
           onClick={() => setOpen((v) => !v)}
           onHoverStart={() => setPeeking(true)}

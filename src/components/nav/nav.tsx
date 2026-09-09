@@ -44,8 +44,8 @@ export function Nav() {
           width: isOpen ? SIDEBAR_WIDTH : 0,
         }}
         transition={TRANSITION_SLOW}
-        onHoverStart={() => setPeeking(true)}
-        onHoverEnd={() => setPeeking(false)}
+        onHoverStart={isMobile ? undefined : () => setPeeking(true)}
+        onHoverEnd={isMobile ? undefined : () => setPeeking(false)}
       >
         <motion.div
           className="absolute bottom-2 flex flex-col p-2 pb-0 pr-0 z-50"
