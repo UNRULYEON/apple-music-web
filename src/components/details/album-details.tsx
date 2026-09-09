@@ -21,7 +21,13 @@ export function AlbumDetails({ type, id }: { type: AlbumType; id: string }) {
             artwork={album.artwork}
             name={album.name}
             subtitle={album.artist?.name}
-            meta={album.releaseDate && <span>{releaseYear(album.releaseDate)}</span>}
+            meta={
+              <div className="flex gap-1">
+                {album.genres.length > 0 && <span>{album.genres.join(", ")}</span>}
+                {album.genres.length > 0 && album.releaseDate && <span>•</span>}
+                {album.releaseDate && <span>{releaseYear(album.releaseDate)}</span>}
+              </div>
+            }
             songs={album.songs}
             source={{ type, id }}
           />
