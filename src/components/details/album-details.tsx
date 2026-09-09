@@ -22,10 +22,10 @@ export function AlbumDetails({ type, id }: { type: AlbumType; id: string }) {
             name={album.name}
             subtitle={album.artist?.name}
             meta={
-              <div className="flex gap-1">
-                {album.genres.length > 0 && <span>{album.genres.join(", ")}</span>}
-                {album.genres.length > 0 && album.releaseDate && <span>•</span>}
-                {album.releaseDate && <span>{releaseYear(album.releaseDate)}</span>}
+              <div className="flex-inline gap-1">
+                {album.genres.length > 0 && album.genres.join(", ")}
+                {album.genres.length > 0 && album.releaseDate && " • "}
+                {album.releaseDate && releaseYear(album.releaseDate)}
               </div>
             }
             songs={album.songs}
