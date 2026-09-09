@@ -17,6 +17,7 @@ import { preHydrationScript as sidebarPreHydrationScript } from "@/lib/sidebar-s
 import { preHydrationScript as themePreHydrationScript } from "@/lib/theme-storage";
 import { preHydrationScript as nodeShimPreHydrationScript } from "@/lib/music-kit/node-shim";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { SCROLL_AREA_ID } from "@/lib/scroll-area";
 import { ToastProvider } from "@/components/ui/toast";
 import { hotkeysDevtoolsPlugin } from "@tanstack/react-hotkeys-devtools";
 
@@ -133,7 +134,7 @@ function RootDocument({ children }: { children: React.ReactNode }) {
                           className="flex-1 min-w-0"
                           fill
                           scrollFade
-                          scrollRestorationId="main"
+                          scrollRestorationId={SCROLL_AREA_ID}
                         >
                           <MainContent>{children}</MainContent>
                         </ScrollArea>

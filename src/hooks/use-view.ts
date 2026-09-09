@@ -1,5 +1,6 @@
 import { useIsHydrated } from "@/hooks/use-is-hydrated";
-import { HOME, isTopLevel, readView, type View } from "@/lib/views/view";
+import { startAtTop } from "@/lib/scroll-area";
+import { HOME, isTopLevel, readView, viewKey, type View } from "@/lib/views/view";
 import { useCanGoBack, useLocation, useNavigate, useRouter } from "@tanstack/react-router";
 import { useCallback } from "react";
 
@@ -19,15 +20,27 @@ export function useView(): ViewNavigation {
 
   const view = isHydrated ? (stored ?? HOME) : HOME;
 
+  // the name of the screen, not the view itself, so opening keeps the same identity
+  // from one render to the next
+  const key = viewKey(view);
+
   const open = useCallback(
     (next: View) => {
+      // asking again for the screen a person is already on takes them to its start, the
+      // way a tab bar does. A step in the history that leads nowhere would give them
+      // nothing but a back button that does not go back.
+      if (viewKey(next) === key) {
+        startAtTop();
+        return;
+      }
+
       void navigate({
         to: ".",
         replace: isTopLevel(next),
         state: (previous) => ({ ...previous, view: next }),
       });
     },
-    [navigate],
+    [key, navigate],
   );
 
   const close = useCallback(() => {

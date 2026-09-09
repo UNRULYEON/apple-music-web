@@ -3,7 +3,7 @@ import { Player } from "@/components/player";
 import { PlayerProvider } from "@/contexts";
 import { usePlayer } from "@/hooks";
 import { setAuthStatus } from "@/lib/music-kit/auth";
-import { HOME, type View } from "@/lib/views/view";
+import { HOME } from "@/lib/views/view";
 import type { Song } from "@/lib/music-kit/track";
 import {
   fakeMusicKit,
@@ -22,12 +22,12 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 vi.mock("@/lib/music-kit/instance", () => ({ getMusicKit: vi.fn() }));
 
-// the player sits in the shell, above the router, so the tests give it the view alone
+// the player sits in the shell, above the router, so the tests give it the view alone.
+// Not opening the screen a person is already on is useView's own rule.
 const openView = vi.fn();
-let currentView: View = HOME;
 
 vi.mock("@/hooks/use-view", () => ({
-  useView: () => ({ view: currentView, open: openView, close: vi.fn(), canClose: false }),
+  useView: () => ({ view: HOME, open: openView, close: vi.fn(), canClose: false }),
 }));
 vi.mock("@/lib/music-kit/drm", async (importOriginal) => ({
   ...(await importOriginal<typeof import("@/lib/music-kit/drm")>()),
@@ -89,7 +89,6 @@ function setViewport(mobile: boolean) {
 let music: FakeMusicKit;
 
 beforeEach(() => {
-  currentView = HOME;
   resetPlayerState();
   resetPlaybackTime();
   setViewport(false);
@@ -564,18 +563,5 @@ describe("Player", () => {
 
     expect(screen.queryByLabelText("Show the album")).toBeNull();
     expect(screen.queryByRole("button", { name: "First" })).toBeNull();
-  });
-
-  it("stays where it is when the album is already open", async () => {
-    currentView = { name: "detail", type: "albums", id: "a1" };
-
-    const seen = await renderPlayer();
-
-    act(() => seen.current?.play(SONGS, { from: { type: "albums", id: "a1" } }));
-    loadQueue([item("1", "First")]);
-
-    fireEvent.click(await screen.findByLabelText("Show the album"));
-
-    expect(openView).not.toHaveBeenCalled();
   });
 });

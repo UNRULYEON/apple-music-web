@@ -3,10 +3,9 @@ import { setupRouterSsrQueryIntegration } from "@tanstack/react-router-ssr-query
 import { routeTree } from "./routeTree.gen";
 import { getContext } from "./integrations/tanstack-query/root-provider";
 
+import { SCROLL_AREA } from "@/lib/scroll-area";
 import { HOME, isTopLevel, readView, viewKey, type View } from "@/lib/views/view";
 import type { ParsedLocation } from "@tanstack/react-router";
-
-const SCROLL_AREA = '[data-scroll-restoration-id="main"]';
 
 // a top level view keeps the place a person left it, so moving between recently played
 // and albums arrives back where they were. A destination opens at its start, under the

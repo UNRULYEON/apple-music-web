@@ -105,24 +105,18 @@ function PlayingFrom({
   children: ReactNode;
 }) {
   const source = usePlayingFrom();
-  const { view, open } = useView();
+  const { open } = useView();
 
   if (!source) {
     return <div className={className}>{children}</div>;
   }
-
-  const isShown = view.name === "detail" && view.type === source.type && view.id === source.id;
 
   return (
     <button
       type="button"
       aria-label={label}
       className={cn(className, hoverClassName, "cursor-pointer rounded-sm text-left", FOCUS_RING)}
-      onClick={() => {
-        if (!isShown) {
-          open({ name: "detail", type: source.type, id: source.id });
-        }
-      }}
+      onClick={() => open({ name: "detail", type: source.type, id: source.id })}
     >
       {children}
     </button>
