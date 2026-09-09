@@ -47,7 +47,7 @@ export function Nav() {
         onHoverEnd={() => setPeeking(false)}
       >
         <motion.div
-          className="absolute flex flex-col h-[-webkit-fill-available] p-2 safari:pb-0 pr-0 z-50"
+          className="absolute bottom-2 flex flex-col p-2 pb-0 pr-0 z-50"
           data-slot="nav-panel-inner"
           suppressHydrationWarning
           style={{ touchAction: "none" }}
