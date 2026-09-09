@@ -1,5 +1,10 @@
-import { chunk, columnCount, gapFor, sameMetrics } from "@/components/media-grid";
-import { describe, expect, it } from "vitest";
+// @vitest-environment happy-dom
+import { chunk, columnCount, gapFor, MediaGrid, sameMetrics } from "@/components/media-grid";
+import { cleanup, render } from "@testing-library/react";
+import { createRef } from "react";
+import { afterEach, describe, expect, it, vi } from "vitest";
+
+afterEach(cleanup);
 
 // what the css grid drew: repeat(auto-fill, minmax(min(13rem, 50% - 1rem), 1fr))
 function cssColumns(width: number): number {
@@ -64,5 +69,29 @@ describe("sameMetrics", () => {
     expect(sameMetrics({ width: 800, scrollMargin: 0 }, { width: 800, scrollMargin: 48 })).toBe(
       false,
     );
+  });
+});
+
+describe("the node the grid hands on", () => {
+  // AnimatePresence needs it to take the grid out of the flow while it leaves. Without
+  // it the grid keeps its space and the state that follows sits under it.
+  it("goes to a ref object", () => {
+    const ref = createRef<HTMLDivElement>();
+
+    render(<MediaGrid items={[]} ref={ref} />);
+
+    expect(ref.current).toBeInstanceOf(HTMLDivElement);
+  });
+
+  it("goes to a ref function", () => {
+    const ref = vi.fn();
+
+    render(<MediaGrid items={[]} ref={ref} />);
+
+    expect(ref).toHaveBeenCalledWith(expect.any(HTMLDivElement));
+  });
+
+  it("draws the grid when nothing holds it", () => {
+    expect(() => render(<MediaGrid items={[]} />)).not.toThrow();
   });
 });

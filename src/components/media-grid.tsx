@@ -11,6 +11,7 @@ import {
   useRef,
   useState,
   type Dispatch,
+  type Ref,
   type SetStateAction,
 } from "react";
 
@@ -93,15 +94,27 @@ function updateMetrics(
   setMetrics((current) => (sameMetrics(current, next) ? current : next));
 }
 
-export function MediaGrid({ items }: { items: MediaTileItem[] }) {
+export function MediaGrid({ items, ref }: { items: MediaTileItem[]; ref?: Ref<HTMLDivElement> }) {
   const container = useRef<HTMLDivElement | null>(null);
   const [viewport, setViewport] = useState<HTMLElement | null>(null);
   const [{ width, scrollMargin }, setMetrics] = useState<Metrics>({ width: 0, scrollMargin: 0 });
 
-  const attach = useCallback((node: HTMLDivElement | null) => {
-    container.current = node;
-    setViewport(node?.closest<HTMLElement>(VIEWPORT) ?? null);
-  }, []);
+  const attach = useCallback(
+    (node: HTMLDivElement | null) => {
+      container.current = node;
+      setViewport(node?.closest<HTMLElement>(VIEWPORT) ?? null);
+
+      // AnimatePresence takes the grid out of the flow while it leaves, but only when it
+      // can reach this node. Without it the grid keeps its space and the state that
+      // follows sits under the grid until the grid has gone.
+      if (typeof ref === "function") {
+        ref(node);
+      } else if (ref) {
+        ref.current = node;
+      }
+    },
+    [ref],
+  );
 
   useLayoutEffect(() => {
     const node = container.current;
