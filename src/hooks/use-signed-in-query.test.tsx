@@ -19,15 +19,15 @@ afterEach(() => {
   vi.clearAllMocks();
 });
 
-function Probe() {
-  useSignedInQuery({ queryKey: ["music-kit", "album"], queryFn });
+function Probe({ enabled }: { enabled?: boolean }) {
+  useSignedInQuery({ queryKey: ["music-kit", "album"], queryFn, enabled });
   return null;
 }
 
-function renderProbe() {
+function renderProbe(enabled?: boolean) {
   render(
     <QueryClientProvider client={client}>
-      <Probe />
+      <Probe enabled={enabled} />
     </QueryClientProvider>,
   );
 }
@@ -59,5 +59,13 @@ describe("useSignedInQuery", () => {
     act(() => setAuthStatus("signed-in"));
 
     await waitFor(() => expect(queryFn).toHaveBeenCalledOnce());
+  });
+
+  it("leaves a query that asks to wait alone", async () => {
+    act(() => setAuthStatus("signed-in"));
+
+    renderProbe(false);
+
+    await waitFor(() => expect(queryFn).not.toHaveBeenCalled());
   });
 });

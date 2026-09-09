@@ -154,6 +154,18 @@ export async function stopPlayback(): Promise<void> {
 // jumping straight to a position drops whatever is loading, so a second tap never
 // waits for the song a first tap started. The stop first is what lets the song being
 // left behind take its key session down cleanly, instead of FairPlay finding it gone.
+// the player belongs to the person who signed in: the sound stops, the queue goes, and
+// the way it was being played goes back to where it started
+export async function clearPlayback(): Promise<void> {
+  const music = await getMusicKit();
+
+  music.stop();
+  music.shuffleMode = MusicKit.PlayerShuffleMode.off;
+  music.repeatMode = toMusicKitRepeat("off");
+
+  await music.clearQueue();
+}
+
 export async function changeToIndex(index: number): Promise<void> {
   const music = await getMusicKit();
 

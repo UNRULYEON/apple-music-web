@@ -1,6 +1,10 @@
 // @vitest-environment happy-dom
 import { Player } from "@/components/player";
 import { PlayerProvider } from "@/contexts";
+import { usePlayer } from "@/hooks";
+import { setAuthStatus } from "@/lib/music-kit/auth";
+import { HOME, type View } from "@/lib/views/view";
+import type { Song } from "@/lib/music-kit/track";
 import {
   fakeMusicKit,
   PLAYBACK_STATES,
@@ -12,14 +16,28 @@ import {
 import { getMusicKit } from "@/lib/music-kit/instance";
 import { resetPlaybackTime } from "@/lib/music-kit/playback-time";
 import { resetPlayerState } from "@/lib/music-kit/player-state";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { act, cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 vi.mock("@/lib/music-kit/instance", () => ({ getMusicKit: vi.fn() }));
+
+// the player sits in the shell, above the router, so the tests give it the view alone
+const openView = vi.fn();
+let currentView: View = HOME;
+
+vi.mock("@/hooks/use-view", () => ({
+  useView: () => ({ view: currentView, open: openView, close: vi.fn(), canClose: false }),
+}));
 vi.mock("@/lib/music-kit/drm", async (importOriginal) => ({
   ...(await importOriginal<typeof import("@/lib/music-kit/drm")>()),
   hasDrm: vi.fn(async () => true),
 }));
+
+const SONGS: Song[] = [
+  { id: "i.one", name: "One", playId: "111" },
+  { id: "i.two", name: "Two", playId: "222" },
+];
 
 const ARTWORK = '[data-slot="player-artwork"]';
 const ELAPSED = '[data-slot="player-elapsed"]';
@@ -71,6 +89,7 @@ function setViewport(mobile: boolean) {
 let music: FakeMusicKit;
 
 beforeEach(() => {
+  currentView = HOME;
   resetPlayerState();
   resetPlaybackTime();
   setViewport(false);
@@ -81,18 +100,33 @@ beforeEach(() => {
 
 afterEach(() => {
   cleanup();
+  act(() => setAuthStatus("checking"));
   vi.clearAllMocks();
   vi.unstubAllGlobals();
 });
 
 async function renderPlayer() {
+  const seen: { current?: ReturnType<typeof usePlayer> } = {};
+
+  function Probe() {
+    seen.current = usePlayer();
+    return null;
+  }
+
+  const client = new QueryClient({ defaultOptions: { queries: { retry: false } } });
+
   render(
-    <PlayerProvider>
-      <Player />
-    </PlayerProvider>,
+    <QueryClientProvider client={client}>
+      <PlayerProvider>
+        <Player />
+        <Probe />
+      </PlayerProvider>
+    </QueryClientProvider>,
   );
 
   await waitFor(() => expect(music.addEventListener).toHaveBeenCalled());
+
+  return seen;
 }
 
 function loadQueue(items: MusicKit.MediaItem[], index = 0) {
@@ -478,5 +512,70 @@ describe("Player", () => {
     expect(screen.getByText("First")).toBeTruthy();
     expect(screen.getByText("The Band")).toBeTruthy();
     expect(screen.queryByLabelText("Seek")).toBeNull();
+  });
+
+  it("goes away when a person signs out", async () => {
+    await renderPlayer();
+
+    loadQueue([item("1", "First")]);
+    expect(screen.getByText("First")).toBeTruthy();
+
+    act(() => setAuthStatus("signed-out"));
+
+    await waitFor(() => expect(screen.queryByText("First")).toBeNull());
+    expect(screen.queryByLabelText("Play")).toBeNull();
+  });
+
+  it("opens the album the queue was built from when a person taps the artwork", async () => {
+    const seen = await renderPlayer();
+
+    act(() => seen.current?.play(SONGS, { from: { type: "albums", id: "a1" } }));
+    loadQueue([item("1", "First")]);
+
+    fireEvent.click(await screen.findByLabelText("Show the album"));
+
+    expect(openView).toHaveBeenCalledWith({ name: "detail", type: "albums", id: "a1" });
+  });
+
+  it("opens it from the song title as well", async () => {
+    const seen = await renderPlayer();
+
+    act(() => seen.current?.play(SONGS, { from: { type: "library-playlists", id: "p.1" } }));
+    loadQueue([item("1", "First")]);
+
+    fireEvent.click(await screen.findByRole("button", { name: "First" }));
+
+    expect(openView).toHaveBeenCalledWith({ name: "detail", type: "library-playlists", id: "p.1" });
+  });
+
+  it("names the playlist a queue came from", async () => {
+    const seen = await renderPlayer();
+
+    act(() => seen.current?.play(SONGS, { from: { type: "playlists", id: "p.1" } }));
+    loadQueue([item("1", "First")]);
+
+    expect(await screen.findByLabelText("Show the playlist")).toBeTruthy();
+  });
+
+  it("leaves the song as plain text when the queue came from nowhere", async () => {
+    await renderPlayer();
+
+    loadQueue([item("1", "First")]);
+
+    expect(screen.queryByLabelText("Show the album")).toBeNull();
+    expect(screen.queryByRole("button", { name: "First" })).toBeNull();
+  });
+
+  it("stays where it is when the album is already open", async () => {
+    currentView = { name: "detail", type: "albums", id: "a1" };
+
+    const seen = await renderPlayer();
+
+    act(() => seen.current?.play(SONGS, { from: { type: "albums", id: "a1" } }));
+    loadQueue([item("1", "First")]);
+
+    fireEvent.click(await screen.findByLabelText("Show the album"));
+
+    expect(openView).not.toHaveBeenCalled();
   });
 });

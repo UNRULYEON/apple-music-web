@@ -41,6 +41,7 @@ export function fakeMusicKit() {
     repeatMode: REPEAT_MODES.none,
     volume: 1,
     setQueue: vi.fn().mockResolvedValue(undefined),
+    clearQueue: vi.fn().mockResolvedValue(undefined),
     playNext: vi.fn().mockResolvedValue(undefined),
     playLater: vi.fn().mockResolvedValue(undefined),
     play: vi.fn().mockResolvedValue(undefined),

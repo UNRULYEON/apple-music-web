@@ -87,6 +87,7 @@ declare namespace MusicKit {
     authorize(): Promise<string>;
     unauthorize(): Promise<void>;
     setQueue(options: QueueOptions): Promise<Queue | undefined>;
+    clearQueue(): Promise<void>;
     playNext(options: QueueOptions): Promise<void>;
     playLater(options: QueueOptions): Promise<void>;
     play(): Promise<void>;

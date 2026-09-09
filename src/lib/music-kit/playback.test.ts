@@ -8,6 +8,7 @@ import {
 import { hasDrm, MissingDrmError } from "@/lib/music-kit/drm";
 import { getMusicKit } from "@/lib/music-kit/instance";
 import {
+  clearPlayback,
   describeError,
   pausePlayback,
   playSongs,
@@ -276,5 +277,19 @@ describe("a browser without DRM", () => {
 
   it("says what is wrong and what a person can do", async () => {
     await expect(playSongs(SONGS)).rejects.toThrow(/DRM/);
+  });
+});
+
+describe("clearPlayback", () => {
+  it("stops the sound, lets the queue go, and puts shuffle and repeat back", async () => {
+    music.shuffleMode = SHUFFLE_MODES.songs;
+    music.repeatMode = REPEAT_MODES.all;
+
+    await clearPlayback();
+
+    expect(music.stop).toHaveBeenCalledOnce();
+    expect(music.clearQueue).toHaveBeenCalledOnce();
+    expect(music.shuffleMode).toBe(SHUFFLE_MODES.off);
+    expect(music.repeatMode).toBe(REPEAT_MODES.none);
   });
 });

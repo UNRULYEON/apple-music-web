@@ -14,7 +14,7 @@ import { hasDrm } from "@/lib/music-kit/drm";
 import { getMusicKit } from "@/lib/music-kit/instance";
 import { resetPlaybackTime } from "@/lib/music-kit/playback-time";
 import { resetPlayerState } from "@/lib/music-kit/player-state";
-import { readStoredQueue, writeStoredQueue } from "@/lib/now-playing-storage";
+import { readStoredQueue, writeStoredQueue, type StoredQueue } from "@/lib/now-playing-storage";
 import { setAuthStatus } from "@/lib/music-kit/auth";
 import type { Song } from "@/lib/music-kit/track";
 import { act, cleanup, render, waitFor } from "@testing-library/react";
@@ -391,6 +391,52 @@ describe("PlayerProvider", () => {
     expect(seen.current?.isPlaying).toBe(false);
     expect(seen.current?.isLoading).toBe(false);
     await waitFor(() => expect(seen.current?.source).toEqual({ type: "albums", id: "a1" }));
+  });
+
+  it("brings the album back when the player already holds the queue", async () => {
+    writeStoredQueue({ songs: ["111", "222"], index: 1, source: { type: "albums", id: "a1" } });
+
+    const seen = await renderProvider();
+
+    music.queue.items = [songItem("111", "One"), songItem("222", "Two")];
+    music.nowPlayingItemIndex = 1;
+    act(() => music.emit("queueItemsDidChange", music.queue.items));
+    act(() => setAuthStatus("signed-in"));
+
+    await waitFor(() => expect(seen.current?.source).toEqual({ type: "albums", id: "a1" }));
+    expect(music.setQueue).not.toHaveBeenCalled();
+  });
+
+  it("does not rub out the album a person left behind with a queue that arrives early", async () => {
+    const stored: StoredQueue = {
+      songs: ["111", "222"],
+      index: 1,
+      source: { type: "albums", id: "a1" },
+    };
+    writeStoredQueue(stored);
+
+    await renderProvider();
+
+    music.queue.items = [songItem("111", "One"), songItem("222", "Two")];
+    music.nowPlayingItemIndex = 1;
+    act(() => music.emit("queueItemsDidChange", music.queue.items));
+
+    expect(readStoredQueue()).toEqual(stored);
+  });
+
+  it("lets the player go when a person signs out", async () => {
+    const seen = await renderProvider();
+
+    act(() => seen.current?.play(SONGS, { startAt: 0, from: { type: "albums", id: "a1" } }));
+    await waitFor(() => expect(seen.current?.source).toBeDefined());
+
+    act(() => setAuthStatus("signed-out"));
+
+    await waitFor(() => expect(music.clearQueue).toHaveBeenCalled());
+    expect(music.stop).toHaveBeenCalled();
+    expect(music.shuffleMode).toBe(SHUFFLE_MODES.off);
+    expect(music.repeatMode).toBe(REPEAT_MODES.none);
+    expect(seen.current?.source).toBeUndefined();
   });
 
   it("leaves the queue alone while nobody is signed in", async () => {

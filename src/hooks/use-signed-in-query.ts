@@ -7,7 +7,7 @@ import {
 } from "@tanstack/react-query";
 
 // every answer comes from the Apple Music session, so no query starts before a person
-// is signed in
+// is signed in. A query that asks to wait still waits.
 export function useSignedInQuery<
   TQueryFnData,
   TError = Error,
@@ -16,5 +16,5 @@ export function useSignedInQuery<
 >(options: UseQueryOptions<TQueryFnData, TError, TData, TQueryKey>): UseQueryResult<TData, TError> {
   const status = useAuthStatus();
 
-  return useQuery({ ...options, enabled: status === "signed-in" });
+  return useQuery({ ...options, enabled: status === "signed-in" && options.enabled !== false });
 }

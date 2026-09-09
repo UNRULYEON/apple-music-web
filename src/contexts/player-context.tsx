@@ -2,6 +2,7 @@ import { useAuthStatus } from "@/lib/music-kit/auth";
 import { reportPlaybackProblem } from "@/lib/player/report";
 import {
   changeToIndex,
+  clearPlayback,
   pausePlayback,
   playSongs,
   queueLast,
@@ -114,17 +115,18 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
   }, [index, wanted]);
 
   // the queue a person left behind comes back as it was, at the same song and from the
-  // same album or playlist, but with nothing playing. It happens once, and only while
+  // same album or playlist, but with nothing playing. The songs come back only while
   // the player holds nothing, so it never takes a song away from a person who is
-  // quicker than the sign in.
-  const hasRestored = useRef(false);
+  // quicker than the sign in. The album or the playlist comes back either way, so a
+  // player that already holds the queue still knows where the songs came from.
+  const [isRestored, setRestored] = useState(false);
 
   useEffect(() => {
-    if (status !== "signed-in" || hasRestored.current || queue.length > 0) {
+    if (status !== "signed-in" || isRestored) {
       return;
     }
 
-    hasRestored.current = true;
+    setRestored(true);
 
     const stored = readStoredQueue();
 
@@ -134,21 +136,43 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
 
     setSource(stored.source);
 
+    if (queue.length > 0) {
+      return;
+    }
+
     void queueWithoutPlaying(stored.songs, stored.index).catch(() => {
       setSource(undefined);
       forgetStoredQueue();
     });
-  }, [queue.length, status]);
+  }, [isRestored, queue.length, status]);
 
-  // what the player holds is kept for the next time. An empty player writes nothing,
-  // so what a person left behind stays until they sign out.
+  // nothing of the player is left behind for the next person at this browser. The queue
+  // and the way it was played go with the session, and the bar goes with them.
   useEffect(() => {
-    if (queue.length === 0) {
+    if (status !== "signed-out") {
+      return;
+    }
+
+    setSource(undefined);
+    setWanted(undefined);
+    setWantsSound(false);
+    setRestored(false);
+    startsNoMore();
+
+    void clearPlayback().catch(() => undefined);
+  }, [startsNoMore, status]);
+
+  // what the player holds is kept for the next time. An empty player writes nothing, so
+  // what a person left behind stays until they sign out. A queue with no album or
+  // playlist writes nothing before the stored one has come back either, so a queue that
+  // arrives early cannot rub out the album or the playlist a person left behind.
+  useEffect(() => {
+    if (queue.length === 0 || (!isRestored && !source)) {
       return;
     }
 
     writeStoredQueue({ songs: queue.map((song) => song.playId ?? song.id), index, source });
-  }, [index, queue, source]);
+  }, [index, isRestored, queue, source]);
 
   useEffect(() => () => clearTimeout(timer.current), []);
 

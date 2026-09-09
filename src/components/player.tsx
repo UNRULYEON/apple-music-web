@@ -1,5 +1,9 @@
-import { useIsMobile, usePlayer } from "@/hooks";
+import { useIsMobile, usePlayer, useSignedInQuery, useView } from "@/hooks";
+import { useAuthStatus } from "@/lib/music-kit/auth";
 import { TRANSITION, TRANSITION_REVEAL, TRANSITION_SWAP } from "@/lib/motion";
+import type { QueueSource } from "@/lib/music-kit/playback";
+import { isPlaylistType } from "@/lib/music-kit/playlists";
+import { songSourceQuery } from "@/lib/music-kit/song-source";
 import type { RepeatMode } from "@/lib/music-kit/player-state";
 import { cn } from "@/lib/utils";
 import {
@@ -15,6 +19,7 @@ import {
 } from "@hugeicons/core-free-icons";
 import { HugeiconsIcon } from "@hugeicons/react";
 import { AnimatePresence, motion, useReducedMotion } from "motion/react";
+import type { ReactNode } from "react";
 import { ArtworkImage } from "./artwork";
 import { PlayerProgress } from "./player-progress";
 import { PlayerVolume } from "./player-volume";
@@ -59,11 +64,70 @@ const GROUP_BEFORE_END = { ...GROUP_EXPANDED, marginInlineEnd: BAR_GAP };
 const FADED = { opacity: 0 };
 const OPAQUE = { opacity: 1 };
 
+const FOCUS_RING =
+  "outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1 focus-visible:ring-offset-background";
+
 const REPEAT_LABELS: Record<RepeatMode, string> = {
   off: "Repeat off",
   queue: "Repeat the queue",
   song: "Repeat the song",
 };
+
+// the album or the playlist the queue was built from. A queue with none of its own,
+// such as one kept before the app held on to it, falls back to the album the song is on.
+function usePlayingFrom(): QueueSource | undefined {
+  const { source, nowPlaying } = usePlayer();
+  const song = nowPlaying?.playId ?? nowPlaying?.id;
+  const { data: found } = useSignedInQuery(songSourceQuery(source ? undefined : song));
+
+  return source ?? found ?? undefined;
+}
+
+function sourceLabel(source?: QueueSource): string | undefined {
+  if (!source) {
+    return undefined;
+  }
+
+  return isPlaylistType(source.type) ? "Show the playlist" : "Show the album";
+}
+
+// opens the album or the playlist the queue was built from. A queue with no source,
+// such as one built before the app kept it, stays as plain text.
+function PlayingFrom({
+  className,
+  hoverClassName,
+  label,
+  children,
+}: {
+  className?: string;
+  hoverClassName?: string;
+  label?: string;
+  children: ReactNode;
+}) {
+  const source = usePlayingFrom();
+  const { view, open } = useView();
+
+  if (!source) {
+    return <div className={className}>{children}</div>;
+  }
+
+  const isShown = view.name === "detail" && view.type === source.type && view.id === source.id;
+
+  return (
+    <button
+      type="button"
+      aria-label={label}
+      className={cn(className, hoverClassName, "cursor-pointer rounded-sm text-left", FOCUS_RING)}
+      onClick={() => {
+        if (!isShown) {
+          open({ name: "detail", type: source.type, id: source.id });
+        }
+      }}
+    >
+      {children}
+    </button>
+  );
+}
 
 function PlayButton({ size = "icon" }: { size?: "icon" | "icon-lg" }) {
   const { isPlaying, isLoading, toggle } = usePlayer();
@@ -115,8 +179,14 @@ function NextButton({ size = "icon-xs" }: { size?: "icon-xs" | "icon-lg" }) {
 export function Player() {
   const { nowPlaying, isShuffled, repeat, canSkipPrevious, toggleShuffle, cycleRepeat, previous } =
     usePlayer();
+  const source = usePlayingFrom();
+  const status = useAuthStatus();
   const prefersReducedMotion = useReducedMotion();
   const isMobile = useIsMobile();
+
+  // the bar belongs to the person who signed in, so it goes with them and does not wait
+  // for MusicKit to let the queue go
+  const isShown = Boolean(nowPlaying) && status !== "signed-out";
 
   const hidden = prefersReducedMotion ? FADED : HIDDEN;
   const shown = prefersReducedMotion ? OPAQUE : SHOWN;
@@ -132,7 +202,7 @@ export function Player() {
 
   return (
     <AnimatePresence>
-      {nowPlaying && (
+      {nowPlaying && isShown && (
         <div
           key="player"
           className="absolute inset-x-0 bottom-0 flex justify-center p-2 pointer-events-none"
@@ -218,7 +288,11 @@ export function Player() {
                 <div
                   className={cn("flex items-center gap-2 pt-2 min-w-0", isMobile ? "pb-2" : "pb-0")}
                 >
-                  <div className="relative size-8 shrink-0">
+                  <PlayingFrom
+                    className="relative size-8 shrink-0"
+                    hoverClassName="transition-transform hover:scale-105"
+                    label={sourceLabel(source)}
+                  >
                     <AnimatePresence initial={false}>
                       <motion.div
                         key={nowPlaying.artwork?.url ?? "no-artwork"}
@@ -237,10 +311,10 @@ export function Player() {
                         />
                       </motion.div>
                     </AnimatePresence>
-                  </div>
+                  </PlayingFrom>
 
                   <div className="flex flex-col grow min-w-0">
-                    <div className="relative min-w-0">
+                    <PlayingFrom className="relative min-w-0" hoverClassName="hover:underline">
                       <AnimatePresence mode="popLayout" initial={false}>
                         <motion.span
                           key={nowPlaying.name}
@@ -253,7 +327,7 @@ export function Player() {
                           {nowPlaying.name}
                         </motion.span>
                       </AnimatePresence>
-                    </div>
+                    </PlayingFrom>
                     <div className="relative min-w-0">
                       <AnimatePresence mode="popLayout" initial={false}>
                         <motion.span
