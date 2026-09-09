@@ -92,7 +92,7 @@ export function Nav() {
               "rounded-lg",
             )}
           >
-            <div className="flex flex-col grow">
+            <div className="flex flex-col grow gap-1">
               <NavItem
                 icon={MusicNote02Icon}
                 label="Recently played"
