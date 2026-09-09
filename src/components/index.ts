@@ -12,3 +12,4 @@ export { DrmNotice } from "./drm-notice";
 export { MainContent } from "./main-content";
 export { Player, PLAYER_SPACE } from "./player";
 export { PlayerVolume } from "./player-volume";
+export { SearchInput } from "./search-input";

@@ -28,6 +28,15 @@ export function viewKey(view: View): string {
   }
 }
 
+// the screens that show a list a person can narrow. Home and recently played show the
+// same list, so a search typed on one carries over to the other.
+export function canSearch(view: View): boolean {
+  return (
+    view.name === "home" ||
+    (view.name === "list" && (view.list === "recently-played" || view.list === "albums"))
+  );
+}
+
 export function isTopLevel(view: View): boolean {
   return view.name === "home" || view.name === "list";
 }

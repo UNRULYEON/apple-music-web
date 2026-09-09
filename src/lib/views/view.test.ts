@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { isTopLevel, readView, viewKey } from "@/lib/views/view";
+import { canSearch, isTopLevel, readView, viewKey } from "@/lib/views/view";
 
 describe("readView", () => {
   it("reads the home view", () => {
@@ -92,5 +92,23 @@ describe("viewKey", () => {
     expect(viewKey({ name: "detail", type: "albums", id: "1" })).not.toBe(
       viewKey({ name: "detail", type: "albums", id: "2" }),
     );
+  });
+});
+
+describe("canSearch", () => {
+  it.each([
+    ["home", { name: "home" } as const],
+    ["recently played", { name: "list", list: "recently-played" } as const],
+    ["albums", { name: "list", list: "albums" } as const],
+  ])("gives a search box to %s", (_name, view) => {
+    expect(canSearch(view)).toBe(true);
+  });
+
+  it.each([
+    ["settings", { name: "settings" } as const],
+    ["songs", { name: "list", list: "songs" } as const],
+    ["an album", { name: "detail", type: "albums", id: "a.1" } as const],
+  ])("gives no search box to %s", (_name, view) => {
+    expect(canSearch(view)).toBe(false);
   });
 });

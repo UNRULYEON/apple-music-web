@@ -1,12 +1,13 @@
 import { DetailsView, ErrorStates, LibraryAlbums, LoadingState } from "@/components";
 import { EmptyStates } from "@/components/empty-states";
 import { MediaGrid } from "@/components/media-grid";
-import { useIsHydrated, usePlayer, useSignedInQuery, useView } from "@/hooks";
+import { useIsHydrated, usePlayer, useSearch, useSignedInQuery, useView } from "@/hooks";
 import {
   recentlyPlayedQuery,
   type RecentlyPlayedItem,
   type RecentlyPlayedType,
 } from "@/lib/music-kit/recently-played";
+import { matchesSearch } from "@/lib/search";
 import { createFileRoute } from "@tanstack/react-router";
 import { AnimatePresence } from "motion/react";
 import { Suspense, useMemo } from "react";
@@ -55,22 +56,25 @@ function HomeView() {
 function RecentlyPlayed() {
   const { open } = useView();
   const { playStation } = usePlayer();
+  const { term } = useSearch();
   const { data: played, isPending, isError } = useSignedInQuery(recentlyPlayedQuery());
 
   const tiles = useMemo(
     () =>
-      played?.map((item) => ({
-        id: item.id,
-        name: item.name,
-        credit: credit(item),
-        artwork: item.artwork,
-        // a station has nothing to show, so it plays where a person taps it
-        onClick: () =>
-          item.type === "stations"
-            ? playStation(item.id)
-            : open({ name: "detail", type: item.type, id: item.id }),
-      })) ?? [],
-    [played, open, playStation],
+      played
+        ?.filter((item) => matchesSearch(term, item.name, item.artist?.name, item.curator?.name))
+        .map((item) => ({
+          id: item.id,
+          name: item.name,
+          credit: credit(item),
+          artwork: item.artwork,
+          // a station has nothing to show, so it plays where a person taps it
+          onClick: () =>
+            item.type === "stations"
+              ? playStation(item.id)
+              : open({ name: "detail", type: item.type, id: item.id }),
+        })) ?? [],
+    [played, open, playStation, term],
   );
 
   return (
@@ -80,6 +84,9 @@ function RecentlyPlayed() {
         {isError && !isPending && <ErrorStates.RecentlyPlayed key="recently-played-error-state" />}
         {played && played.length === 0 && !isPending && (
           <EmptyStates.NoRecentlyPlayed key="recently-played-empty-state" />
+        )}
+        {played && played.length > 0 && tiles.length === 0 && !isPending && (
+          <EmptyStates.NoMatches key="recently-played-no-matches-state" />
         )}
         {tiles.length > 0 && !isPending && <MediaGrid key="recently-played-list" items={tiles} />}
       </AnimatePresence>

@@ -11,8 +11,22 @@ import appCss from "../styles.css?url";
 
 import type { QueryClient } from "@tanstack/react-query";
 import type { TanStackDevtoolsReactPlugin } from "@tanstack/react-devtools";
-import { BackButton, DrmNotice, MainContent, Nav, Player, SidebarToggle } from "@/components";
-import { BackdropProvider, PlayerProvider, SidebarProvider, ThemeProvider } from "@/contexts";
+import {
+  BackButton,
+  DrmNotice,
+  MainContent,
+  Nav,
+  Player,
+  SearchInput,
+  SidebarToggle,
+} from "@/components";
+import {
+  BackdropProvider,
+  PlayerProvider,
+  SearchProvider,
+  SidebarProvider,
+  ThemeProvider,
+} from "@/contexts";
 import { preHydrationScript as sidebarPreHydrationScript } from "@/lib/sidebar-storage";
 import { preHydrationScript as themePreHydrationScript } from "@/lib/theme-storage";
 import { preHydrationScript as nodeShimPreHydrationScript } from "@/lib/music-kit/node-shim";
@@ -124,22 +138,25 @@ function RootDocument({ children }: { children: React.ReactNode }) {
                   <PlayerProvider>
                     <DrmNotice />
                     <MusicKitGate>
-                      <Nav />
-                      <div className="relative flex flex-col grow min-w-0 min-h-0">
-                        <div className="flex p-2 gap-2 bg-transparent">
-                          <SidebarToggle />
-                          <BackButton />
+                      <SearchProvider>
+                        <Nav />
+                        <div className="relative flex flex-col grow min-w-0 min-h-0">
+                          <div className="flex items-center p-2 gap-2 bg-transparent">
+                            <SidebarToggle />
+                            <BackButton />
+                            <SearchInput />
+                          </div>
+                          <ScrollArea
+                            className="flex-1 min-w-0"
+                            fill
+                            scrollFade
+                            scrollRestorationId={SCROLL_AREA_ID}
+                          >
+                            <MainContent>{children}</MainContent>
+                          </ScrollArea>
+                          <Player />
                         </div>
-                        <ScrollArea
-                          className="flex-1 min-w-0"
-                          fill
-                          scrollFade
-                          scrollRestorationId={SCROLL_AREA_ID}
-                        >
-                          <MainContent>{children}</MainContent>
-                        </ScrollArea>
-                        <Player />
-                      </div>
+                      </SearchProvider>
                     </MusicKitGate>
                     <TanStackDevtools
                       config={{
