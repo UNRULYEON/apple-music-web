@@ -5,6 +5,7 @@ import {
   clearPlayback,
   pausePlayback,
   playSongs,
+  playStation as startStation,
   queueLast,
   queueNext,
   queueWithoutPlaying,
@@ -52,6 +53,7 @@ import {
 export type PlayerContextType = PlayerState & {
   source?: QueueSource;
   play: (songs: Song[], options?: PlayOptions) => void;
+  playStation: (id: string) => void;
   playNext: (songs: Song[]) => void;
   addToQueue: (songs: Song[]) => void;
   next: () => void;
@@ -323,6 +325,23 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
     [startsNoMore, startsSoon],
   );
 
+  // a station has no screen and no list of songs to show, so it only plays
+  const playStation: PlayerContextType["playStation"] = useCallback(
+    (id) => {
+      pending.current = undefined;
+      dropPlaybackTime();
+      setSource(undefined);
+      setWantsSound(true);
+      startsSoon();
+
+      void startStation(id).catch((cause: unknown) => {
+        startsNoMore();
+        reportPlaybackProblem(cause);
+      });
+    },
+    [startsNoMore, startsSoon],
+  );
+
   const playNext: PlayerContextType["playNext"] = useCallback((songs) => {
     void queueNext(songs).catch(reportPlaybackProblem);
   }, []);
@@ -408,6 +427,7 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
       isPlaying: wantsSound && isPlaying,
       isLoading: wantsSound && !isPlaying && (isLoading || isStarting),
       play,
+      playStation,
       playNext,
       addToQueue,
       next,
@@ -423,6 +443,7 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
       next,
       play,
       playNext,
+      playStation,
       previous,
       queue,
       shown,

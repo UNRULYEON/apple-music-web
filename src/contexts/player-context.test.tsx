@@ -564,6 +564,23 @@ describe("PlayerProvider", () => {
     expect(readStoredQueue()).toEqual(stored);
   });
 
+  it("plays a station where a person taps it, with no album behind it", async () => {
+    const seen = await renderProvider();
+
+    act(() => seen.current?.play(SONGS, { startAt: 0, from: { type: "albums", id: "a1" } }));
+    await waitFor(() => expect(seen.current?.source).toBeDefined());
+
+    act(() => seen.current?.playStation("ra.978194965"));
+
+    await waitFor(() =>
+      expect(music.setQueue).toHaveBeenCalledWith({
+        station: "ra.978194965",
+        startPlaying: true,
+      }),
+    );
+    expect(seen.current?.source).toBeUndefined();
+  });
+
   it("lets the player go when a person signs out", async () => {
     const seen = await renderProvider();
 

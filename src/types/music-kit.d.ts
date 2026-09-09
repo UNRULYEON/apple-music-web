@@ -15,6 +15,7 @@ declare namespace MusicKit {
     songs?: string[];
     album?: string;
     playlist?: string;
+    station?: string;
     startWith?: number;
     startPlaying?: boolean;
     startTime?: number;

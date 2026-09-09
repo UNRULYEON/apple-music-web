@@ -96,6 +96,20 @@ export async function playSongs(songs: Song[], options: PlayOptions = {}): Promi
   }
 }
 
+// a station is an endless queue that Apple builds and keeps filling, so the app hands
+// over the name of it and nothing else
+export async function playStation(id: string): Promise<void> {
+  await requireDrm();
+
+  const music = await getMusicKit();
+
+  await music.setQueue({ station: id, startPlaying: true });
+
+  if (music.queueIsEmpty) {
+    throw new Error(`Apple Music kept no song for the station ${id}.`);
+  }
+}
+
 export async function queueNext(songs: Song[]): Promise<void> {
   await requireDrm();
 

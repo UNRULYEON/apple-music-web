@@ -1,7 +1,7 @@
 import { DetailsView, ErrorStates, LibraryAlbums, LoadingState } from "@/components";
 import { EmptyStates } from "@/components/empty-states";
 import { MediaGrid } from "@/components/media-grid";
-import { useIsHydrated, useSignedInQuery, useView } from "@/hooks";
+import { useIsHydrated, usePlayer, useSignedInQuery, useView } from "@/hooks";
 import {
   recentlyPlayedQuery,
   type RecentlyPlayedItem,
@@ -54,6 +54,7 @@ function HomeView() {
 
 function RecentlyPlayed() {
   const { open } = useView();
+  const { playStation } = usePlayer();
   const { data: played, isPending, isError } = useSignedInQuery(recentlyPlayedQuery());
 
   const tiles = useMemo(
@@ -63,9 +64,13 @@ function RecentlyPlayed() {
         name: item.name,
         credit: credit(item),
         artwork: item.artwork,
-        onClick: () => open({ name: "detail", type: item.type, id: item.id }),
+        // a station has nothing to show, so it plays where a person taps it
+        onClick: () =>
+          item.type === "stations"
+            ? playStation(item.id)
+            : open({ name: "detail", type: item.type, id: item.id }),
       })) ?? [],
-    [played, open],
+    [played, open, playStation],
   );
 
   return (

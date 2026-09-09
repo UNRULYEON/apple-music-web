@@ -12,6 +12,7 @@ import {
   describeError,
   pausePlayback,
   playSongs,
+  playStation,
   queueLast,
   queueNext,
   resumePlayback,
@@ -105,6 +106,23 @@ describe("playSongs", () => {
     });
 
     await expect(playSongs(SONGS)).rejects.toThrow('The nl catalog holds it as "One"');
+  });
+});
+
+describe("playStation", () => {
+  it("hands MusicKit the station and lets it fill the queue", async () => {
+    await playStation("ra.978194965");
+
+    expect(music.setQueue).toHaveBeenCalledWith({
+      station: "ra.978194965",
+      startPlaying: true,
+    });
+  });
+
+  it("complains when MusicKit keeps no song for the station", async () => {
+    music.queueIsEmpty = true;
+
+    await expect(playStation("ra.978194965")).rejects.toThrow("ra.978194965");
   });
 });
 
@@ -265,6 +283,12 @@ describe("a browser without DRM", () => {
     await expect(resumePlayback()).rejects.toBeInstanceOf(MissingDrmError);
 
     expect(music.play).not.toHaveBeenCalled();
+  });
+
+  it("starts no station either", async () => {
+    await expect(playStation("ra.1")).rejects.toBeInstanceOf(MissingDrmError);
+
+    expect(music.setQueue).not.toHaveBeenCalled();
   });
 
   it("takes nothing into the queue either", async () => {
