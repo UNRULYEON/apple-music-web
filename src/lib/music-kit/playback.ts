@@ -75,9 +75,14 @@ export async function playSongs(songs: Song[], options: PlayOptions = {}): Promi
     return;
   }
 
+  // MusicKit starts a shuffled queue at the song it was given, so a shuffle that nobody
+  // pointed at a song starts at a random one
+  const startWith =
+    options.startAt ?? (options.shuffle ? Math.floor(Math.random() * ids.length) : 0);
+
   await music.setQueue({
     songs: ids,
-    startWith: options.startAt ?? 0,
+    startWith,
     startPlaying: true,
     shuffleMode: options.shuffle
       ? MusicKit.PlayerShuffleMode.songs

@@ -27,6 +27,8 @@ export function PlaylistDetails({ type, id }: { type: PlaylistType; id: string }
                 <span className="max-w-prose text-pretty">{playlist.description}</span>
               )
             }
+            songs={playlist.songs}
+            source={{ type, id }}
           />
           <TrackList
             songs={playlist.songs}

@@ -42,6 +42,7 @@ beforeEach(() => {
 
 afterEach(() => {
   vi.clearAllMocks();
+  vi.restoreAllMocks();
   vi.unstubAllGlobals();
 });
 
@@ -68,6 +69,20 @@ describe("playSongs", () => {
     expect(music.setQueue).toHaveBeenCalledWith(
       expect.objectContaining({ shuffleMode: SHUFFLE_MODES.songs }),
     );
+  });
+
+  it("starts a shuffle at a song picked at random", async () => {
+    vi.spyOn(Math, "random").mockReturnValue(0.75);
+
+    await playSongs(SONGS, { shuffle: true });
+
+    expect(music.setQueue).toHaveBeenCalledWith(expect.objectContaining({ startWith: 1 }));
+  });
+
+  it("starts a shuffle at the song a person points at", async () => {
+    await playSongs(SONGS, { shuffle: true, startAt: 0 });
+
+    expect(music.setQueue).toHaveBeenCalledWith(expect.objectContaining({ startWith: 0 }));
   });
 
   it("falls back to the id of a song that has no catalog id", async () => {
