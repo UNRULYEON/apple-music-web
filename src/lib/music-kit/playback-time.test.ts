@@ -5,6 +5,9 @@ import {
 } from "@/lib/music-kit/fake-music-kit";
 import { getMusicKit } from "@/lib/music-kit/instance";
 import {
+  dropPlaybackTime,
+  holdPlaybackTime,
+  readHeldPlaybackTime,
   readPlaybackTime,
   resetPlaybackTime,
   subscribeToPlaybackTime,
@@ -101,5 +104,83 @@ describe("subscribeToPlaybackTime", () => {
     });
 
     expect(listener).not.toHaveBeenCalled();
+  });
+});
+
+describe("the held place", () => {
+  it("shows the held place in place of the time of the song", () => {
+    music.currentPlaybackTime = 3;
+    music.emit("playbackTimeDidChange", { currentPlaybackTime: 3 });
+
+    holdPlaybackTime(42);
+
+    expect(readPlaybackTime().position).toBe(42);
+    expect(readHeldPlaybackTime()).toBe(42);
+  });
+
+  it("keeps the length of the song while it holds the place", () => {
+    music.currentPlaybackDuration = 180;
+    music.emit("playbackDurationDidChange", { currentPlaybackDuration: 180 });
+
+    holdPlaybackTime(42);
+
+    expect(readPlaybackTime().duration).toBe(180);
+  });
+
+  it("holds the place while the song is still at its start", () => {
+    holdPlaybackTime(42);
+
+    for (const at of [0, 0.3, 1.1]) {
+      music.currentPlaybackTime = at;
+      music.emit("playbackTimeDidChange", { currentPlaybackTime: at });
+    }
+
+    expect(readPlaybackTime().position).toBe(42);
+    expect(readHeldPlaybackTime()).toBe(42);
+  });
+
+  it("takes the bar back by itself once the song arrives at the place", () => {
+    holdPlaybackTime(42);
+
+    music.currentPlaybackTime = 42.2;
+    music.emit("playbackTimeDidChange", { currentPlaybackTime: 42.2 });
+
+    expect(readHeldPlaybackTime()).toBeUndefined();
+    expect(readPlaybackTime().position).toBe(42.2);
+  });
+
+  it("lets the song have the bar back", () => {
+    holdPlaybackTime(42);
+    music.currentPlaybackTime = 3;
+    music.emit("playbackTimeDidChange", { currentPlaybackTime: 3 });
+
+    expect(readPlaybackTime().position).toBe(42);
+
+    dropPlaybackTime();
+
+    expect(readPlaybackTime().position).toBe(3);
+    expect(readHeldPlaybackTime()).toBeUndefined();
+  });
+
+  it("tells the listeners when it takes the bar and when it gives it back", () => {
+    const listener = vi.fn();
+    subscribeToPlaybackTime(listener);
+
+    holdPlaybackTime(42);
+    expect(listener).toHaveBeenCalledTimes(1);
+
+    dropPlaybackTime();
+    expect(listener).toHaveBeenCalledTimes(2);
+  });
+
+  it("gives back the same time until it changes, so a reader sees no false change", () => {
+    holdPlaybackTime(42);
+
+    expect(readPlaybackTime()).toBe(readPlaybackTime());
+
+    music.currentPlaybackTime = 3;
+    music.emit("playbackTimeDidChange", { currentPlaybackTime: 3 });
+
+    expect(readPlaybackTime()).toBe(readPlaybackTime());
   });
 });

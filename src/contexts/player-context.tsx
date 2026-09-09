@@ -9,6 +9,7 @@ import {
   queueNext,
   queueWithoutPlaying,
   resumePlayback,
+  seekTo,
   setRepeatMode,
   setShuffleMode,
   silenceKnownRejections,
@@ -17,13 +18,25 @@ import {
   type QueueSource,
 } from "@/lib/music-kit/playback";
 import {
+  dropPlaybackTime,
+  holdPlaybackTime,
+  readHeldPlaybackTime,
+  readPlaybackTime,
+  subscribeToPlaybackTime,
+} from "@/lib/music-kit/playback-time";
+import {
   nextRepeatMode,
   readInitialPlayerState,
   readPlayerState,
   subscribeToPlayer,
   type PlayerState,
 } from "@/lib/music-kit/player-state";
-import { forgetStoredQueue, readStoredQueue, writeStoredQueue } from "@/lib/now-playing-storage";
+import {
+  forgetStoredQueue,
+  readStoredQueue,
+  writeStoredPosition,
+  writeStoredQueue,
+} from "@/lib/now-playing-storage";
 import type { Song } from "@/lib/music-kit/track";
 import {
   createContext,
@@ -57,6 +70,9 @@ const REBUILD_GAP = 5000;
 
 // how long the button waits for a song that was asked for before it gives up on it
 const STARTING_LIMIT = 20_000;
+
+// how long the bar holds a place for a song that does not take it
+const GIVE_BACK = 3000;
 
 export const PlayerContext = createContext<PlayerContextType | undefined>(undefined);
 
@@ -121,6 +137,11 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
   // player that already holds the queue still knows where the songs came from.
   const [isRestored, setRestored] = useState(false);
 
+  // which song the held place belongs to. The place itself lives with the playback
+  // time, so the bar shows it and a person can move it before the song starts.
+  const pending = useRef<{ index: number } | undefined>(undefined);
+  const giveBack = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
+
   useEffect(() => {
     if (status !== "signed-in" || isRestored) {
       return;
@@ -140,11 +161,68 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
       return;
     }
 
+    if (stored.position) {
+      pending.current = { index: stored.index };
+      holdPlaybackTime(stored.position);
+    }
+
     void queueWithoutPlaying(stored.songs, stored.index).catch(() => {
+      pending.current = undefined;
+      dropPlaybackTime();
       setSource(undefined);
       forgetStoredQueue();
     });
   }, [isRestored, queue.length, status]);
+
+  // the held place goes to the song at its first sound, and the bar keeps showing it
+  // until the seek lands. It is used once, and only on the song it belongs to, so a
+  // person who skips before they press play starts that song at its beginning.
+  useEffect(() => {
+    const place = pending.current;
+    const held = readHeldPlaybackTime();
+
+    if (!isPlaying || !place) {
+      return;
+    }
+
+    pending.current = undefined;
+
+    if (place.index !== index || held === undefined) {
+      dropPlaybackTime();
+      return;
+    }
+
+    // the song takes the bar back when it arrives. This is only for a song that never
+    // does, so the bar cannot sit on a place it will never reach.
+    void seekTo(held)
+      .catch(() => undefined)
+      .finally(() => {
+        giveBack.current = setTimeout(dropPlaybackTime, GIVE_BACK);
+      });
+  }, [index, isPlaying]);
+
+  // the place in the song, kept once a second and never at nought. The time moves many
+  // times a second, and a song at its start has no place worth keeping. A held place
+  // stands in for the time of the song, so this keeps that instead until it is given
+  // back, and a person who moves the thumb before the first sound comes back there.
+  useEffect(() => {
+    if (status !== "signed-in") {
+      return;
+    }
+
+    let written = 0;
+
+    return subscribeToPlaybackTime(() => {
+      const seconds = Math.floor(readPlaybackTime().position);
+
+      if (seconds === 0 || seconds === written) {
+        return;
+      }
+
+      written = seconds;
+      writeStoredPosition(seconds);
+    });
+  }, [status]);
 
   // nothing of the player is left behind for the next person at this browser. The queue
   // and the way it was played go with the session, and the bar goes with them.
@@ -153,6 +231,8 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
       return;
     }
 
+    pending.current = undefined;
+    dropPlaybackTime();
     setSource(undefined);
     setWanted(undefined);
     setWantsSound(false);
@@ -175,6 +255,8 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
   }, [index, isRestored, queue, source]);
 
   useEffect(() => () => clearTimeout(timer.current), []);
+
+  useEffect(() => () => clearTimeout(giveBack.current), []);
 
   useEffect(silenceKnownRejections, []);
 
@@ -227,6 +309,8 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
 
   const play: PlayerContextType["play"] = useCallback(
     (songs, options) => {
+      pending.current = undefined;
+      dropPlaybackTime();
       setSource(options?.from);
       setWantsSound(true);
       startsSoon();

@@ -6,6 +6,7 @@ export interface StoredQueue {
   songs: string[];
   index: number;
   source?: QueueSource;
+  position?: number;
 }
 
 // what the player needs to build the same queue again: the ids it handed MusicKit, the
@@ -20,7 +21,25 @@ export function readStoredQueue(): StoredQueue | undefined {
   }
 }
 
+// the place in the song is written on its own, so a write of the queue keeps it while a
+// person stays on the same song and drops it when they move to another
 export function writeStoredQueue(queue: StoredQueue): void {
+  const kept = readStoredQueue();
+  const position = queue.position ?? (kept?.index === queue.index ? kept.position : undefined);
+
+  write({ ...queue, position });
+}
+
+// how far into the song a person had come, so a reload starts them where they left off
+export function writeStoredPosition(position: number): void {
+  const stored = readStoredQueue();
+
+  if (stored) {
+    write({ ...stored, position });
+  }
+}
+
+function write(queue: StoredQueue): void {
   try {
     window.localStorage.setItem(STORAGE_KEY, JSON.stringify(queue));
   } catch {}
@@ -39,7 +58,7 @@ function asQueue(value: unknown): StoredQueue | undefined {
     return undefined;
   }
 
-  const { songs, index, source } = value as Partial<StoredQueue>;
+  const { songs, index, source, position } = value as Partial<StoredQueue>;
 
   if (!Array.isArray(songs) || songs.some((song) => typeof song !== "string" || song === "")) {
     return undefined;
@@ -53,7 +72,12 @@ function asQueue(value: unknown): StoredQueue | undefined {
     return undefined;
   }
 
-  return { songs, index, source: asSource(source) };
+  return { songs, index, source: asSource(source), position: asPosition(position) };
+}
+
+// a song starts at its beginning, so a place of nought is the same as no place at all
+function asPosition(value: unknown): number | undefined {
+  return typeof value === "number" && Number.isFinite(value) && value > 0 ? value : undefined;
 }
 
 function asSource(value: unknown): QueueSource | undefined {

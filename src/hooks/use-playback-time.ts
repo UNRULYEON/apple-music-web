@@ -1,5 +1,7 @@
 import { seekTo } from "@/lib/music-kit/playback";
 import {
+  holdPlaybackTime,
+  readHeldPlaybackTime,
   readInitialPlaybackTime,
   readPlaybackTime,
   subscribeToPlaybackTime,
@@ -15,6 +17,12 @@ export function usePlaybackTime() {
   );
 
   const seek = useCallback((seconds: number) => {
+    // a song that is not open takes no time from MusicKit, so the place a person moves
+    // the thumb to is held with the rest and goes to the song when it starts
+    if (readHeldPlaybackTime() !== undefined) {
+      holdPlaybackTime(seconds);
+    }
+
     void seekTo(seconds).catch(reportPlaybackProblem);
   }, []);
 

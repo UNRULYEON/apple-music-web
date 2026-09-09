@@ -12,9 +12,18 @@ import {
 } from "@/lib/music-kit/fake-music-kit";
 import { hasDrm } from "@/lib/music-kit/drm";
 import { getMusicKit } from "@/lib/music-kit/instance";
-import { resetPlaybackTime } from "@/lib/music-kit/playback-time";
+import {
+  holdPlaybackTime,
+  readPlaybackTime,
+  resetPlaybackTime,
+} from "@/lib/music-kit/playback-time";
 import { resetPlayerState } from "@/lib/music-kit/player-state";
-import { readStoredQueue, writeStoredQueue, type StoredQueue } from "@/lib/now-playing-storage";
+import {
+  readStoredQueue,
+  writeStoredPosition,
+  writeStoredQueue,
+  type StoredQueue,
+} from "@/lib/now-playing-storage";
 import { setAuthStatus } from "@/lib/music-kit/auth";
 import type { Song } from "@/lib/music-kit/track";
 import { act, cleanup, render, waitFor } from "@testing-library/react";
@@ -391,6 +400,137 @@ describe("PlayerProvider", () => {
     expect(seen.current?.isPlaying).toBe(false);
     expect(seen.current?.isLoading).toBe(false);
     await waitFor(() => expect(seen.current?.source).toEqual({ type: "albums", id: "a1" }));
+  });
+
+  async function restoreAt(index: number, position?: number) {
+    writeStoredQueue({ songs: ["111", "222"], index });
+
+    if (position) {
+      writeStoredPosition(position);
+    }
+
+    const seen = await renderProvider();
+    act(() => setAuthStatus("signed-in"));
+
+    await waitFor(() => expect(music.setQueue).toHaveBeenCalled());
+
+    return seen;
+  }
+
+  function startsPlaying(at: number) {
+    music.queue.items = [songItem("111", "One"), songItem("222", "Two")];
+    music.nowPlayingItemIndex = at;
+    music.playbackState = PLAYBACK_STATES.playing;
+    act(() => music.emit("queueItemsDidChange", music.queue.items));
+    act(() =>
+      music.emit("playbackStateDidChange", { oldState: 0, state: PLAYBACK_STATES.playing }),
+    );
+  }
+
+  it("takes a person back to the place they left off at when the song starts", async () => {
+    await restoreAt(1, 42);
+
+    // MusicKit opens the song only when it plays, so nothing is asked for before that
+    expect(music.seekToTime).not.toHaveBeenCalled();
+
+    startsPlaying(1);
+
+    await waitFor(() => expect(music.seekToTime).toHaveBeenCalledWith(42));
+  });
+
+  it("shows the place in the bar before the song opens", async () => {
+    await restoreAt(1, 42);
+
+    expect(readPlaybackTime().position).toBe(42);
+  });
+
+  it("lets the bar follow the song again once the place is given back", async () => {
+    await restoreAt(1, 42);
+    startsPlaying(1);
+
+    await waitFor(() => expect(music.seekToTime).toHaveBeenCalledWith(42));
+
+    music.currentPlaybackTime = 43;
+    act(() => music.emit("playbackTimeDidChange", { currentPlaybackTime: 43 }));
+
+    await waitFor(() => expect(readPlaybackTime().position).toBe(43));
+  });
+
+  it("lets the bar follow the song again when a person skips first", async () => {
+    await restoreAt(1, 42);
+    startsPlaying(0);
+
+    await waitFor(() => expect(readPlaybackTime().position).toBe(0));
+    expect(music.seekToTime).not.toHaveBeenCalled();
+  });
+
+  it("never shows the start of the song while the seek is on its way", async () => {
+    await restoreAt(1, 42);
+    startsPlaying(1);
+
+    await waitFor(() => expect(music.seekToTime).toHaveBeenCalledWith(42));
+
+    // what MusicKit reports while the song is still on its way to the place
+    music.currentPlaybackTime = 0.4;
+    act(() => music.emit("playbackTimeDidChange", { currentPlaybackTime: 0.4 }));
+
+    expect(readPlaybackTime().position).toBe(42);
+  });
+
+  it("gives the place back only once", async () => {
+    await restoreAt(1, 42);
+    startsPlaying(1);
+
+    await waitFor(() => expect(music.seekToTime).toHaveBeenCalledTimes(1));
+
+    act(() => music.emit("playbackStateDidChange", { oldState: 2, state: PLAYBACK_STATES.paused }));
+    startsPlaying(1);
+
+    await waitFor(() => expect(music.seekToTime).toHaveBeenCalledTimes(1));
+  });
+
+  it("leaves another song at its beginning", async () => {
+    await restoreAt(1, 42);
+    startsPlaying(0);
+
+    await waitFor(() => expect(music.setQueue).toHaveBeenCalled());
+    expect(music.seekToTime).not.toHaveBeenCalled();
+  });
+
+  it("does not seek when a person left off at the start", async () => {
+    await restoreAt(1);
+    startsPlaying(1);
+
+    await waitFor(() => expect(music.setQueue).toHaveBeenCalled());
+    expect(music.seekToTime).not.toHaveBeenCalled();
+  });
+
+  it("keeps the place in the song while it plays", async () => {
+    await restoreAt(1);
+
+    music.currentPlaybackTime = 42.7;
+    act(() => music.emit("playbackTimeDidChange", { currentPlaybackTime: 42.7 }));
+
+    await waitFor(() => expect(readStoredQueue()?.position).toBe(42));
+  });
+
+  it("keeps the place a person came back to until the song has it again", async () => {
+    await restoreAt(1, 42);
+
+    // the song starts again at nought, and its first seconds must not rub out the place
+    music.currentPlaybackTime = 1.2;
+    act(() => music.emit("playbackTimeDidChange", { currentPlaybackTime: 1.2 }));
+
+    expect(readStoredQueue()?.position).toBe(42);
+  });
+
+  it("keeps a place a person moves the thumb to before the song starts", async () => {
+    await restoreAt(1, 42);
+
+    // what the bar does with a thumb that lands before the first sound
+    act(() => holdPlaybackTime(90));
+
+    await waitFor(() => expect(readStoredQueue()?.position).toBe(90));
   });
 
   it("brings the album back when the player already holds the queue", async () => {
