@@ -33,6 +33,7 @@ export function viewKey(view: View): string {
 export function canSearch(view: View): boolean {
   return (
     view.name === "home" ||
+    view.name === "detail" ||
     (view.name === "list" && (view.list === "recently-played" || view.list === "albums"))
   );
 }

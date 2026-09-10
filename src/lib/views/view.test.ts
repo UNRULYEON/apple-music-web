@@ -100,6 +100,8 @@ describe("canSearch", () => {
     ["home", { name: "home" } as const],
     ["recently played", { name: "list", list: "recently-played" } as const],
     ["albums", { name: "list", list: "albums" } as const],
+    ["an album", { name: "detail", type: "albums", id: "a.1" } as const],
+    ["a playlist", { name: "detail", type: "playlists", id: "p.1" } as const],
   ])("gives a search box to %s", (_name, view) => {
     expect(canSearch(view)).toBe(true);
   });
@@ -107,7 +109,6 @@ describe("canSearch", () => {
   it.each([
     ["settings", { name: "settings" } as const],
     ["songs", { name: "list", list: "songs" } as const],
-    ["an album", { name: "detail", type: "albums", id: "a.1" } as const],
   ])("gives no search box to %s", (_name, view) => {
     expect(canSearch(view)).toBe(false);
   });

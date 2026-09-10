@@ -1,3 +1,4 @@
+import { matchesSearch } from "@/lib/search";
 import {
   readArtist,
   readArtwork,
@@ -19,6 +20,11 @@ export interface Song {
   previewUrl?: string;
   playId?: string;
   inLibrary?: boolean;
+}
+
+// a person looks for a song by what the list shows of it: its name and who plays it
+export function searchSongs(songs: Song[], term: string): Song[] {
+  return songs.filter((song) => matchesSearch(term, song.name, song.artist?.name));
 }
 
 // a song in the library and the song the player queues from the catalog

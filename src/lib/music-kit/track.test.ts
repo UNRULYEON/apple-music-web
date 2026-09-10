@@ -1,4 +1,4 @@
-import { isSameSong, readSong } from "@/lib/music-kit/track";
+import { isSameSong, readSong, searchSongs, type Song } from "@/lib/music-kit/track";
 import { describe, expect, it } from "vitest";
 
 describe("isSameSong", () => {
@@ -40,5 +40,29 @@ describe("readSong", () => {
 
     expect(song?.id).toBe("i.abc");
     expect(song?.playId).toBe("s1");
+  });
+});
+
+describe("searchSongs", () => {
+  const SONGS: Song[] = [
+    { id: "1", name: "Without You Without Them", artist: { name: "boygenius" } },
+    { id: "2", name: "$20", artist: { name: "boygenius" } },
+    { id: "3", name: "Nameless", artist: { name: "Björk" } },
+  ];
+
+  it("gives back every song while a person has typed nothing", () => {
+    expect(searchSongs(SONGS, "")).toHaveLength(3);
+  });
+
+  it("looks at the name of the song", () => {
+    expect(searchSongs(SONGS, "without").map((song) => song.id)).toEqual(["1"]);
+  });
+
+  it("looks at who plays it, accent marks and all", () => {
+    expect(searchSongs(SONGS, "bjork").map((song) => song.id)).toEqual(["3"]);
+  });
+
+  it("gives back no song when nothing matches", () => {
+    expect(searchSongs(SONGS, "nirvana")).toEqual([]);
   });
 });

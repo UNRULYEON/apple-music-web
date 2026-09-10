@@ -1,10 +1,14 @@
 import { DetailsFooter } from "@/components/details/details-footer";
 import { DetailsHeader } from "@/components/details/details-header";
 import { DetailsShell } from "@/components/details/details-shell";
+import { HiddenSongs } from "@/components/details/hidden-songs";
 import { TrackList } from "@/components/details/track-list";
+import { EmptyStates } from "@/components/empty-states";
 import { relativeDate } from "@/lib/format";
-import { useSignedInQuery } from "@/hooks";
+import { useSearch, useSignedInQuery } from "@/hooks";
 import { fetchPlaylist, type PlaylistType } from "@/lib/music-kit/playlists";
+import { searchSongs } from "@/lib/music-kit/track";
+import { useMemo } from "react";
 
 export function PlaylistDetails({ type, id }: { type: PlaylistType; id: string }) {
   const { data: playlist, isPending } = useSignedInQuery({
@@ -13,6 +17,12 @@ export function PlaylistDetails({ type, id }: { type: PlaylistType; id: string }
   });
 
   const modified = playlist?.lastModifiedDate ?? playlist?.dateAdded;
+
+  // the search narrows the list of songs. The header and the foot go on telling a
+  // person about the whole playlist, so Play still plays it whole.
+  const { term } = useSearch();
+  const songs = playlist?.songs;
+  const shown = useMemo(() => searchSongs(songs ?? [], term), [songs, term]);
 
   return (
     <DetailsShell id={`${type}-${id}`} artwork={playlist?.artwork} isPending={isPending}>
@@ -30,12 +40,14 @@ export function PlaylistDetails({ type, id }: { type: PlaylistType; id: string }
             songs={playlist.songs}
             source={{ type, id }}
           />
-          <TrackList
-            songs={playlist.songs}
-            showTrackNumber={false}
-            showArtwork
-            source={{ type, id }}
-          />
+          {shown.length === 0 && playlist.songs.length > 0 ? (
+            <EmptyStates.NoMatches />
+          ) : (
+            <div className="flex flex-col gap-4">
+              <TrackList songs={shown} showTrackNumber={false} showArtwork source={{ type, id }} />
+              <HiddenSongs shown={shown.length} total={playlist.songs.length} />
+            </div>
+          )}
           <DetailsFooter songs={playlist.songs}>
             {modified && <span>Updated {relativeDate(modified)}</span>}
           </DetailsFooter>

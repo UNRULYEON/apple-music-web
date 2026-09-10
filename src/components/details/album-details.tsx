@@ -2,9 +2,11 @@ import { DetailsFooter } from "@/components/details/details-footer";
 import { DetailsHeader } from "@/components/details/details-header";
 import { LibraryMark } from "@/components/details/library-mark";
 import { DetailsShell } from "@/components/details/details-shell";
+import { HiddenSongs } from "@/components/details/hidden-songs";
 import { TrackList } from "@/components/details/track-list";
+import { EmptyStates } from "@/components/empty-states";
 import { releaseYear } from "@/lib/format";
-import { useSignedInQuery } from "@/hooks";
+import { useSearch, useSignedInQuery } from "@/hooks";
 import {
   fetchAlbum,
   isAlbumInLibrary,
@@ -13,6 +15,7 @@ import {
   markInLibrary,
   type AlbumType,
 } from "@/lib/music-kit/album";
+import { searchSongs } from "@/lib/music-kit/track";
 import { intlFormat } from "date-fns";
 import { useMemo } from "react";
 
@@ -35,6 +38,11 @@ export function AlbumDetails({ type, id }: { type: AlbumType; id: string }) {
 
   const songs = useMemo(() => markInLibrary(album?.songs ?? [], added), [album?.songs, added]);
   const inLibrary = isAlbumInLibrary(songs, album?.trackCount);
+
+  // the search narrows the list of songs. The header and the foot go on telling a
+  // person about the whole album, so Play still plays the album.
+  const { term } = useSearch();
+  const shown = useMemo(() => searchSongs(songs, term), [songs, term]);
 
   return (
     <DetailsShell id={`${type}-${id}`} artwork={album?.artwork} isPending={isPending}>
@@ -61,12 +69,19 @@ export function AlbumDetails({ type, id }: { type: AlbumType; id: string }) {
             songs={songs}
             source={{ type, id }}
           />
-          <TrackList
-            songs={songs}
-            primaryArtist={album.artist?.name}
-            showLibraryMark={!inLibrary}
-            source={{ type, id }}
-          />
+          {shown.length === 0 && songs.length > 0 ? (
+            <EmptyStates.NoMatches />
+          ) : (
+            <div className="flex flex-col gap-4">
+              <TrackList
+                songs={shown}
+                primaryArtist={album.artist?.name}
+                showLibraryMark={!inLibrary}
+                source={{ type, id }}
+              />
+              <HiddenSongs shown={shown.length} total={songs.length} />
+            </div>
+          )}
           <DetailsFooter songs={songs} trackCount={album.trackCount}>
             {album.releaseDate && <span>{intlFormat(album.releaseDate)}</span>}
             {album.copyright && <span className="text-center">{album.copyright}</span>}
