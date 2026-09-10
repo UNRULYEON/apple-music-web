@@ -62,6 +62,7 @@ describe("fetchAlbum", () => {
 
     expect(music).toHaveBeenCalledWith("/v1/catalog/nl/albums/1440857781", {
       include: "tracks,artists",
+      "include[songs]": "artists",
     });
   });
 
@@ -72,6 +73,7 @@ describe("fetchAlbum", () => {
 
     expect(music).toHaveBeenCalledWith("/v1/me/library/albums/l.AbCdEf", {
       include: "tracks,artists",
+      "include[songs]": "artists",
     });
     expect(loadStorefront).not.toHaveBeenCalled();
   });
@@ -132,6 +134,7 @@ describe("fetchAlbum", () => {
           id: "1",
           name: "Without You Without Them",
           artist: { name: "boygenius" },
+          artists: [],
           artwork: undefined,
           discNumber: 1,
           trackNumber: 1,
@@ -224,6 +227,7 @@ describe("fetchAlbum for a library album", () => {
 
     expect(music).toHaveBeenCalledWith("/v1/me/library/albums/l.AbCdEf/catalog", {
       include: "tracks,artists",
+      "include[songs]": "artists",
     });
   });
 

@@ -18,6 +18,8 @@ const PAGE_SIZE = 100;
 
 const TYPES = ["playlists", "library-playlists"] as const;
 const INCLUDE = "tracks";
+// the artists of each song, so a person can open one. See the note in album.ts.
+const SONG_PARAMS = { include: INCLUDE, "include[songs]": "artists" } as const;
 
 export type PlaylistType = (typeof TYPES)[number];
 
@@ -78,7 +80,7 @@ export async function fetchLibraryPlaylists(): Promise<LibraryPlaylist[]> {
 export async function fetchPlaylist(type: PlaylistType, id: string): Promise<Playlist> {
   const path = await playlistPath(type, id);
   const music = await getMusicKit();
-  const { data } = await music.api.music(path, { include: INCLUDE });
+  const { data } = await music.api.music(path, SONG_PARAMS);
   const [first] = readItems(data);
   const playlist = readPlaylist(type, first);
 

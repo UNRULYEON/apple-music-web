@@ -1,8 +1,9 @@
 import { DetailsFooter } from "@/components/details/details-footer";
 import { DetailsHeader } from "@/components/details/details-header";
 import { LibraryMark } from "@/components/details/library-mark";
+import { ArtistLinks } from "@/components/details/artist-links";
 import { DetailsShell } from "@/components/details/details-shell";
-import { HiddenSongs } from "@/components/details/hidden-songs";
+import { HiddenItems } from "@/components/details/hidden-items";
 import { TrackList } from "@/components/details/track-list";
 import { EmptyStates } from "@/components/empty-states";
 import { releaseYear } from "@/lib/format";
@@ -51,7 +52,7 @@ export function AlbumDetails({ type, id }: { type: AlbumType; id: string }) {
           <DetailsHeader
             artwork={album.artwork}
             name={album.name}
-            subtitle={album.artist?.name}
+            subtitle={<ArtistLinks artists={album.artists} fallback={album.artist?.name} />}
             meta={
               <>
                 <div className="inline-flex">
@@ -79,7 +80,7 @@ export function AlbumDetails({ type, id }: { type: AlbumType; id: string }) {
                 showLibraryMark={!inLibrary}
                 source={{ type, id }}
               />
-              <HiddenSongs shown={shown.length} total={songs.length} />
+              <HiddenItems noun="songs" shown={shown.length} total={songs.length} />
             </div>
           )}
           <DetailsFooter songs={songs} trackCount={album.trackCount}>

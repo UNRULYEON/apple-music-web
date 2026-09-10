@@ -146,7 +146,10 @@ describe("fetchPlaylist", () => {
 
     await fetchPlaylist("playlists", "pl.u-123");
 
-    expect(music).toHaveBeenCalledWith("/v1/catalog/nl/playlists/pl.u-123", { include: "tracks" });
+    expect(music).toHaveBeenCalledWith("/v1/catalog/nl/playlists/pl.u-123", {
+      include: "tracks",
+      "include[songs]": "artists",
+    });
   });
 
   it("asks the library for a library playlist, and does not need a storefront", async () => {
@@ -154,7 +157,10 @@ describe("fetchPlaylist", () => {
 
     await fetchPlaylist("library-playlists", "p.AbCdEf");
 
-    expect(music).toHaveBeenCalledWith("/v1/me/library/playlists/p.AbCdEf", { include: "tracks" });
+    expect(music).toHaveBeenCalledWith("/v1/me/library/playlists/p.AbCdEf", {
+      include: "tracks",
+      "include[songs]": "artists",
+    });
     expect(loadStorefront).not.toHaveBeenCalled();
   });
 

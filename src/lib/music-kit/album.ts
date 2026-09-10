@@ -16,6 +16,9 @@ import { fetchStorefront } from "@/lib/music-kit/storefront";
 
 const TYPES = ["albums", "library-albums"] as const;
 const INCLUDE = "tracks,artists";
+// the artists of each song, which name one artist at a time. Without this a song holds
+// only the display string "A & B", which cannot be cut into artists a person can open.
+const SONG_PARAMS = { include: INCLUDE, "include[songs]": "artists" } as const;
 const LIBRARY_PATH = "/v1/me/library/albums";
 const CATALOG_PATH = "/catalog";
 const PAGE_SIZE = 100;
@@ -85,7 +88,7 @@ export function markInLibrary(songs: Song[], added?: Song[]): Song[] {
 export async function fetchAlbum(type: AlbumType, id: string): Promise<Album> {
   const path = await albumPath(type, id);
   const music = await getMusicKit();
-  const { data } = await music.api.music(path, { include: INCLUDE });
+  const { data } = await music.api.music(path, SONG_PARAMS);
   const [first] = readItems(data);
   const album = readAlbum(type, first);
 
@@ -138,7 +141,7 @@ async function fetchCatalogAlbum(id: string): Promise<Album | undefined> {
   const path = `${LIBRARY_PATH}/${encodeURIComponent(id)}${CATALOG_PATH}`;
 
   try {
-    const { data } = await music.api.music(path, { include: INCLUDE });
+    const { data } = await music.api.music(path, SONG_PARAMS);
     const [first] = readItems(data);
 
     return readAlbum("albums", first);

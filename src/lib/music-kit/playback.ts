@@ -8,7 +8,7 @@ import type { PlaylistType } from "@/lib/music-kit/playlists";
 import type { Song } from "@/lib/music-kit/track";
 
 export interface QueueSource {
-  type: AlbumType | PlaylistType;
+  type: AlbumType | PlaylistType | "artists";
   id: string;
 }
 

@@ -1,4 +1,10 @@
-const DETAIL_TYPES = ["albums", "library-albums", "playlists", "library-playlists"] as const;
+const DETAIL_TYPES = [
+  "albums",
+  "library-albums",
+  "playlists",
+  "library-playlists",
+  "artists",
+] as const;
 
 const LIST_NAMES = ["recently-played", "albums", "playlists", "songs"] as const;
 

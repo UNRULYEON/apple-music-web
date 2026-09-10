@@ -1,4 +1,5 @@
 import { ArtworkImage } from "@/components/artwork";
+import { ArtistLinks } from "@/components/details/artist-links";
 import { LibraryMark } from "@/components/details/library-mark";
 import { usePlayer } from "@/hooks";
 import { songDuration } from "@/lib/format";
@@ -192,7 +193,9 @@ export function TrackList({
             <div className="flex flex-col grow min-w-0">
               <span className="truncate">{song.name}</span>
               <span className="truncate text-sm text-neutral-600 dark:text-neutral-400">
-                {song.artist?.name !== primaryArtist ? song.artist?.name : ""}
+                {song.artist?.name !== primaryArtist && (
+                  <ArtistLinks artists={song.artists} fallback={song.artist?.name} />
+                )}
               </span>
             </div>
             {marksLibrary && (

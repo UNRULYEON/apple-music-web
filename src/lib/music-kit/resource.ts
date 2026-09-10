@@ -2,6 +2,9 @@ const CROP = "bb";
 const FORMAT = "jpg";
 
 export interface Artist {
+  // only an artist that came from a relationship has one. The display string a song
+  // carries, "A & B", cannot be cut into names an id could be found for.
+  id?: string;
   name: string;
 }
 
@@ -40,6 +43,22 @@ export function hasNextPage(data: unknown): boolean {
 
 export function readArtist(value: unknown): Artist | undefined {
   return readName(value);
+}
+
+// an artist out of a relationship, which names one artist and gives its id
+export function readArtistRef(value: unknown): Artist | undefined {
+  if (typeof value !== "object" || value === null) {
+    return undefined;
+  }
+
+  const candidate = value as { id?: unknown; attributes?: Record<string, unknown> };
+  const name = candidate.attributes?.name;
+
+  if (typeof candidate.id !== "string" || typeof name !== "string") {
+    return undefined;
+  }
+
+  return { id: candidate.id, name };
 }
 
 export function readCurator(value: unknown): Curator | undefined {

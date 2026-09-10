@@ -1,6 +1,8 @@
 import { matchesSearch } from "@/lib/search";
 import {
   readArtist,
+  readArtistRef,
+  readRelated,
   readArtwork,
   readNumber,
   readText,
@@ -12,6 +14,9 @@ export interface Song {
   id: string;
   name: string;
   artist?: Artist;
+  // every artist of the song, each with an id of its own. Apple sends these only when
+  // the request asks for them, so a song can hold none and still show its artist text.
+  artists?: Artist[];
   artwork?: Artwork;
   discNumber?: number;
   trackNumber?: number;
@@ -46,7 +51,11 @@ export function readSong(value: unknown): Song | undefined {
     return undefined;
   }
 
-  const candidate = value as { id?: unknown; attributes?: Record<string, unknown> };
+  const candidate = value as {
+    id?: unknown;
+    attributes?: Record<string, unknown>;
+    relationships?: unknown;
+  };
   const attributes = candidate.attributes;
 
   if (typeof candidate.id !== "string" || typeof attributes?.name !== "string") {
@@ -57,6 +66,7 @@ export function readSong(value: unknown): Song | undefined {
     id: candidate.id,
     name: attributes.name,
     artist: readArtist(attributes.artistName),
+    artists: readRelated(candidate.relationships, "artists", readArtistRef),
     artwork: readArtwork(attributes.artwork),
     discNumber: readNumber(attributes.discNumber),
     trackNumber: readNumber(attributes.trackNumber),

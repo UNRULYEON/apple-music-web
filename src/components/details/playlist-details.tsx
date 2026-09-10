@@ -1,7 +1,7 @@
 import { DetailsFooter } from "@/components/details/details-footer";
 import { DetailsHeader } from "@/components/details/details-header";
 import { DetailsShell } from "@/components/details/details-shell";
-import { HiddenSongs } from "@/components/details/hidden-songs";
+import { HiddenItems } from "@/components/details/hidden-items";
 import { TrackList } from "@/components/details/track-list";
 import { EmptyStates } from "@/components/empty-states";
 import { relativeDate } from "@/lib/format";
@@ -45,7 +45,7 @@ export function PlaylistDetails({ type, id }: { type: PlaylistType; id: string }
           ) : (
             <div className="flex flex-col gap-4">
               <TrackList songs={shown} showTrackNumber={false} showArtwork source={{ type, id }} />
-              <HiddenSongs shown={shown.length} total={playlist.songs.length} />
+              <HiddenItems noun="songs" shown={shown.length} total={playlist.songs.length} />
             </div>
           )}
           <DetailsFooter songs={playlist.songs}>

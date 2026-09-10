@@ -16,7 +16,7 @@ export function DetailsHeader({
 }: {
   artwork?: Artwork;
   name: string;
-  subtitle?: string;
+  subtitle?: ReactNode;
   meta?: ReactNode;
   songs: Song[];
   source?: QueueSource;

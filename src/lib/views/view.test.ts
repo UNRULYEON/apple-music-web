@@ -18,6 +18,14 @@ describe("readView", () => {
   });
 
   it("reads a detail view", () => {
+    expect(readView({ name: "detail", type: "artists", id: "1440846798" })).toEqual({
+      name: "detail",
+      type: "artists",
+      id: "1440846798",
+    });
+  });
+
+  it("takes an album", () => {
     expect(readView({ name: "detail", type: "albums", id: "a.1" })).toEqual({
       name: "detail",
       type: "albums",
@@ -102,6 +110,7 @@ describe("canSearch", () => {
     ["albums", { name: "list", list: "albums" } as const],
     ["an album", { name: "detail", type: "albums", id: "a.1" } as const],
     ["a playlist", { name: "detail", type: "playlists", id: "p.1" } as const],
+    ["an artist", { name: "detail", type: "artists", id: "1440846798" } as const],
   ])("gives a search box to %s", (_name, view) => {
     expect(canSearch(view)).toBe(true);
   });
