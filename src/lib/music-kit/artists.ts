@@ -1,6 +1,7 @@
 import { getMusicKit } from "@/lib/music-kit/instance";
 import {
   readArtist,
+  readArtistRef,
   readArtwork,
   readItems,
   readRelated,
@@ -59,6 +60,29 @@ export function artistQuery(id: string) {
   return {
     queryKey: ["music-kit", "artist", id],
     queryFn: () => fetchArtist(id),
+    staleTime: STALE,
+  };
+}
+
+// the artists of one song. The player builds its queue out of MusicKit media items,
+// which name the artists in one string and hold no artist of their own, so the catalog
+// is asked for them.
+export async function fetchSongArtists(id: string): Promise<Artist[]> {
+  const storefront = await fetchStorefront();
+  const music = await getMusicKit();
+  const path = `/v1/catalog/${storefront.id}/songs/${encodeURIComponent(id)}`;
+  const { data } = await music.api.music(path, { include: "artists" });
+  const [first] = readItems(data);
+  const relationships = (first as { relationships?: unknown } | undefined)?.relationships;
+
+  return readRelated(relationships, "artists", readArtistRef);
+}
+
+export function songArtistsQuery(id?: string) {
+  return {
+    queryKey: ["music-kit", "song-artists", id],
+    queryFn: () => fetchSongArtists(id ?? ""),
+    enabled: id !== undefined,
     staleTime: STALE,
   };
 }

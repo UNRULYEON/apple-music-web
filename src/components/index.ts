@@ -1,3 +1,4 @@
+export { ArtistLinks } from "./artist-links";
 export { ArtworkImage } from "./artwork";
 export { BackButton } from "./back-button";
 export { EmptyStates } from "./empty-states";

@@ -1,7 +1,7 @@
 import { DetailsFooter } from "@/components/details/details-footer";
 import { DetailsHeader } from "@/components/details/details-header";
 import { LibraryMark } from "@/components/details/library-mark";
-import { ArtistLinks } from "@/components/details/artist-links";
+import { ArtistLinks } from "@/components/artist-links";
 import { DetailsShell } from "@/components/details/details-shell";
 import { HiddenItems } from "@/components/details/hidden-items";
 import { TrackList } from "@/components/details/track-list";

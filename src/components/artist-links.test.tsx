@@ -1,5 +1,5 @@
 // @vitest-environment happy-dom
-import { ArtistLinks } from "@/components/details/artist-links";
+import { ArtistLinks } from "@/components/artist-links";
 import { cleanup, fireEvent, render, screen } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 

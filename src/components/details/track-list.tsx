@@ -1,5 +1,5 @@
 import { ArtworkImage } from "@/components/artwork";
-import { ArtistLinks } from "@/components/details/artist-links";
+import { ArtistLinks } from "@/components/artist-links";
 import { LibraryMark } from "@/components/details/library-mark";
 import { usePlayer } from "@/hooks";
 import { songDuration } from "@/lib/format";

@@ -1,4 +1,9 @@
-import { fetchArtist, searchAlbums, type ArtistAlbum } from "@/lib/music-kit/artists";
+import {
+  fetchArtist,
+  fetchSongArtists,
+  searchAlbums,
+  type ArtistAlbum,
+} from "@/lib/music-kit/artists";
 import { getMusicKit } from "@/lib/music-kit/instance";
 import { fetchStorefront } from "@/lib/music-kit/storefront";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
@@ -139,5 +144,49 @@ describe("searchAlbums", () => {
 
   it("gives back no album when nothing matches", () => {
     expect(searchAlbums(ALBUMS, "nirvana")).toEqual([]);
+  });
+});
+
+describe("fetchSongArtists", () => {
+  it("asks the storefront catalog for the artists of the song", async () => {
+    music.mockResolvedValue({ data: { data: [] } });
+
+    await fetchSongArtists("1440857782");
+
+    expect(music).toHaveBeenCalledWith("/v1/catalog/nl/songs/1440857782", {
+      include: "artists",
+    });
+  });
+
+  it("names every artist of the song, each with an id of its own", async () => {
+    music.mockResolvedValue({
+      data: {
+        data: [
+          {
+            id: "1440857782",
+            type: "songs",
+            relationships: {
+              artists: {
+                data: [
+                  { id: "1", type: "artists", attributes: { name: "Kendrick Lamar" } },
+                  { id: "2", type: "artists", attributes: { name: "SZA" } },
+                ],
+              },
+            },
+          },
+        ],
+      },
+    });
+
+    await expect(fetchSongArtists("1440857782")).resolves.toEqual([
+      { id: "1", name: "Kendrick Lamar" },
+      { id: "2", name: "SZA" },
+    ]);
+  });
+
+  it("gives no artist for a song Apple Music does not know", async () => {
+    music.mockResolvedValue({ data: { data: [] } });
+
+    await expect(fetchSongArtists("0")).resolves.toEqual([]);
   });
 });

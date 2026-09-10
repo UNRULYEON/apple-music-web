@@ -2,7 +2,9 @@ import { useIsMobile, usePlayer, useSignedInQuery, useView } from "@/hooks";
 import { useAuthStatus } from "@/lib/music-kit/auth";
 import { TRANSITION, TRANSITION_REVEAL, TRANSITION_SWAP } from "@/lib/motion";
 import type { QueueSource } from "@/lib/music-kit/playback";
+import type { Artist } from "@/lib/music-kit/resource";
 import { isPlaylistType } from "@/lib/music-kit/playlists";
+import { songArtistsQuery } from "@/lib/music-kit/artists";
 import { songSourceQuery } from "@/lib/music-kit/song-source";
 import type { RepeatMode } from "@/lib/music-kit/player-state";
 import { cn } from "@/lib/utils";
@@ -20,6 +22,7 @@ import {
 import { HugeiconsIcon } from "@hugeicons/react";
 import { AnimatePresence, motion, useReducedMotion } from "motion/react";
 import type { ReactNode } from "react";
+import { ArtistLinks } from "./artist-links";
 import { ArtworkImage } from "./artwork";
 import { PlayerProgress } from "./player-progress";
 import { PlayerVolume } from "./player-volume";
@@ -81,6 +84,18 @@ function usePlayingFrom(): QueueSource | undefined {
   const { data: found } = useSignedInQuery(songSourceQuery(source ? undefined : song));
 
   return source ?? found ?? undefined;
+}
+
+// the artists of the song that plays. MusicKit builds its queue out of media items,
+// which name the artists in one string and hold no artist of their own, so the catalog
+// is asked which artists that string stands for.
+function useNowPlayingArtists(): Artist[] | undefined {
+  const { nowPlaying } = usePlayer();
+  const known = nowPlaying?.artists;
+  const song = known && known.length > 0 ? undefined : (nowPlaying?.playId ?? nowPlaying?.id);
+  const { data: found } = useSignedInQuery(songArtistsQuery(song));
+
+  return known && known.length > 0 ? known : found;
 }
 
 function sourceLabel(source?: QueueSource): string | undefined {
@@ -171,6 +186,7 @@ function NextButton({ size = "icon-xs" }: { size?: "icon-xs" | "icon-lg" }) {
 }
 
 export function Player() {
+  const artists = useNowPlayingArtists();
   const { nowPlaying, isShuffled, repeat, canSkipPrevious, toggleShuffle, cycleRepeat, previous } =
     usePlayer();
   const source = usePlayingFrom();
@@ -332,7 +348,7 @@ export function Player() {
                           exit={blurred}
                           transition={swapTransition}
                         >
-                          {nowPlaying.artist?.name}
+                          <ArtistLinks artists={artists} fallback={nowPlaying.artist?.name} />
                         </motion.span>
                       </AnimatePresence>
                     </div>

@@ -1,6 +1,5 @@
 export { AlbumDetails } from "./album-details";
 export { ArtistDetails } from "./artist-details";
-export { ArtistLinks } from "./artist-links";
 export { DetailsArtwork } from "./details-artwork";
 export { DetailsFooter } from "./details-footer";
 export { DetailsHeader } from "./details-header";
