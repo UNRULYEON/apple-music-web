@@ -1,5 +1,7 @@
 import { LoadingState } from "@/components/loading-state";
 import { useBackdrop } from "@/hooks";
+import { VIEW_INSET } from "@/lib/layout";
+import { cn } from "@/lib/utils";
 import { TRANSITION_REVEAL } from "@/lib/motion";
 import type { Artwork } from "@/lib/music-kit/resource";
 import { AnimatePresence, motion } from "motion/react";
@@ -50,7 +52,7 @@ export function DetailsShell({
       {children && !isPending && (
         <motion.div
           key={`${id}-loaded`}
-          className="flex flex-col grow min-w-0 gap-8 px-4 py-4 sm:py-8 sm:px-4 sm:gap-8"
+          className={cn("flex flex-col grow min-w-0 gap-8 py-4 sm:py-8 sm:gap-8", VIEW_INSET)}
           initial={BLURRED}
           animate={SHARP}
           exit={BLURRED}

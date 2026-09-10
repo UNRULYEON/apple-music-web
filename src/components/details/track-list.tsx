@@ -3,6 +3,8 @@ import { ArtistLinks } from "@/components/artist-links";
 import { LibraryMark } from "@/components/details/library-mark";
 import { usePlayer } from "@/hooks";
 import { songDuration } from "@/lib/format";
+import { ROW_BLEED } from "@/lib/layout";
+import { cn } from "@/lib/utils";
 import { TRANSITION } from "@/lib/motion";
 import { isSameSource, type QueueSource } from "@/lib/music-kit/playback";
 import { isSameSong, type Song } from "@/lib/music-kit/track";
@@ -101,7 +103,7 @@ export function TrackList({
   const transition = reduceMotion ? NO_TRANSITION : TRANSITION;
 
   return (
-    <div ref={list} className="flex flex-col">
+    <div ref={list} className={cn("flex flex-col", ROW_BLEED)}>
       {songs.map((song, i) => {
         const playsNow = playsThisList && isSameSong(nowPlaying, song);
 

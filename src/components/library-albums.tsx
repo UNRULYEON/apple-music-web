@@ -4,6 +4,8 @@ import { LoadingState } from "@/components/loading-state";
 import { MediaGrid } from "@/components/media-grid";
 import { useSearch, useSignedInQuery, useView } from "@/hooks";
 import { libraryAlbumsQuery } from "@/lib/music-kit/album";
+import { VIEW_INSET } from "@/lib/layout";
+import { cn } from "@/lib/utils";
 import { matchesSearch } from "@/lib/search";
 import { AnimatePresence } from "motion/react";
 import { useMemo } from "react";
@@ -28,7 +30,7 @@ export function LibraryAlbums() {
   );
 
   return (
-    <div className="flex flex-col grow px-4 pb-4">
+    <div className={cn("flex flex-col grow pb-4", VIEW_INSET)}>
       <AnimatePresence mode="popLayout">
         {isPending && <LoadingState key="library-albums-loading-state" />}
         {isError && !isPending && <ErrorStates.Albums key="library-albums-error-state" />}

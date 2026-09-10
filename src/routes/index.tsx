@@ -7,6 +7,8 @@ import {
   type RecentlyPlayedItem,
   type RecentlyPlayedType,
 } from "@/lib/music-kit/recently-played";
+import { VIEW_INSET } from "@/lib/layout";
+import { cn } from "@/lib/utils";
 import { matchesSearch } from "@/lib/search";
 import { createFileRoute } from "@tanstack/react-router";
 import { AnimatePresence } from "motion/react";
@@ -78,7 +80,7 @@ function RecentlyPlayed() {
   );
 
   return (
-    <div className="flex flex-col grow px-4 pb-4">
+    <div className={cn("flex flex-col grow pb-4", VIEW_INSET)}>
       <AnimatePresence mode="popLayout">
         {isPending && <LoadingState key="recently-played-loading-state" />}
         {isError && !isPending && <ErrorStates.RecentlyPlayed key="recently-played-error-state" />}
