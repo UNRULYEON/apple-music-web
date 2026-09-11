@@ -556,6 +556,94 @@ describe("Player", () => {
     expect(await screen.findByLabelText("Show the playlist")).toBeTruthy();
   });
 
+  it("plays and pauses with Space", async () => {
+    await renderPlayer();
+
+    loadQueue([item("1", "First")]);
+
+    fireEvent.keyDown(document.body, { key: " ", code: "Space" });
+    await waitFor(() => expect(music.play).toHaveBeenCalledOnce());
+    setState(PLAYBACK_STATES.playing);
+
+    fireEvent.keyDown(document.body, { key: " ", code: "Space" });
+    expect(screen.getByLabelText("Play")).toBeTruthy();
+    await waitFor(() => expect(music.pause).toHaveBeenCalled());
+  });
+
+  it("does not play again while a person holds Space down", async () => {
+    await renderPlayer();
+
+    loadQueue([item("1", "First")]);
+
+    fireEvent.keyDown(document.body, { key: " ", code: "Space" });
+    fireEvent.keyDown(document.body, { key: " ", code: "Space", repeat: true });
+
+    await waitFor(() => expect(music.play).toHaveBeenCalledOnce());
+    expect(screen.getByLabelText("Stop loading")).toBeTruthy();
+  });
+
+  it("skips between the songs with Shift and the arrows", async () => {
+    await renderPlayer();
+
+    loadQueue([item("1", "First"), item("2", "Second")]);
+
+    fireEvent.keyDown(document.body, { key: "ArrowRight", shiftKey: true });
+    expect(screen.getByText("Second")).toBeTruthy();
+
+    fireEvent.keyDown(document.body, { key: "ArrowLeft", shiftKey: true });
+    expect(screen.getByText("First")).toBeTruthy();
+  });
+
+  it("turns the shuffle and the repeat mode with S and R", async () => {
+    await renderPlayer();
+
+    loadQueue([item("1", "First")]);
+
+    fireEvent.keyDown(document.body, { key: "s", code: "KeyS" });
+    fireEvent.keyDown(document.body, { key: "r", code: "KeyR" });
+
+    await waitFor(() => expect(music.shuffleMode).toBe(SHUFFLE_MODES.songs));
+    await waitFor(() => expect(music.repeatMode).toBe(REPEAT_MODES.all));
+  });
+
+  it("leaves the keys to the page while the player is away", async () => {
+    await renderPlayer();
+
+    const isKept = fireEvent.keyDown(document.body, { key: " ", code: "Space" });
+
+    expect(isKept).toBe(true);
+    expect(music.play).not.toHaveBeenCalled();
+  });
+
+  it("leaves Space to a button a person moved to with the keys", async () => {
+    await renderPlayer();
+
+    loadQueue([item("1", "First")]);
+
+    const shuffle = screen.getByLabelText("Shuffle");
+    shuffle.focus();
+
+    fireEvent.keyDown(shuffle, { key: " ", code: "Space" });
+
+    expect(screen.getByLabelText("Play")).toBeTruthy();
+  });
+
+  it("leaves the keys alone while a person types", async () => {
+    await renderPlayer();
+
+    loadQueue([item("1", "First")]);
+
+    const input = document.createElement("input");
+    document.body.append(input);
+    input.focus();
+
+    const isKept = fireEvent.keyDown(input, { key: " ", code: "Space" });
+    input.remove();
+
+    expect(isKept).toBe(true);
+    expect(music.play).not.toHaveBeenCalled();
+  });
+
   it("leaves the song as plain text when the queue came from nowhere", async () => {
     await renderPlayer();
 

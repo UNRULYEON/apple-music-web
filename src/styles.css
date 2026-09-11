@@ -213,6 +213,11 @@ body {
   --dropdown-pre-scale: 0.97;
   --dropdown-closing-scale: 0.99;
   --dropdown-ease: cubic-bezier(0.22, 1, 0.36, 1);
+
+  --hint-in-dur: 150ms;
+  --hint-out-dur: 150ms;
+  --hint-in-offset: 4px;
+  --hint-ease: cubic-bezier(0.22, 1, 0.36, 1);
 }
 
 .dark {

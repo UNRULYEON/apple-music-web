@@ -1,4 +1,4 @@
-import { useIsMobile, usePlayer, useSignedInQuery, useView } from "@/hooks";
+import { useIsMobile, usePlayer, usePlayerHotkeys, useSignedInQuery, useView } from "@/hooks";
 import { useAuthStatus } from "@/lib/music-kit/auth";
 import { TRANSITION, TRANSITION_REVEAL, TRANSITION_SWAP } from "@/lib/motion";
 import type { QueueSource } from "@/lib/music-kit/playback";
@@ -7,6 +7,7 @@ import { isPlaylistType } from "@/lib/music-kit/playlists";
 import { songArtistsQuery } from "@/lib/music-kit/artists";
 import { songSourceQuery } from "@/lib/music-kit/song-source";
 import type { RepeatMode } from "@/lib/music-kit/player-state";
+import { PLAYER_HOTKEYS } from "@/lib/hotkeys";
 import { cn } from "@/lib/utils";
 import {
   Loading03Icon,
@@ -148,6 +149,7 @@ function PlayButton({ size = "icon" }: { size?: "icon" | "icon-lg" }) {
       variant="ghost"
       size={size}
       aria-label={isLoading ? "Stop loading" : isPlaying ? "Pause" : "Play"}
+      aria-keyshortcuts={PLAYER_HOTKEYS.toggle}
     >
       <AnimatePresence mode="popLayout">
         <motion.div
@@ -179,6 +181,7 @@ function NextButton({ size = "icon-xs" }: { size?: "icon-xs" | "icon-lg" }) {
       variant="ghost"
       size={size}
       aria-label="Next song"
+      aria-keyshortcuts={PLAYER_HOTKEYS.next}
     >
       <HugeiconsIcon icon={NextIcon} size={16} strokeWidth={2} />
     </Button>
@@ -197,6 +200,8 @@ export function Player() {
   // the bar belongs to the person who signed in, so it goes with them and does not wait
   // for MusicKit to let the queue go
   const isShown = Boolean(nowPlaying) && status !== "signed-out";
+
+  usePlayerHotkeys(isShown);
 
   const hidden = prefersReducedMotion ? FADED : HIDDEN;
   const shown = prefersReducedMotion ? OPAQUE : SHOWN;
@@ -250,6 +255,7 @@ export function Player() {
                         variant="ghost"
                         size="icon-xs"
                         aria-label="Shuffle"
+                        aria-keyshortcuts={PLAYER_HOTKEYS.shuffle}
                         aria-pressed={isShuffled}
                       >
                         <HugeiconsIcon
@@ -268,6 +274,7 @@ export function Player() {
                         variant="ghost"
                         size="icon-xs"
                         aria-label="Previous song"
+                        aria-keyshortcuts={PLAYER_HOTKEYS.previous}
                       >
                         <HugeiconsIcon icon={PreviousIcon} size={16} strokeWidth={2} />
                       </Button>
@@ -278,6 +285,7 @@ export function Player() {
                         variant="ghost"
                         size="icon-xs"
                         aria-label={REPEAT_LABELS[repeat]}
+                        aria-keyshortcuts={PLAYER_HOTKEYS.repeat}
                         aria-pressed={repeat !== "off"}
                       >
                         <HugeiconsIcon

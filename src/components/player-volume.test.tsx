@@ -99,6 +99,62 @@ describe("PlayerVolume", () => {
     await waitFor(() => expect(readStoredVolume()).toBeCloseTo(0.99));
   });
 
+  it("makes the tab louder and quieter with Shift and the arrows", async () => {
+    music.volume = 0.5;
+
+    render(<PlayerVolume />);
+    await waitFor(() => expect(trigger().getAttribute("aria-label")).toBe("Volume, 50 percent"));
+
+    fireEvent.keyDown(document.body, { key: "ArrowUp", shiftKey: true });
+    await waitFor(() => expect(music.volume).toBe(0.6));
+
+    fireEvent.keyDown(document.body, { key: "ArrowDown", shiftKey: true });
+    fireEvent.keyDown(document.body, { key: "ArrowDown", shiftKey: true });
+    await waitFor(() => expect(music.volume).toBe(0.4));
+  });
+
+  it("stops at the loudest level", async () => {
+    music.volume = 0.95;
+
+    render(<PlayerVolume />);
+    await waitFor(() => expect(trigger().getAttribute("aria-label")).toBe("Volume, 95 percent"));
+
+    fireEvent.keyDown(document.body, { key: "ArrowUp", shiftKey: true });
+
+    await waitFor(() => expect(music.volume).toBe(1));
+  });
+
+  it("shows the new level above the speaker when a person uses the keys", async () => {
+    music.volume = 0.5;
+
+    render(<PlayerVolume />);
+    await waitFor(() => expect(trigger().getAttribute("aria-label")).toBe("Volume, 50 percent"));
+
+    fireEvent.keyDown(document.body, { key: "ArrowUp", shiftKey: true });
+
+    const hint = await screen.findByRole("status");
+    await waitFor(() => expect(hint.querySelector(".rn-value")?.textContent).toBe("60"));
+  });
+
+  it("lets the level go a moment after the last key", async () => {
+    render(<PlayerVolume />);
+
+    fireEvent.keyDown(document.body, { key: "ArrowDown", shiftKey: true });
+    await screen.findByRole("status");
+
+    await waitFor(() => expect(screen.queryByRole("status")).toBeNull(), { timeout: 2000 });
+  });
+
+  it("leaves the level to the slider while the slider is open", async () => {
+    render(<PlayerVolume />);
+    await openPopover();
+
+    fireEvent.keyDown(document.body, { key: "ArrowDown", shiftKey: true });
+
+    await waitFor(() => expect(music.volume).toBe(0.9));
+    expect(screen.queryByRole("status")).toBeNull();
+  });
+
   it("closes when a person presses outside it", async () => {
     render(<PlayerVolume />);
     await openPopover();

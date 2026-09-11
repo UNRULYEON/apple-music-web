@@ -6,6 +6,7 @@ export { useView } from "./use-view";
 export { useSearch } from "./use-search";
 export { useBackdrop } from "./use-backdrop";
 export { usePlayer } from "./use-player";
+export { usePlayerHotkeys } from "./use-player-hotkeys";
 export { usePlaybackTime } from "./use-playback-time";
 export { usePrefetchRecentlyPlayed } from "./use-prefetch-recently-played";
 export { useSignedInQuery } from "./use-signed-in-query";
