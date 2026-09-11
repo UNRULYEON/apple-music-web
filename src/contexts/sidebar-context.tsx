@@ -1,4 +1,5 @@
 import { useMediaQuery } from "@/hooks";
+import { SIDEBAR_HOTKEY } from "@/lib/hotkeys";
 import { clearPreHydrationState, readStoredOpen, writeStoredOpen } from "@/lib/sidebar-storage";
 import { useHotkey } from "@tanstack/react-hotkeys";
 import {
@@ -38,7 +39,7 @@ export function SidebarProvider({ children }: { children: ReactNode }) {
 
   useIsomorphicLayoutEffect(clearPreHydrationState, []);
 
-  useHotkey("[", () => {
+  useHotkey(SIDEBAR_HOTKEY, () => {
     if (isMobile) {
       setPeeking((v) => !v);
     } else {

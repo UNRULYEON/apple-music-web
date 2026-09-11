@@ -8,6 +8,7 @@ import {
   segmentedControlRootClassName,
 } from "@/lib/segmented-control";
 import { RadioGroupPrimitive, RadioPrimitive } from "@/components/ui/radio-group";
+import { ShortcutsDialog } from "@/components/shortcuts-dialog";
 import { useTheme } from "@/hooks";
 import type { Theme } from "@/lib/theme-storage";
 import { cn } from "@/lib/utils";
@@ -50,6 +51,8 @@ export function BottomNav() {
           <HugeiconsIcon icon={LaptopIcon} strokeWidth={2} aria-hidden="true" />
         </RadioPrimitive.Root>
       </RadioGroupPrimitive>
+
+      <ShortcutsDialog />
 
       <Button
         variant="ghost"

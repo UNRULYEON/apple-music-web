@@ -1,5 +1,9 @@
 import type { Hotkey } from "@tanstack/react-hotkeys";
 
+export const SIDEBAR_HOTKEY = "[" satisfies Hotkey;
+
+export const SHORTCUTS_HOTKEY = "Shift+?" as Hotkey;
+
 export const PLAYER_HOTKEYS = {
   toggle: "Space",
   next: "Shift+ArrowRight",
