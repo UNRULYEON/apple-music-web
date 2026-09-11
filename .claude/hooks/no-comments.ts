@@ -2,6 +2,7 @@
 
 const CODE_FILE = /\.(ts|tsx|js|jsx|mts|cts|mjs|cjs|css)$/;
 const COMMENT = /(?:^|[^:"'`\\])\/\/|\/\*/;
+const TEST_ENVIRONMENT = /^\/\/ @vitest-environment \S+$/;
 
 interface HookInput {
   tool_input?: {
@@ -19,7 +20,7 @@ function findComments(source: string): Array<string> {
   return source
     .split("\n")
     .map((line, index) => ({ number: index + 1, text: line.trim() }))
-    .filter(({ text }) => COMMENT.test(text))
+    .filter(({ text }) => COMMENT.test(text) && !TEST_ENVIRONMENT.test(text))
     .map(({ number, text }) => `  line ${number}: ${text.slice(0, 100)}`);
 }
 
