@@ -1,6 +1,7 @@
 import { useSidebar, useView } from "@/hooks";
 import { TRANSITION_SLOW } from "@/lib/motion";
 import { cn } from "@/lib/utils";
+import type { View } from "@/lib/views/view";
 import { AnimatePresence, motion } from "motion/react";
 import { BottomNav } from "@/components";
 import { Button } from "@/components/ui/button";
@@ -17,6 +18,14 @@ export function Nav() {
   const isRecentlyPlayed =
     view.name === "home" || (view.name === "list" && view.list === "recently-played");
   const isAlbums = view.name === "list" && view.list === "albums";
+
+  function openAndClose(next: View) {
+    open(next);
+
+    if (isMobile) {
+      setOpen(false);
+    }
+  }
 
   return (
     <div className="flex flex-col">
@@ -97,13 +106,13 @@ export function Nav() {
                 icon={MusicNote02Icon}
                 label="Recently played"
                 isCurrent={isRecentlyPlayed}
-                onClick={() => open({ name: "list", list: "recently-played" })}
+                onClick={() => openAndClose({ name: "list", list: "recently-played" })}
               />
               <NavItem
                 icon={DiscAlbumIcon}
                 label="Albums"
                 isCurrent={isAlbums}
-                onClick={() => open({ name: "list", list: "albums" })}
+                onClick={() => openAndClose({ name: "list", list: "albums" })}
               />
             </div>
             <div className="flex flex-col">
