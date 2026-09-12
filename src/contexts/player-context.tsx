@@ -1,4 +1,11 @@
 import { useAuthStatus } from "@/lib/music-kit/auth";
+import {
+  handleMediaKeys,
+  showNowPlaying,
+  showPlaybackState,
+  showPosition,
+} from "@/lib/player/media-session";
+import { notifySong } from "@/lib/player/notify";
 import { reportPlaybackProblem } from "@/lib/player/report";
 import {
   changeToIndex,
@@ -256,6 +263,36 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
     writeStoredQueue({ songs: queue.map((song) => song.playId ?? song.id), index, source });
   }, [index, isRestored, queue, source]);
 
+  const asked = useRef(false);
+  const sounding = useRef<string>(undefined);
+  const song = queue[wanted ?? index] ?? state.nowPlaying;
+  const songId = song?.playId ?? song?.id;
+
+  useEffect(() => {
+    const before = sounding.current;
+
+    if (songId === undefined) {
+      sounding.current = undefined;
+      return;
+    }
+
+    if (before === songId) {
+      return;
+    }
+
+    sounding.current = songId;
+
+    const wasAsked = asked.current;
+
+    asked.current = false;
+
+    if (before === undefined || wasAsked || !song) {
+      return;
+    }
+
+    notifySong(song);
+  }, [song, songId]);
+
   useEffect(() => () => clearTimeout(timer.current), []);
 
   useEffect(() => () => clearTimeout(giveBack.current), []);
@@ -312,6 +349,7 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
   const play: PlayerContextType["play"] = useCallback(
     (songs, options) => {
       pending.current = undefined;
+      asked.current = true;
       dropPlaybackTime();
       setSource(options?.from);
       setWantsSound(true);
@@ -329,6 +367,7 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
   const playStation: PlayerContextType["playStation"] = useCallback(
     (id) => {
       pending.current = undefined;
+      asked.current = true;
       dropPlaybackTime();
       setSource(undefined);
       setWantsSound(true);
@@ -371,6 +410,7 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
       // drop it half way, which is what makes MusicKit complain about the key.
       setWanted(target);
       setWantsSound(true);
+      asked.current = true;
       startsSoon();
       clearTimeout(timer.current);
 
@@ -404,6 +444,42 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
       reportPlaybackProblem(cause);
     });
   }, [startsNoMore, startsSoon, wantsSound]);
+
+  useEffect(() => {
+    showNowPlaying(song);
+  }, [song]);
+
+  useEffect(() => {
+    showPlaybackState(wantsSound && isPlaying, song !== undefined);
+  }, [isPlaying, song, wantsSound]);
+
+  useEffect(
+    () =>
+      handleMediaKeys({
+        play: () => !wantsSound && toggle(),
+        pause: () => wantsSound && toggle(),
+        next,
+        previous,
+        seek: (to) => void seekTo(to).catch(reportPlaybackProblem),
+      }),
+    [next, previous, toggle, wantsSound],
+  );
+
+  useEffect(() => {
+    let written = -1;
+
+    return subscribeToPlaybackTime(() => {
+      const { position, duration } = readPlaybackTime();
+      const second = Math.floor(position);
+
+      if (second === written) {
+        return;
+      }
+
+      written = second;
+      showPosition(position, duration);
+    });
+  }, [song]);
 
   const toggleShuffle = useCallback(() => {
     void setShuffleMode(!isShuffled).catch(reportPlaybackProblem);

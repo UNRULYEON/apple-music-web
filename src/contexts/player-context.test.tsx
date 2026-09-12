@@ -25,6 +25,13 @@ import {
   type StoredQueue,
 } from "@/lib/now-playing-storage";
 import { setAuthStatus } from "@/lib/music-kit/auth";
+import {
+  handleMediaKeys,
+  showNowPlaying,
+  showPlaybackState,
+  showPosition,
+} from "@/lib/player/media-session";
+import { notifySong } from "@/lib/player/notify";
 import type { Song } from "@/lib/music-kit/track";
 import { act, cleanup, render, waitFor } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
@@ -36,6 +43,16 @@ vi.mock("@/lib/music-kit/drm", async (importOriginal) => ({
 }));
 vi.mock("@/lib/music-kit/storefront", () => ({
   fetchStorefront: vi.fn().mockResolvedValue({ id: "nl", name: "Netherlands" }),
+}));
+vi.mock("@/lib/player/media-session", () => ({
+  handleMediaKeys: vi.fn(() => () => undefined),
+  showNowPlaying: vi.fn(),
+  showPlaybackState: vi.fn(),
+  showPosition: vi.fn(),
+}));
+vi.mock("@/lib/player/notify", () => ({
+  askToNotify: vi.fn().mockResolvedValue(true),
+  notifySong: vi.fn(),
 }));
 
 const SONGS: Song[] = [
@@ -119,6 +136,87 @@ describe("PlayerProvider", () => {
     expect(seen.current?.nowPlaying?.name).toBe("Two");
     expect(seen.current?.queue).toHaveLength(2);
     expect(seen.current?.isPlaying).toBe(true);
+  });
+
+  it("puts the song in the media panel of the system", async () => {
+    await renderProvider();
+
+    music.queue.items = [songItem("111", "One"), songItem("222", "Two")];
+    act(() => music.emit("queueItemsDidChange", music.queue.items));
+
+    expect(showNowPlaying).toHaveBeenLastCalledWith(expect.objectContaining({ name: "One" }));
+    expect(showPlaybackState).toHaveBeenLastCalledWith(false, true);
+  });
+
+  it("hands the media keys of the system to the player", async () => {
+    const seen = await renderProvider();
+
+    music.queue.items = [songItem("111", "One"), songItem("222", "Two")];
+    act(() => music.emit("queueItemsDidChange", music.queue.items));
+
+    const keys = vi.mocked(handleMediaKeys).mock.lastCall?.[0];
+
+    act(() => keys?.next());
+
+    await waitFor(() => expect(music.changeToMediaAtIndex).toHaveBeenCalledWith(1));
+    expect(seen.current).toBeTruthy();
+  });
+
+  it("tells about the song when the queue moves on by itself", async () => {
+    const seen = await renderProvider();
+
+    music.queue.items = [songItem("111", "One"), songItem("222", "Two")];
+    act(() => music.emit("queueItemsDidChange", music.queue.items));
+
+    expect(seen.current?.nowPlaying?.name).toBe("One");
+    expect(notifySong).not.toHaveBeenCalled();
+
+    music.nowPlayingItemIndex = 1;
+    act(() => music.emit("nowPlayingItemDidChange", music.queue.items[1]));
+
+    expect(notifySong).toHaveBeenCalledWith(expect.objectContaining({ name: "Two" }));
+  });
+
+  it("tells about the second song when the first one a person started runs out", async () => {
+    const seen = await renderProvider();
+
+    act(() => seen.current?.play(SONGS));
+
+    music.queue.items = [songItem("111", "One"), songItem("222", "Two")];
+    act(() => music.emit("queueItemsDidChange", music.queue.items));
+
+    expect(notifySong).not.toHaveBeenCalled();
+
+    music.nowPlayingItemIndex = 1;
+    act(() => music.emit("nowPlayingItemDidChange", music.queue.items[1]));
+
+    expect(notifySong).toHaveBeenCalledWith(expect.objectContaining({ name: "Two" }));
+  });
+
+  it("keeps quiet about a song a person picked themselves", async () => {
+    const seen = await renderProvider();
+
+    music.queue.items = [songItem("111", "One"), songItem("222", "Two")];
+    act(() => music.emit("queueItemsDidChange", music.queue.items));
+
+    act(() => seen.current?.play(SONGS, { startAt: 1 }));
+    music.nowPlayingItemIndex = 1;
+    act(() => music.emit("nowPlayingItemDidChange", music.queue.items[1]));
+
+    expect(notifySong).not.toHaveBeenCalled();
+  });
+
+  it("keeps quiet about a song a person skipped to", async () => {
+    const seen = await renderProvider();
+
+    music.queue.items = [songItem("111", "One"), songItem("222", "Two")];
+    act(() => music.emit("queueItemsDidChange", music.queue.items));
+
+    act(() => seen.current?.next());
+    music.nowPlayingItemIndex = 1;
+    act(() => music.emit("nowPlayingItemDidChange", music.queue.items[1]));
+
+    expect(notifySong).not.toHaveBeenCalled();
   });
 
   it("moves through the queue that MusicKit holds", async () => {
@@ -512,6 +610,16 @@ describe("PlayerProvider", () => {
     act(() => music.emit("playbackTimeDidChange", { currentPlaybackTime: 42.7 }));
 
     await waitFor(() => expect(readStoredQueue()?.position).toBe(42));
+  });
+
+  it("moves the bar of the media panel with the song", async () => {
+    await restoreAt(1);
+
+    music.currentPlaybackTime = 42.7;
+    music.currentPlaybackDuration = 210;
+    act(() => music.emit("playbackTimeDidChange", { currentPlaybackTime: 42.7 }));
+
+    await waitFor(() => expect(showPosition).toHaveBeenCalledWith(42.7, 210));
   });
 
   it("keeps the place a person came back to until the song has it again", async () => {

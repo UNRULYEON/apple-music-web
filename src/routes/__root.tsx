@@ -15,6 +15,7 @@ import type { TanStackDevtoolsReactPlugin } from "@tanstack/react-devtools";
 import {
   BackButton,
   DrmNotice,
+  NotificationNotice,
   MainContent,
   Nav,
   Player,
@@ -140,6 +141,7 @@ function RootDocument({ children }: { children: React.ReactNode }) {
                 <ToastProvider position="top-center">
                   <PlayerProvider>
                     <DrmNotice />
+                    <NotificationNotice />
                     <MusicKitGate>
                       <SearchProvider>
                         <Nav />
