@@ -32,6 +32,24 @@ export function searchSongs(songs: Song[], term: string): Song[] {
   return songs.filter((song) => matchesSearch(term, song.name, song.artist?.name));
 }
 
+export function isExplicit(song: Song): boolean {
+  return song.contentRating === "explicit";
+}
+
+export function discStarts(songs: Song[]): Map<number, number> {
+  const starts = new Map<number, number>();
+  let current: number | undefined;
+
+  songs.forEach((song, index) => {
+    if (song.discNumber !== undefined && song.discNumber !== current) {
+      current = song.discNumber;
+      starts.set(index, current);
+    }
+  });
+
+  return starts.size > 1 ? starts : new Map();
+}
+
 // a song in the library and the song the player queues from the catalog
 // hold the same music under two ids
 export function isSameSong(one?: Song, other?: Song): boolean {

@@ -113,6 +113,52 @@ describe("TrackList", () => {
     expect(screen.queryByText("3")).toBeNull();
   });
 
+  it("marks an explicit song", () => {
+    renderList({
+      songs: [
+        { id: "s0", name: "First", trackNumber: 1, contentRating: "explicit" },
+        { id: "s1", name: "Second", trackNumber: 2 },
+      ],
+    });
+
+    expect(screen.getAllByLabelText("Explicit")).toHaveLength(1);
+  });
+
+  it("names each disc of an album that has more than one", () => {
+    renderList({
+      songs: [
+        { id: "s0", name: "First", trackNumber: 1, discNumber: 1 },
+        { id: "s1", name: "Second", trackNumber: 1, discNumber: 2 },
+      ],
+    });
+
+    expect(screen.getByRole("heading", { name: "Disc 1" })).toBeTruthy();
+    expect(screen.getByRole("heading", { name: "Disc 2" })).toBeTruthy();
+  });
+
+  it("names no disc on an album that has one", () => {
+    renderList({
+      songs: [
+        { id: "s0", name: "First", trackNumber: 1, discNumber: 1 },
+        { id: "s1", name: "Second", trackNumber: 2, discNumber: 1 },
+      ],
+    });
+
+    expect(screen.queryByRole("heading", { name: /^Disc/ })).toBeNull();
+  });
+
+  it("names no disc in a list that shows no track number", () => {
+    renderList({
+      showTrackNumber: false,
+      songs: [
+        { id: "s0", name: "First", discNumber: 1 },
+        { id: "s1", name: "Second", discNumber: 2 },
+      ],
+    });
+
+    expect(screen.queryByRole("heading", { name: /^Disc/ })).toBeNull();
+  });
+
   it("shows no number for a song Apple Music gives none", () => {
     renderList({ source: ALBUM, songs: [{ id: "s0", name: "First", artwork: ARTWORK }] });
 

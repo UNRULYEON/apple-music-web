@@ -1,4 +1,11 @@
-import { isSameSong, readSong, searchSongs, type Song } from "@/lib/music-kit/track";
+import {
+  discStarts,
+  isExplicit,
+  isSameSong,
+  readSong,
+  searchSongs,
+  type Song,
+} from "@/lib/music-kit/track";
 import { describe, expect, it } from "vitest";
 
 describe("isSameSong", () => {
@@ -64,5 +71,52 @@ describe("searchSongs", () => {
 
   it("gives back no song when nothing matches", () => {
     expect(searchSongs(SONGS, "nirvana")).toEqual([]);
+  });
+});
+
+describe("isExplicit", () => {
+  it("marks a song Apple Music calls explicit", () => {
+    expect(isExplicit({ id: "s1", name: "First", contentRating: "explicit" })).toBe(true);
+  });
+
+  it("leaves a clean song alone", () => {
+    expect(isExplicit({ id: "s1", name: "First", contentRating: "clean" })).toBe(false);
+  });
+
+  it("leaves a song with no rating alone", () => {
+    expect(isExplicit({ id: "s1", name: "First" })).toBe(false);
+  });
+});
+
+function onDisc(id: string, discNumber?: number): Song {
+  return { id, name: id, discNumber };
+}
+
+describe("discStarts", () => {
+  it("gives nothing for an album on one disc", () => {
+    expect(discStarts([onDisc("a", 1), onDisc("b", 1), onDisc("c", 1)]).size).toBe(0);
+  });
+
+  it("gives nothing when no song names a disc", () => {
+    expect(discStarts([onDisc("a"), onDisc("b")]).size).toBe(0);
+  });
+
+  it("names where each disc starts", () => {
+    const starts = discStarts([onDisc("a", 1), onDisc("b", 1), onDisc("c", 2), onDisc("d", 2)]);
+
+    expect([...starts]).toEqual([
+      [0, 1],
+      [2, 2],
+    ]);
+  });
+
+  it("counts a disc that comes back after another one", () => {
+    const starts = discStarts([onDisc("a", 1), onDisc("b", 2), onDisc("c", 1)]);
+
+    expect([...starts]).toEqual([
+      [0, 1],
+      [1, 2],
+      [2, 1],
+    ]);
   });
 });

@@ -1,5 +1,6 @@
 import { ArtworkImage } from "@/components/artwork";
 import { ArtistLinks } from "@/components/artist-links";
+import { ExplicitMark } from "@/components/details/explicit-mark";
 import { LibraryMark } from "@/components/details/library-mark";
 import { usePlayer } from "@/hooks";
 import { songDuration } from "@/lib/format";
@@ -7,11 +8,11 @@ import { ROW_BLEED } from "@/lib/layout";
 import { cn } from "@/lib/utils";
 import { TRANSITION } from "@/lib/motion";
 import { isSameSource, type QueueSource } from "@/lib/music-kit/playback";
-import { isSameSong, type Song } from "@/lib/music-kit/track";
+import { discStarts, isExplicit, isSameSong, type Song } from "@/lib/music-kit/track";
 import { PlayIcon } from "@hugeicons/core-free-icons";
 import { HugeiconsIcon } from "@hugeicons/react";
 import { AnimatePresence, motion, useReducedMotion } from "motion/react";
-import { useEffect, useRef } from "react";
+import { Fragment, useEffect, useMemo, useRef } from "react";
 
 const ARTWORK_SIZE = 48;
 
@@ -80,6 +81,10 @@ export function TrackList({
   const marksLibrary = showLibraryMark && songs.some((song) => song.inLibrary);
   const list = useRef<HTMLDivElement>(null);
   const hasShown = useRef(false);
+  const discs = useMemo(
+    () => (showTrackNumber ? discStarts(songs) : new Map<number, number>()),
+    [songs, showTrackNumber],
+  );
 
   useEffect(() => {
     const node = list.current;
@@ -106,35 +111,61 @@ export function TrackList({
     <div ref={list} className={cn("flex flex-col", ROW_BLEED)}>
       {songs.map((song, i) => {
         const playsNow = playsThisList && isSameSong(nowPlaying, song);
+        const disc = discs.get(i);
 
         return (
-          <button
-            key={`${song.id}-${i}`}
-            type="button"
-            data-playing={playsNow ? "" : undefined}
-            onClick={() => play(songs, { startAt: i, from: source })}
-            className="flex items-center text-left gap-4 px-2 sm:px-4 h-14 sm:h-16 hover:bg-neutral-600/15 hover:dark:bg-neutral-400/15 cursor-pointer rounded-xl backdrop-blur-3xl"
-          >
-            {showArtwork ? (
-              <div className="relative size-10 shrink-0">
-                <ArtworkImage
-                  artwork={song.artwork}
-                  size={ARTWORK_SIZE}
-                  iconSize={20}
-                  className="size-10 rounded-md"
-                />
-                <AnimatePresence initial={false}>
-                  {playsNow && (
-                    <motion.span
-                      key="mark"
-                      className="absolute inset-0 flex items-center justify-center rounded-md bg-neutral-950/50"
-                      initial={FADED}
-                      animate={OPAQUE}
-                      exit={FADED}
-                      transition={transition}
-                    >
+          <Fragment key={`${song.id}-${i}`}>
+            {disc !== undefined && <DiscHeading number={disc} />}
+            <button
+              type="button"
+              data-playing={playsNow ? "" : undefined}
+              onClick={() => play(songs, { startAt: i, from: source })}
+              className="flex items-center text-left gap-4 px-2 sm:px-4 h-14 sm:h-16 hover:bg-neutral-600/15 hover:dark:bg-neutral-400/15 cursor-pointer rounded-xl backdrop-blur-3xl"
+            >
+              {showArtwork ? (
+                <div className="relative size-10 shrink-0">
+                  <ArtworkImage
+                    artwork={song.artwork}
+                    size={ARTWORK_SIZE}
+                    iconSize={20}
+                    className="size-10 rounded-md"
+                  />
+                  <AnimatePresence initial={false}>
+                    {playsNow && (
                       <motion.span
-                        className="flex"
+                        key="mark"
+                        className="absolute inset-0 flex items-center justify-center rounded-md bg-neutral-950/50"
+                        initial={FADED}
+                        animate={OPAQUE}
+                        exit={FADED}
+                        transition={transition}
+                      >
+                        <motion.span
+                          className="flex"
+                          initial={hidden}
+                          animate={shown}
+                          exit={hidden}
+                          transition={transition}
+                        >
+                          <HugeiconsIcon
+                            icon={PlayIcon}
+                            size={16}
+                            strokeWidth={2}
+                            aria-label="Playing now"
+                            className="text-neutral-50"
+                          />
+                        </motion.span>
+                      </motion.span>
+                    )}
+                  </AnimatePresence>
+                </div>
+              ) : (
+                <span className="grid min-w-6 place-items-center tabular-nums text-sm text-neutral-600 dark:text-neutral-400">
+                  <AnimatePresence initial={false}>
+                    {playsNow ? (
+                      <motion.span
+                        key="mark"
+                        className="col-start-1 row-start-1 flex text-neutral-900 dark:text-neutral-100"
                         initial={hidden}
                         animate={shown}
                         exit={hidden}
@@ -142,75 +173,63 @@ export function TrackList({
                       >
                         <HugeiconsIcon
                           icon={PlayIcon}
-                          size={16}
+                          size={14}
                           strokeWidth={2}
                           aria-label="Playing now"
-                          className="text-neutral-50"
                         />
                       </motion.span>
-                    </motion.span>
+                    ) : (
+                      // the number Apple Music gives the song on its album, because a
+                      // list can leave songs out and counting the rows would name the
+                      // rest wrongly
+                      showTrackNumber &&
+                      song.trackNumber !== undefined && (
+                        <motion.span
+                          key="number"
+                          className="col-start-1 row-start-1"
+                          initial={hidden}
+                          animate={shown}
+                          exit={hidden}
+                          transition={transition}
+                        >
+                          {song.trackNumber}
+                        </motion.span>
+                      )
+                    )}
+                  </AnimatePresence>
+                </span>
+              )}
+              <div className="flex flex-col grow min-w-0">
+                <span className="flex min-w-0 items-center gap-1.5">
+                  <span className="truncate">{song.name}</span>
+                  {isExplicit(song) && <ExplicitMark />}
+                </span>
+                <span className="truncate text-sm text-neutral-600 dark:text-neutral-400">
+                  {song.artist?.name !== primaryArtist && (
+                    <ArtistLinks artists={song.artists} fallback={song.artist?.name} />
                   )}
-                </AnimatePresence>
+                </span>
               </div>
-            ) : (
-              <span className="grid min-w-6 place-items-center tabular-nums text-sm text-neutral-600 dark:text-neutral-400">
-                <AnimatePresence initial={false}>
-                  {playsNow ? (
-                    <motion.span
-                      key="mark"
-                      className="col-start-1 row-start-1 flex text-neutral-900 dark:text-neutral-100"
-                      initial={hidden}
-                      animate={shown}
-                      exit={hidden}
-                      transition={transition}
-                    >
-                      <HugeiconsIcon
-                        icon={PlayIcon}
-                        size={14}
-                        strokeWidth={2}
-                        aria-label="Playing now"
-                      />
-                    </motion.span>
-                  ) : (
-                    // the number Apple Music gives the song on its album, because a
-                    // list can leave songs out and counting the rows would name the
-                    // rest wrongly
-                    showTrackNumber &&
-                    song.trackNumber !== undefined && (
-                      <motion.span
-                        key="number"
-                        className="col-start-1 row-start-1"
-                        initial={hidden}
-                        animate={shown}
-                        exit={hidden}
-                        transition={transition}
-                      >
-                        {song.trackNumber}
-                      </motion.span>
-                    )
-                  )}
-                </AnimatePresence>
-              </span>
-            )}
-            <div className="flex flex-col grow min-w-0">
-              <span className="truncate">{song.name}</span>
-              <span className="truncate text-sm text-neutral-600 dark:text-neutral-400">
-                {song.artist?.name !== primaryArtist && (
-                  <ArtistLinks artists={song.artists} fallback={song.artist?.name} />
-                )}
-              </span>
-            </div>
-            {marksLibrary && (
-              <span className="grid w-4 shrink-0 place-items-center text-neutral-600 dark:text-neutral-400">
-                {song.inLibrary && <LibraryMark label="This song is in your library" />}
-              </span>
-            )}
-            <div className="text-sm tabular-nums text-neutral-600 dark:text-neutral-400">
-              {song.durationInMillis ? songDuration(song.durationInMillis) : null}
-            </div>
-          </button>
+              {marksLibrary && (
+                <span className="grid w-4 shrink-0 place-items-center text-neutral-600 dark:text-neutral-400">
+                  {song.inLibrary && <LibraryMark label="This song is in your library" />}
+                </span>
+              )}
+              <div className="text-sm tabular-nums text-neutral-600 dark:text-neutral-400">
+                {song.durationInMillis ? songDuration(song.durationInMillis) : null}
+              </div>
+            </button>
+          </Fragment>
         );
       })}
     </div>
+  );
+}
+
+function DiscHeading({ number }: { number: number }) {
+  return (
+    <h3 className="px-2 sm:px-4 pt-6 pb-2 text-sm font-medium text-neutral-600 dark:text-neutral-400">
+      Disc {number}
+    </h3>
   );
 }
