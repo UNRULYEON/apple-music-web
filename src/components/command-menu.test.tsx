@@ -4,6 +4,7 @@ import { SidebarProvider } from "@/contexts";
 import { useSidebar } from "@/hooks";
 import { COMMAND_MENU_HOTKEY, resolveHotkey } from "@/lib/hotkeys";
 import { libraryAlbumsQuery, type LibraryAlbum } from "@/lib/music-kit/album";
+import { catalogSearchQuery, type CatalogResults } from "@/lib/music-kit/catalog-search";
 import { libraryPlaylistsQuery, type LibraryPlaylist } from "@/lib/music-kit/playlists";
 import { setAuthStatus } from "@/lib/music-kit/auth";
 import { HOME } from "@/lib/views/view";
@@ -37,6 +38,12 @@ const PLAYLISTS: LibraryPlaylist[] = [
   { id: "p.2", name: "Runs", canEdit: true, hasCatalog: false, isPublic: false },
 ];
 
+const CATALOG: CatalogResults = {
+  artists: [{ id: "1440846798", name: "boygenius", credit: "Alternative" }],
+  albums: [{ id: "1656074388", name: "the record", credit: "boygenius" }],
+  playlists: [],
+};
+
 function stubViewport({ mobile }: { mobile: boolean }) {
   vi.stubGlobal("matchMedia", (query: string) => ({
     matches: mobile ? query.includes("max-width") : query.includes("min-width"),
@@ -59,7 +66,11 @@ afterEach(() => {
   localStorage.clear();
 });
 
-function renderMenu(albums: LibraryAlbum[] = ALBUMS, playlists: LibraryPlaylist[] = PLAYLISTS) {
+function renderMenu(
+  albums: LibraryAlbum[] = ALBUMS,
+  playlists: LibraryPlaylist[] = PLAYLISTS,
+  catalog: Record<string, CatalogResults> = {},
+) {
   const seen: { current?: ReturnType<typeof useSidebar> } = {};
 
   function Probe() {
@@ -70,6 +81,10 @@ function renderMenu(albums: LibraryAlbum[] = ALBUMS, playlists: LibraryPlaylist[
   const client = new QueryClient({ defaultOptions: { queries: { retry: false } } });
   client.setQueryData(libraryAlbumsQuery().queryKey, albums);
   client.setQueryData(libraryPlaylistsQuery().queryKey, playlists);
+
+  for (const [term, results] of Object.entries(catalog)) {
+    client.setQueryData(catalogSearchQuery(term).queryKey, results);
+  }
 
   render(
     <QueryClientProvider client={client}>
@@ -90,8 +105,8 @@ function pressShortcut() {
   fireEvent.keyDown(document.body, { key: "k", code: "KeyK", metaKey: isMac, ctrlKey: !isMac });
 }
 
-function input(): HTMLInputElement {
-  return screen.getByRole<HTMLInputElement>("combobox", { name: "Search your library" });
+function input(name: string = "Search your library"): HTMLInputElement {
+  return screen.getByRole<HTMLInputElement>("combobox", { name });
 }
 
 function type(text: string) {
@@ -114,7 +129,7 @@ describe("CommandMenu", () => {
 
     pressShortcut();
 
-    expect(await screen.findByRole("dialog", { name: "Search your library" })).toBeTruthy();
+    expect(await screen.findByRole("dialog", { name: "Search" })).toBeTruthy();
   });
 
   it("closes again with the shortcut", async () => {
@@ -262,6 +277,101 @@ describe("CommandMenu", () => {
 
     expect(await screen.findByRole("dialog")).toBeTruthy();
     expect(seen.current?.isPeeking).toBe(false);
+  });
+
+  it("shows a tab for the library and one for Apple Music", async () => {
+    renderMenu();
+
+    pressShortcut();
+    await screen.findByRole("dialog");
+
+    expect(screen.getByRole("tab", { name: "Library", selected: true })).toBeTruthy();
+    expect(screen.getByRole("tab", { name: "Apple Music", selected: false })).toBeTruthy();
+  });
+
+  it("asks for words before it searches Apple Music", async () => {
+    renderMenu();
+
+    pressShortcut();
+    await screen.findByRole("dialog");
+
+    fireEvent.click(screen.getByRole("tab", { name: "Apple Music" }));
+
+    expect(await screen.findByText("Type to search Apple Music.")).toBeTruthy();
+  });
+
+  it("lists what Apple Music holds and keeps the words a person typed", async () => {
+    renderMenu(ALBUMS, PLAYLISTS, { boygenius: CATALOG });
+
+    pressShortcut();
+    await screen.findByRole("dialog");
+
+    type("boygenius");
+    fireEvent.click(screen.getByRole("tab", { name: "Apple Music" }));
+
+    expect(input("Search Apple Music").value).toBe("boygenius");
+    await waitFor(() => expect(names()).toEqual(["boygeniusAlternative", "the recordboygenius"]));
+  });
+
+  it("switches tabs with the left and the right arrow", async () => {
+    renderMenu();
+
+    pressShortcut();
+    await screen.findByRole("dialog");
+
+    fireEvent.keyDown(input(), { key: "ArrowRight" });
+
+    await screen.findByRole("tab", { name: "Apple Music", selected: true });
+
+    fireEvent.keyDown(input("Search Apple Music"), { key: "ArrowLeft" });
+
+    expect(await screen.findByRole("tab", { name: "Library", selected: true })).toBeTruthy();
+  });
+
+  it("stays on the last tab when the arrow points past it", async () => {
+    renderMenu();
+
+    pressShortcut();
+    await screen.findByRole("dialog");
+
+    fireEvent.keyDown(input(), { key: "ArrowLeft" });
+
+    expect(screen.getByRole("tab", { name: "Library", selected: true })).toBeTruthy();
+  });
+
+  it("keeps the up and the down arrow on the results", async () => {
+    renderMenu(ALBUMS, PLAYLISTS, { boygenius: CATALOG });
+
+    pressShortcut();
+    await screen.findByRole("dialog");
+
+    type("boygenius");
+    fireEvent.click(screen.getByRole("tab", { name: "Apple Music" }));
+    await waitFor(() => expect(names()).toHaveLength(2));
+
+    const field = input("Search Apple Music");
+
+    expect(document.activeElement).toBe(field);
+
+    fireEvent.keyDown(field, { key: "ArrowDown" });
+    fireEvent.keyDown(field, { key: "Enter" });
+
+    expect(screen.getByRole("tab", { name: "Apple Music", selected: true })).toBeTruthy();
+    expect(openView).toHaveBeenCalledWith({ name: "detail", type: "albums", id: "1656074388" });
+  });
+
+  it("says so when Apple Music holds nothing like it", async () => {
+    renderMenu(ALBUMS, PLAYLISTS, {
+      nothing: { artists: [], albums: [], playlists: [] },
+    });
+
+    pressShortcut();
+    await screen.findByRole("dialog");
+
+    type("nothing");
+    fireEvent.click(screen.getByRole("tab", { name: "Apple Music" }));
+
+    expect(await screen.findByText("Nothing on Apple Music matches what you typed.")).toBeTruthy();
   });
 
   it("leaves the shortcut alone while nobody is signed in", () => {

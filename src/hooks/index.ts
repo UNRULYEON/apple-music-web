@@ -2,6 +2,7 @@ export { useCloseSidebarOnMobile, useSidebar } from "./use-sidebar";
 export { useMediaQuery, useIsMobile } from "./use-media-query";
 export { useTheme } from "./use-theme";
 export { useIsHydrated } from "./use-is-hydrated";
+export { useDebounced } from "./use-debounced";
 export { useView } from "./use-view";
 export { useSearch } from "./use-search";
 export { useBackdrop } from "./use-backdrop";
