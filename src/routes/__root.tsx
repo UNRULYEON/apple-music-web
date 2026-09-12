@@ -33,6 +33,8 @@ import { preHydrationScript as themePreHydrationScript } from "@/lib/theme-stora
 import { preHydrationScript as nodeShimPreHydrationScript } from "@/lib/music-kit/node-shim";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { SCROLL_AREA_ID } from "@/lib/scroll-area";
+import { BAR_INSET } from "@/lib/layout";
+import { cn } from "@/lib/utils";
 import { ToastProvider } from "@/components/ui/toast";
 import { hotkeysDevtoolsPlugin } from "@tanstack/react-hotkeys-devtools";
 
@@ -141,8 +143,10 @@ function RootDocument({ children }: { children: React.ReactNode }) {
                     <MusicKitGate>
                       <SearchProvider>
                         <Nav />
-                        <div className="relative flex flex-col grow min-w-0 min-h-0">
-                          <div className="flex items-center p-2 gap-2 bg-transparent">
+                        <div className="relative flex flex-col grow min-w-0 min-h-0 gap-2">
+                          <div
+                            className={cn("flex items-center py-2 gap-2 bg-transparent", BAR_INSET)}
+                          >
                             <SidebarToggle />
                             <BackButton />
                             <SearchInput />

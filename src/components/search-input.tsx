@@ -15,7 +15,7 @@ export function SearchInput() {
   const label = searchLabel(view);
 
   return (
-    <InputGroup className="ms-auto w-36 sm:w-56">
+    <InputGroup className="ms-auto w-64">
       <InputGroupAddon className="size-5">
         <HugeiconsIcon icon={Search01Icon} strokeWidth={2} />
       </InputGroupAddon>
