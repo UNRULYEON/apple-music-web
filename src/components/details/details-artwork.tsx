@@ -10,7 +10,7 @@ export function DetailsArtwork({ artwork, name }: { artwork?: Artwork; name: str
       alt={name}
       size={ARTWORK_SIZE}
       iconSize={96}
-      className="rounded-xl outline-neutral-50/50 outline-1 -outline-offset-1 dark:outline-neutral-900/50"
+      className="rounded-xl outline-neutral-50/50 outline-2 -outline-offset-2 dark:outline-neutral-900/50"
     />
   );
 }
