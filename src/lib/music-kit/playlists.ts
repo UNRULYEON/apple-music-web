@@ -77,6 +77,16 @@ export async function fetchLibraryPlaylists(): Promise<LibraryPlaylist[]> {
   }
 }
 
+export const LIBRARY_PLAYLISTS_STALE = 5 * 60 * 1000;
+
+export function libraryPlaylistsQuery() {
+  return {
+    queryKey: ["music-kit", "library-playlists"],
+    queryFn: fetchLibraryPlaylists,
+    staleTime: LIBRARY_PLAYLISTS_STALE,
+  };
+}
+
 export async function fetchPlaylist(type: PlaylistType, id: string): Promise<Playlist> {
   const path = await playlistPath(type, id);
   const music = await getMusicKit();

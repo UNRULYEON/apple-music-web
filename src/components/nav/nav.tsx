@@ -1,9 +1,10 @@
-import { useSidebar, useView } from "@/hooks";
+import { useCloseSidebarOnMobile, useSidebar, useView } from "@/hooks";
 import { TRANSITION_SLOW } from "@/lib/motion";
 import { cn } from "@/lib/utils";
 import type { View } from "@/lib/views/view";
 import { AnimatePresence, motion } from "motion/react";
 import { BottomNav } from "@/components";
+import { CommandMenuTrigger } from "@/components/command-menu";
 import { Button } from "@/components/ui/button";
 import { DiscAlbumIcon, MusicNote02Icon } from "@hugeicons/core-free-icons";
 import { HugeiconsIcon, type IconSvgElement } from "@hugeicons/react";
@@ -15,16 +16,14 @@ const SWIPE_CLOSE_VELOCITY = 500;
 export function Nav() {
   const { isOpen, isPeeking, isMobile, setOpen, setPeeking } = useSidebar();
   const { view, open } = useView();
+  const closeSidebarOnMobile = useCloseSidebarOnMobile();
   const isRecentlyPlayed =
     view.name === "home" || (view.name === "list" && view.list === "recently-played");
   const isAlbums = view.name === "list" && view.list === "albums";
 
   function openAndClose(next: View) {
     open(next);
-
-    if (isMobile) {
-      setOpen(false);
-    }
+    closeSidebarOnMobile();
   }
 
   return (
@@ -102,6 +101,7 @@ export function Nav() {
             )}
           >
             <div className="flex flex-col grow gap-1">
+              <CommandMenuTrigger />
               <NavItem
                 icon={MusicNote02Icon}
                 label="Recently played"

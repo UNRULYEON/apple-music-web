@@ -1,4 +1,4 @@
-export { useSidebar } from "./use-sidebar";
+export { useCloseSidebarOnMobile, useSidebar } from "./use-sidebar";
 export { useMediaQuery, useIsMobile } from "./use-media-query";
 export { useTheme } from "./use-theme";
 export { useIsHydrated } from "./use-is-hydrated";

@@ -8,12 +8,17 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import { Kbd, KbdGroup } from "@/components/ui/kbd";
-import { useSidebar } from "@/hooks";
-import { PLAYER_HOTKEYS, SHORTCUTS_HOTKEY, SIDEBAR_HOTKEY } from "@/lib/hotkeys";
+import { HotkeyKeys } from "@/components/hotkey-keys";
+import { useCloseSidebarOnMobile } from "@/hooks";
+import {
+  COMMAND_MENU_HOTKEY,
+  PLAYER_HOTKEYS,
+  SHORTCUTS_HOTKEY,
+  SIDEBAR_HOTKEY,
+} from "@/lib/hotkeys";
 import { KeyboardIcon } from "@hugeicons/core-free-icons";
 import { HugeiconsIcon } from "@hugeicons/react";
-import { formatForDisplay, useHotkey, type Hotkey } from "@tanstack/react-hotkeys";
+import { useHotkey, type Hotkey } from "@tanstack/react-hotkeys";
 import { useState } from "react";
 
 interface Shortcut {
@@ -25,6 +30,7 @@ const GROUPS: { title: string; shortcuts: Shortcut[] }[] = [
   {
     title: "General",
     shortcuts: [
+      { hotkey: COMMAND_MENU_HOTKEY, label: "Search your library" },
       { hotkey: SIDEBAR_HOTKEY, label: "Open or close the sidebar" },
       { hotkey: SHORTCUTS_HOTKEY, label: "Show the shortcuts" },
     ],
@@ -43,32 +49,9 @@ const GROUPS: { title: string; shortcuts: Shortcut[] }[] = [
   },
 ];
 
-function keyLabel(key: string): string {
-  return key === "Space" ? "Space" : formatForDisplay(key);
-}
-
-function Keys({ hotkey }: { hotkey: Hotkey }) {
-  return (
-    <KbdGroup>
-      <span className="sr-only">{hotkey}</span>
-      {hotkey.split("+").map((key) => (
-        <Kbd key={key} aria-hidden="true">
-          {keyLabel(key)}
-        </Kbd>
-      ))}
-    </KbdGroup>
-  );
-}
-
 export function ShortcutsDialog() {
-  const { isMobile, setOpen } = useSidebar();
+  const closeSidebarOnMobile = useCloseSidebarOnMobile();
   const [isShown, setShown] = useState(false);
-
-  function closeSidebarOnMobile() {
-    if (isMobile) {
-      setOpen(false);
-    }
-  }
 
   useHotkey(SHORTCUTS_HOTKEY, () => {
     closeSidebarOnMobile();
@@ -99,7 +82,7 @@ export function ShortcutsDialog() {
                   <div key={hotkey} className="flex items-center justify-between gap-4 text-sm">
                     <dt>{label}</dt>
                     <dd>
-                      <Keys hotkey={hotkey} />
+                      <HotkeyKeys hotkey={hotkey} />
                     </dd>
                   </div>
                 ))}

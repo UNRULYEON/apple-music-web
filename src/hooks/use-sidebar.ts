@@ -10,3 +10,13 @@ export function useSidebar() {
 
   return context;
 }
+
+export function useCloseSidebarOnMobile(): () => void {
+  const { isMobile, setOpen } = useSidebar();
+
+  return function closeSidebarOnMobile() {
+    if (isMobile) {
+      setOpen(false);
+    }
+  };
+}

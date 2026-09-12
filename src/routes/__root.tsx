@@ -6,6 +6,7 @@ import TanStackQueryDevtools from "@/integrations/tanstack-query/devtools";
 import { MusicKitDevtools } from "@/components/music-kit-devtools";
 import { PlayerDevtools } from "@/components/player-devtools";
 import { MusicKitGate } from "@/components/music-kit-gate";
+import { CommandMenu } from "@/components/command-menu";
 
 import appCss from "../styles.css?url";
 
@@ -156,6 +157,7 @@ function RootDocument({ children }: { children: React.ReactNode }) {
                           </ScrollArea>
                           <Player />
                         </div>
+                        <CommandMenu />
                       </SearchProvider>
                     </MusicKitGate>
                     <TanStackDevtools
