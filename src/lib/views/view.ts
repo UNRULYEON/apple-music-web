@@ -41,8 +41,7 @@ export function canSearch(view: View): boolean {
   return (
     view.name === "home" ||
     view.name === "detail" ||
-    (view.name === "list" &&
-      (view.list === "recently-played" || view.list === "albums" || view.list === "artists"))
+    (view.name === "list" && view.list !== "songs")
   );
 }
 

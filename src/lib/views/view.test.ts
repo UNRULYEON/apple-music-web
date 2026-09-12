@@ -117,6 +117,7 @@ describe("canSearch", () => {
     ["recently played", { name: "list", list: "recently-played" } as const],
     ["albums", { name: "list", list: "albums" } as const],
     ["artists", { name: "list", list: "artists" } as const],
+    ["playlists", { name: "list", list: "playlists" } as const],
     ["an album", { name: "detail", type: "albums", id: "a.1" } as const],
     ["a playlist", { name: "detail", type: "playlists", id: "p.1" } as const],
     ["an artist", { name: "detail", type: "artists", id: "1440846798" } as const],

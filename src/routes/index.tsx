@@ -3,6 +3,7 @@ import {
   ErrorStates,
   LibraryAlbums,
   LibraryArtists,
+  LibraryPlaylists,
   LoadingState,
 } from "@/components";
 import { EmptyStates } from "@/components/empty-states";
@@ -54,12 +55,17 @@ function HomeView() {
     return <DetailsView id={view.id} type={view.type} />;
   }
 
-  if (view.name === "list" && view.list === "albums") {
-    return <LibraryAlbums />;
-  }
-
-  if (view.name === "list" && view.list === "artists") {
-    return <LibraryArtists />;
+  if (view.name === "list") {
+    switch (view.list) {
+      case "albums":
+        return <LibraryAlbums />;
+      case "artists":
+        return <LibraryArtists />;
+      case "playlists":
+        return <LibraryPlaylists />;
+      default:
+        break;
+    }
   }
 
   return <RecentlyPlayed />;

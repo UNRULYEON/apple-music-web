@@ -5,6 +5,7 @@ export { EmptyStates } from "./empty-states";
 export { ErrorStates } from "./error-states";
 export { LibraryAlbums } from "./library-albums";
 export { LibraryArtists } from "./library-artists";
+export { LibraryPlaylists } from "./library-playlists";
 export { LoadingState } from "./loading-state";
 export { MediaGrid } from "./media-grid";
 export { Nav, BottomNav } from "./nav";
