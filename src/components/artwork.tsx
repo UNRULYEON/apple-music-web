@@ -94,7 +94,7 @@ export function ArtworkImage({
         onLoad={load}
         onError={() => setStatus("error")}
         className={cn(
-          "absolute inset-0 size-full object-cover outline-neutral-50/50 outline-1 -outline-offset-1 dark:outline-neutral-900/50",
+          "absolute inset-0 size-full object-cover outline-artwork-outline outline-1 -outline-offset-1",
           className,
         )}
         initial={wasShown ? SHARP : BLURRED}

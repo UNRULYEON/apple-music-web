@@ -2,7 +2,6 @@ export type Theme = "light" | "dark" | "system";
 
 const STORAGE_KEY = "theme";
 const DARK_QUERY = "(prefers-color-scheme: dark)";
-const REDUCED_MOTION_QUERY = "(prefers-reduced-motion: reduce)";
 
 const listeners = new Set<() => void>();
 
@@ -41,15 +40,6 @@ export function applyTheme(theme: Theme, prefersDark: boolean): void {
   const dark = theme === "dark" || (theme === "system" && prefersDark);
   document.documentElement.classList.toggle("dark", dark);
   document.documentElement.style.colorScheme = dark ? "dark" : "light";
-}
-
-export function startThemeTransition(update: () => void): void {
-  if (!document.startViewTransition || window.matchMedia(REDUCED_MOTION_QUERY).matches) {
-    update();
-    return;
-  }
-
-  document.startViewTransition(update);
 }
 
 export const preHydrationScript = `try{

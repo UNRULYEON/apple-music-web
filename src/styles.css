@@ -160,6 +160,7 @@ body {
   --color-code-highlight: var(--code-highlight);
   --code-foreground: var(--code-foreground);
   --color-code: var(--code);
+  --color-artwork-outline: var(--artwork-outline);
 }
 
 :root {
@@ -170,7 +171,8 @@ body {
   --success-foreground: var(--color-emerald-700);
   --warning: var(--color-amber-500);
   --warning-foreground: var(--color-amber-700);
-  --background: var(--color-white);
+  --background-instant: var(--color-white);
+  --background: var(--background-instant);
   --foreground: var(--color-neutral-800);
   --card: var(--color-white);
   --card-foreground: var(--color-neutral-800);
@@ -205,6 +207,7 @@ body {
   --code: var(--color-white);
   --code-foreground: var(--foreground);
   --code-highlight: --alpha(var(--color-black) / 4%);
+  --artwork-outline: --alpha(var(--color-neutral-50) / 50%);
 
   /* a surface that grows out of the button it belongs to. The close is quicker and
      quieter than the open, so leaving takes less notice than arriving. */
@@ -218,6 +221,8 @@ body {
   --hint-out-dur: 150ms;
   --hint-in-offset: 4px;
   --hint-ease: cubic-bezier(0.22, 1, 0.36, 1);
+
+  --theme-fade: 250ms ease-in-out;
 }
 
 .dark {
@@ -228,7 +233,8 @@ body {
   --success-foreground: var(--color-emerald-400);
   --warning: var(--color-amber-500);
   --warning-foreground: var(--color-amber-400);
-  --background: color-mix(in srgb, var(--color-neutral-950) 95%, var(--color-white));
+  --background-instant: color-mix(in srgb, var(--color-neutral-950) 95%, var(--color-white));
+  --background: var(--background-instant);
   --foreground: var(--color-neutral-100);
   --card: color-mix(in srgb, var(--background) 98%, var(--color-white));
   --card-foreground: var(--color-neutral-100);
@@ -262,6 +268,272 @@ body {
   --code: color-mix(in srgb, var(--background) 98%, var(--color-white));
   --code-foreground: var(--foreground);
   --code-highlight: --alpha(var(--color-white) / 4%);
+  --artwork-outline: --alpha(var(--color-neutral-900) / 50%);
+}
+
+@property --destructive-foreground {
+  syntax: "<color>";
+  inherits: true;
+  initial-value: transparent;
+}
+
+@property --info-foreground {
+  syntax: "<color>";
+  inherits: true;
+  initial-value: transparent;
+}
+
+@property --success-foreground {
+  syntax: "<color>";
+  inherits: true;
+  initial-value: transparent;
+}
+
+@property --warning-foreground {
+  syntax: "<color>";
+  inherits: true;
+  initial-value: transparent;
+}
+
+@property --background {
+  syntax: "<color>";
+  inherits: true;
+  initial-value: transparent;
+}
+
+@property --foreground {
+  syntax: "<color>";
+  inherits: true;
+  initial-value: transparent;
+}
+
+@property --card {
+  syntax: "<color>";
+  inherits: true;
+  initial-value: transparent;
+}
+
+@property --card-foreground {
+  syntax: "<color>";
+  inherits: true;
+  initial-value: transparent;
+}
+
+@property --popover {
+  syntax: "<color>";
+  inherits: true;
+  initial-value: transparent;
+}
+
+@property --popover-foreground {
+  syntax: "<color>";
+  inherits: true;
+  initial-value: transparent;
+}
+
+@property --primary {
+  syntax: "<color>";
+  inherits: true;
+  initial-value: transparent;
+}
+
+@property --primary-foreground {
+  syntax: "<color>";
+  inherits: true;
+  initial-value: transparent;
+}
+
+@property --secondary {
+  syntax: "<color>";
+  inherits: true;
+  initial-value: transparent;
+}
+
+@property --secondary-foreground {
+  syntax: "<color>";
+  inherits: true;
+  initial-value: transparent;
+}
+
+@property --muted {
+  syntax: "<color>";
+  inherits: true;
+  initial-value: transparent;
+}
+
+@property --muted-foreground {
+  syntax: "<color>";
+  inherits: true;
+  initial-value: transparent;
+}
+
+@property --accent {
+  syntax: "<color>";
+  inherits: true;
+  initial-value: transparent;
+}
+
+@property --accent-foreground {
+  syntax: "<color>";
+  inherits: true;
+  initial-value: transparent;
+}
+
+@property --destructive {
+  syntax: "<color>";
+  inherits: true;
+  initial-value: transparent;
+}
+
+@property --border {
+  syntax: "<color>";
+  inherits: true;
+  initial-value: transparent;
+}
+
+@property --input {
+  syntax: "<color>";
+  inherits: true;
+  initial-value: transparent;
+}
+
+@property --ring {
+  syntax: "<color>";
+  inherits: true;
+  initial-value: transparent;
+}
+
+@property --chart-1 {
+  syntax: "<color>";
+  inherits: true;
+  initial-value: transparent;
+}
+
+@property --chart-2 {
+  syntax: "<color>";
+  inherits: true;
+  initial-value: transparent;
+}
+
+@property --chart-3 {
+  syntax: "<color>";
+  inherits: true;
+  initial-value: transparent;
+}
+
+@property --chart-4 {
+  syntax: "<color>";
+  inherits: true;
+  initial-value: transparent;
+}
+
+@property --chart-5 {
+  syntax: "<color>";
+  inherits: true;
+  initial-value: transparent;
+}
+
+@property --sidebar {
+  syntax: "<color>";
+  inherits: true;
+  initial-value: transparent;
+}
+
+@property --sidebar-foreground {
+  syntax: "<color>";
+  inherits: true;
+  initial-value: transparent;
+}
+
+@property --sidebar-primary {
+  syntax: "<color>";
+  inherits: true;
+  initial-value: transparent;
+}
+
+@property --sidebar-primary-foreground {
+  syntax: "<color>";
+  inherits: true;
+  initial-value: transparent;
+}
+
+@property --sidebar-accent {
+  syntax: "<color>";
+  inherits: true;
+  initial-value: transparent;
+}
+
+@property --sidebar-accent-foreground {
+  syntax: "<color>";
+  inherits: true;
+  initial-value: transparent;
+}
+
+@property --sidebar-border {
+  syntax: "<color>";
+  inherits: true;
+  initial-value: transparent;
+}
+
+@property --code {
+  syntax: "<color>";
+  inherits: true;
+  initial-value: transparent;
+}
+
+@property --code-highlight {
+  syntax: "<color>";
+  inherits: true;
+  initial-value: transparent;
+}
+
+@property --artwork-outline {
+  syntax: "<color>";
+  inherits: true;
+  initial-value: transparent;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  :root {
+    transition:
+      --destructive-foreground var(--theme-fade),
+      --info-foreground var(--theme-fade),
+      --success-foreground var(--theme-fade),
+      --warning-foreground var(--theme-fade),
+      --background var(--theme-fade),
+      --foreground var(--theme-fade),
+      --card var(--theme-fade),
+      --card-foreground var(--theme-fade),
+      --popover var(--theme-fade),
+      --popover-foreground var(--theme-fade),
+      --primary var(--theme-fade),
+      --primary-foreground var(--theme-fade),
+      --secondary var(--theme-fade),
+      --secondary-foreground var(--theme-fade),
+      --muted var(--theme-fade),
+      --muted-foreground var(--theme-fade),
+      --accent var(--theme-fade),
+      --accent-foreground var(--theme-fade),
+      --destructive var(--theme-fade),
+      --border var(--theme-fade),
+      --input var(--theme-fade),
+      --ring var(--theme-fade),
+      --chart-1 var(--theme-fade),
+      --chart-2 var(--theme-fade),
+      --chart-3 var(--theme-fade),
+      --chart-4 var(--theme-fade),
+      --chart-5 var(--theme-fade),
+      --sidebar var(--theme-fade),
+      --sidebar-foreground var(--theme-fade),
+      --sidebar-primary var(--theme-fade),
+      --sidebar-primary-foreground var(--theme-fade),
+      --sidebar-accent var(--theme-fade),
+      --sidebar-accent-foreground var(--theme-fade),
+      --sidebar-border var(--theme-fade),
+      --code var(--theme-fade),
+      --code-highlight var(--theme-fade),
+      --artwork-outline var(--theme-fade);
+  }
 }
 
 @layer base {
@@ -269,10 +541,14 @@ body {
     @apply border-border outline-ring/50;
   }
   body {
-    @apply bg-background text-foreground;
+    @apply text-foreground;
   }
   html {
     @apply font-sans;
+  }
+  html,
+  body {
+    background-color: var(--background-instant);
   }
   code,
   kbd,
@@ -291,18 +567,5 @@ body {
   }
   [data-sidebar="closed"] [data-slot="nav-panel-inner"] {
     top: 40px !important;
-  }
-}
-
-::view-transition-old(root),
-::view-transition-new(root) {
-  animation-duration: 250ms;
-  animation-timing-function: ease-in-out;
-}
-
-@media (prefers-reduced-motion: reduce) {
-  ::view-transition-old(root),
-  ::view-transition-new(root) {
-    animation: none;
   }
 }

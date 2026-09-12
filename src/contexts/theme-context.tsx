@@ -4,7 +4,6 @@ import {
   DARK_QUERY,
   readInitialTheme,
   readStoredTheme,
-  startThemeTransition,
   subscribeToTheme,
   writeStoredTheme,
   type Theme,
@@ -18,7 +17,6 @@ import {
   useSyncExternalStore,
   type ReactNode,
 } from "react";
-import { flushSync } from "react-dom";
 
 export type ThemeContextType = {
   theme: Theme;
@@ -44,7 +42,7 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
   }, [theme, prefersDark]);
 
   const setTheme: ThemeContextType["setTheme"] = useCallback((next) => {
-    startThemeTransition(() => flushSync(() => writeStoredTheme(next)));
+    writeStoredTheme(next);
   }, []);
 
   return <ThemeContext.Provider value={{ theme, setTheme }}>{children}</ThemeContext.Provider>;
