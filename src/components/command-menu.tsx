@@ -19,7 +19,13 @@ import {
 } from "@/components/ui/command";
 import { useCloseSidebarOnMobile, useIsHydrated, useSignedInQuery, useView } from "@/hooks";
 import { COMMAND_MENU_HOTKEY, resolveHotkey } from "@/lib/hotkeys";
+import { count } from "@/lib/format";
 import { libraryAlbumsQuery, type LibraryAlbum } from "@/lib/music-kit/album";
+import {
+  readLibraryArtists,
+  searchArtists,
+  type LibraryArtist,
+} from "@/lib/music-kit/library-artists";
 import { libraryPlaylistsQuery, type LibraryPlaylist } from "@/lib/music-kit/playlists";
 import type { Artwork } from "@/lib/music-kit/resource";
 import type { View } from "@/lib/views/view";
@@ -59,6 +65,16 @@ function albumResult(album: LibraryAlbum): Result {
   };
 }
 
+function artistResult(artist: LibraryArtist): Result {
+  return {
+    id: `library-artists:${artist.name}`,
+    name: artist.name,
+    credit: count(artist.albumCount, "album"),
+    artwork: artist.artwork,
+    view: { name: "detail", type: "library-artists", id: artist.name },
+  };
+}
+
 function playlistResult(playlist: LibraryPlaylist): Result {
   return {
     id: `library-playlists:${playlist.id}`,
@@ -73,7 +89,7 @@ function group(label: string, items: Result[]): ResultGroup[] {
   return items.length > 0 ? [{ label, items: items.slice(0, LIMIT) }] : [];
 }
 
-function emptyText(isPending: boolean, isError: boolean, count: number): string {
+function emptyText(isPending: boolean, isError: boolean, found: number): string {
   if (isPending) {
     return "Loading your library…";
   }
@@ -82,7 +98,7 @@ function emptyText(isPending: boolean, isError: boolean, count: number): string 
     return "Your library did not load.";
   }
 
-  return count === 0 ? "Your library is empty." : "Nothing in your library matches what you typed.";
+  return found === 0 ? "Your library is empty." : "Nothing in your library matches what you typed.";
 }
 
 function LibrarySearch() {
@@ -91,8 +107,11 @@ function LibrarySearch() {
   const playlists = useSignedInQuery(libraryPlaylistsQuery());
   const [query, setQuery] = useState("");
 
+  const artists = useMemo(() => readLibraryArtists(albums.data ?? []), [albums.data]);
+
   const groups = useMemo<ResultGroup[]>(
     () => [
+      ...group("Artists", searchArtists(artists, query).map(artistResult)),
       ...group(
         "Albums",
         (albums.data ?? [])
@@ -106,7 +125,7 @@ function LibrarySearch() {
           .map(playlistResult),
       ),
     ],
-    [albums.data, playlists.data, query],
+    [albums.data, artists, playlists.data, query],
   );
 
   function show(result: Result) {

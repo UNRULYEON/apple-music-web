@@ -136,13 +136,14 @@ describe("CommandMenu", () => {
     expect(await screen.findByRole("dialog")).toBeTruthy();
   });
 
-  it("lists the albums and the playlists of the library", async () => {
+  it("lists the artists, the albums and the playlists of the library", async () => {
     renderMenu();
 
     pressShortcut();
     await screen.findByRole("dialog");
 
-    expect(names()).toHaveLength(5);
+    expect(names()).toHaveLength(7);
+    expect(screen.getByText("Artists")).toBeTruthy();
     expect(screen.getByText("Albums")).toBeTruthy();
     expect(screen.getByText("Playlists")).toBeTruthy();
   });
@@ -188,6 +189,24 @@ describe("CommandMenu", () => {
     });
   });
 
+  it("opens the artist a person picks", async () => {
+    renderMenu();
+
+    pressShortcut();
+    await screen.findByRole("dialog");
+
+    type("radiohead");
+    await waitFor(() => expect(names()[0]).toBe("Radiohead2 albums"));
+
+    fireEvent.keyDown(input(), { key: "Enter" });
+
+    expect(openView).toHaveBeenCalledWith({
+      name: "detail",
+      type: "library-artists",
+      id: "Radiohead",
+    });
+  });
+
   it("finds an album by its artist, whatever the accents", async () => {
     renderMenu();
 
@@ -196,7 +215,7 @@ describe("CommandMenu", () => {
 
     type("bjork");
 
-    await waitFor(() => expect(names()).toEqual(["HomogenicBjörk"]));
+    await waitFor(() => expect(names()).toEqual(["Björk1 album", "HomogenicBjörk"]));
   });
 
   it("says so when nothing in the library matches", async () => {

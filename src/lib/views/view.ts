@@ -4,9 +4,10 @@ const DETAIL_TYPES = [
   "playlists",
   "library-playlists",
   "artists",
+  "library-artists",
 ] as const;
 
-const LIST_NAMES = ["recently-played", "albums", "playlists", "songs"] as const;
+const LIST_NAMES = ["recently-played", "albums", "artists", "playlists", "songs"] as const;
 
 export type DetailType = (typeof DETAIL_TYPES)[number];
 export type ListName = (typeof LIST_NAMES)[number];
@@ -40,13 +41,15 @@ export function canSearch(view: View): boolean {
   return (
     view.name === "home" ||
     view.name === "detail" ||
-    (view.name === "list" && (view.list === "recently-played" || view.list === "albums"))
+    (view.name === "list" &&
+      (view.list === "recently-played" || view.list === "albums" || view.list === "artists"))
   );
 }
 
 const LIST_SEARCH_LABELS: Record<ListName, string> = {
   "recently-played": "Search recently played",
   albums: "Search albums",
+  artists: "Search artists",
   playlists: "Search playlists",
   songs: "Search songs",
 };
@@ -57,6 +60,7 @@ const DETAIL_SEARCH_LABELS: Record<DetailType, string> = {
   playlists: "Search this playlist",
   "library-playlists": "Search this playlist",
   artists: "Search this artist",
+  "library-artists": "Search this artist",
 };
 
 export function searchLabel(view: View): string {

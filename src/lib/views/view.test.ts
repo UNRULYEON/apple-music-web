@@ -25,6 +25,14 @@ describe("readView", () => {
     });
   });
 
+  it("reads the artists of the library", () => {
+    expect(readView({ name: "detail", type: "library-artists", id: "Björk" })).toEqual({
+      name: "detail",
+      type: "library-artists",
+      id: "Björk",
+    });
+  });
+
   it("takes an album", () => {
     expect(readView({ name: "detail", type: "albums", id: "a.1" })).toEqual({
       name: "detail",
@@ -108,9 +116,11 @@ describe("canSearch", () => {
     ["home", { name: "home" } as const],
     ["recently played", { name: "list", list: "recently-played" } as const],
     ["albums", { name: "list", list: "albums" } as const],
+    ["artists", { name: "list", list: "artists" } as const],
     ["an album", { name: "detail", type: "albums", id: "a.1" } as const],
     ["a playlist", { name: "detail", type: "playlists", id: "p.1" } as const],
     ["an artist", { name: "detail", type: "artists", id: "1440846798" } as const],
+    ["an artist in the library", { name: "detail", type: "library-artists", id: "Björk" } as const],
   ])("gives a search box to %s", (_name, view) => {
     expect(canSearch(view)).toBe(true);
   });
@@ -126,6 +136,7 @@ describe("canSearch", () => {
 describe("searchLabel", () => {
   it("names the list a person is on", () => {
     expect(searchLabel({ name: "list", list: "albums" })).toBe("Search albums");
+    expect(searchLabel({ name: "list", list: "artists" })).toBe("Search artists");
     expect(searchLabel({ name: "list", list: "playlists" })).toBe("Search playlists");
   });
 
@@ -142,5 +153,8 @@ describe("searchLabel", () => {
       "Search this playlist",
     );
     expect(searchLabel({ name: "detail", type: "artists", id: "a.1" })).toBe("Search this artist");
+    expect(searchLabel({ name: "detail", type: "library-artists", id: "Björk" })).toBe(
+      "Search this artist",
+    );
   });
 });

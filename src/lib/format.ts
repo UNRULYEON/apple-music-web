@@ -55,6 +55,6 @@ export function totalDuration(songs: Song[]): string {
   return `${count(hours, "hour")} ${count(rest, "minute")}`;
 }
 
-function count(value: number, unit: string): string {
+export function count(value: number, unit: string): string {
   return `${value} ${unit}${value === 1 ? "" : "s"}`;
 }

@@ -4,6 +4,7 @@ export { BackButton } from "./back-button";
 export { EmptyStates } from "./empty-states";
 export { ErrorStates } from "./error-states";
 export { LibraryAlbums } from "./library-albums";
+export { LibraryArtists } from "./library-artists";
 export { LoadingState } from "./loading-state";
 export { MediaGrid } from "./media-grid";
 export { Nav, BottomNav } from "./nav";

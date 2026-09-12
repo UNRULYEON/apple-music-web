@@ -6,7 +6,7 @@ import { AnimatePresence, motion } from "motion/react";
 import { BottomNav } from "@/components";
 import { CommandMenuTrigger } from "@/components/command-menu";
 import { Button } from "@/components/ui/button";
-import { DiscAlbumIcon, MusicNote02Icon } from "@hugeicons/core-free-icons";
+import { DiscAlbumIcon, Mic01Icon, MusicNote02Icon } from "@hugeicons/core-free-icons";
 import { HugeiconsIcon, type IconSvgElement } from "@hugeicons/react";
 
 const SIDEBAR_WIDTH = 256;
@@ -20,6 +20,7 @@ export function Nav() {
   const isRecentlyPlayed =
     view.name === "home" || (view.name === "list" && view.list === "recently-played");
   const isAlbums = view.name === "list" && view.list === "albums";
+  const isArtists = view.name === "list" && view.list === "artists";
 
   function openAndClose(next: View) {
     open(next);
@@ -113,6 +114,12 @@ export function Nav() {
                 label="Albums"
                 isCurrent={isAlbums}
                 onClick={() => openAndClose({ name: "list", list: "albums" })}
+              />
+              <NavItem
+                icon={Mic01Icon}
+                label="Artists"
+                isCurrent={isArtists}
+                onClick={() => openAndClose({ name: "list", list: "artists" })}
               />
             </div>
             <div className="flex flex-col">

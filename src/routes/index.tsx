@@ -1,4 +1,10 @@
-import { DetailsView, ErrorStates, LibraryAlbums, LoadingState } from "@/components";
+import {
+  DetailsView,
+  ErrorStates,
+  LibraryAlbums,
+  LibraryArtists,
+  LoadingState,
+} from "@/components";
 import { EmptyStates } from "@/components/empty-states";
 import { MediaGrid } from "@/components/media-grid";
 import { useIsHydrated, usePlayer, useSearch, useSignedInQuery, useView } from "@/hooks";
@@ -50,6 +56,10 @@ function HomeView() {
 
   if (view.name === "list" && view.list === "albums") {
     return <LibraryAlbums />;
+  }
+
+  if (view.name === "list" && view.list === "artists") {
+    return <LibraryArtists />;
   }
 
   return <RecentlyPlayed />;
