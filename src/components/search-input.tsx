@@ -1,6 +1,6 @@
 import { InputGroup, InputGroupAddon, InputGroupInput } from "@/components/ui/input-group";
 import { useSearch, useView } from "@/hooks";
-import { canSearch } from "@/lib/views/view";
+import { canSearch, searchLabel } from "@/lib/views/view";
 import { Cancel01Icon, Search01Icon } from "@hugeicons/core-free-icons";
 import { HugeiconsIcon } from "@hugeicons/react";
 
@@ -12,6 +12,8 @@ export function SearchInput() {
     return null;
   }
 
+  const label = searchLabel(view);
+
   return (
     <InputGroup className="ms-auto w-36 sm:w-56">
       <InputGroupAddon className="size-5">
@@ -22,8 +24,8 @@ export function SearchInput() {
         size="sm"
         value={term}
         onChange={(event) => setTerm(event.target.value)}
-        placeholder="Search"
-        aria-label="Search this list"
+        placeholder={label}
+        aria-label={label}
       />
       {term !== "" && (
         <InputGroupAddon align="inline-end" className="">

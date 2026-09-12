@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { canSearch, isTopLevel, readView, viewKey } from "@/lib/views/view";
+import { canSearch, isTopLevel, readView, searchLabel, viewKey } from "@/lib/views/view";
 
 describe("readView", () => {
   it("reads the home view", () => {
@@ -120,5 +120,27 @@ describe("canSearch", () => {
     ["songs", { name: "list", list: "songs" } as const],
   ])("gives no search box to %s", (_name, view) => {
     expect(canSearch(view)).toBe(false);
+  });
+});
+
+describe("searchLabel", () => {
+  it("names the list a person is on", () => {
+    expect(searchLabel({ name: "list", list: "albums" })).toBe("Search albums");
+    expect(searchLabel({ name: "list", list: "playlists" })).toBe("Search playlists");
+  });
+
+  it("gives home the words of recently played, which it shows", () => {
+    expect(searchLabel({ name: "home" })).toBe("Search recently played");
+    expect(searchLabel({ name: "list", list: "recently-played" })).toBe("Search recently played");
+  });
+
+  it("names the screen a person opened", () => {
+    expect(searchLabel({ name: "detail", type: "library-albums", id: "l.1" })).toBe(
+      "Search this album",
+    );
+    expect(searchLabel({ name: "detail", type: "playlists", id: "p.1" })).toBe(
+      "Search this playlist",
+    );
+    expect(searchLabel({ name: "detail", type: "artists", id: "a.1" })).toBe("Search this artist");
   });
 });

@@ -44,6 +44,34 @@ export function canSearch(view: View): boolean {
   );
 }
 
+const LIST_SEARCH_LABELS: Record<ListName, string> = {
+  "recently-played": "Search recently played",
+  albums: "Search albums",
+  playlists: "Search playlists",
+  songs: "Search songs",
+};
+
+const DETAIL_SEARCH_LABELS: Record<DetailType, string> = {
+  albums: "Search this album",
+  "library-albums": "Search this album",
+  playlists: "Search this playlist",
+  "library-playlists": "Search this playlist",
+  artists: "Search this artist",
+};
+
+export function searchLabel(view: View): string {
+  switch (view.name) {
+    case "home":
+      return LIST_SEARCH_LABELS["recently-played"];
+    case "list":
+      return LIST_SEARCH_LABELS[view.list];
+    case "detail":
+      return DETAIL_SEARCH_LABELS[view.type];
+    default:
+      return "Search";
+  }
+}
+
 export function isTopLevel(view: View): boolean {
   return view.name === "home" || view.name === "list";
 }
