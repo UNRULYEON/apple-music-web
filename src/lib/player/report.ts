@@ -33,7 +33,5 @@ export function reportPlaybackProblem(cause: unknown): void {
     type: "error",
     title: "This song did not play",
     description,
-    timeout: 0,
-    data: { noSwipe: true },
   });
 }
