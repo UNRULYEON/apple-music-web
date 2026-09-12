@@ -80,20 +80,66 @@ export async function playSongs(songs: Song[], options: PlayOptions = {}): Promi
   const startWith =
     options.startAt ?? (options.shuffle ? Math.floor(Math.random() * ids.length) : 0);
 
-  await music.setQueue({
-    songs: ids,
-    startWith,
-    startPlaying: true,
-    shuffleMode: options.shuffle
-      ? MusicKit.PlayerShuffleMode.songs
-      : MusicKit.PlayerShuffleMode.off,
-  });
+  await queueSongs(
+    music,
+    ids,
+    ids[startWith] ?? "",
+    options.shuffle ? MusicKit.PlayerShuffleMode.songs : MusicKit.PlayerShuffleMode.off,
+  );
 
   if (music.queueIsEmpty) {
     const [id] = ids;
 
     throw new Error(`Apple Music kept no song for the id ${id}. ${await askTheCatalog(id ?? "")}`);
   }
+}
+
+const UNRESOLVED = /could not be resolved:\s*(?<ids>.+)/i;
+
+async function queueSongs(
+  music: MusicKit.MusicKitInstance,
+  ids: string[],
+  startId: string,
+  shuffleMode: number,
+): Promise<void> {
+  try {
+    await music.setQueue({
+      songs: ids,
+      startWith: Math.max(ids.indexOf(startId), 0),
+      startPlaying: true,
+      shuffleMode,
+    });
+  } catch (cause) {
+    const refused = readRefusedIds(cause);
+    const left = ids.filter((id) => !refused.has(id));
+
+    if (left.length === 0 || left.length === ids.length) {
+      throw cause;
+    }
+
+    if (refused.has(startId)) {
+      throw new Error("Apple Music does not have that song here.", { cause });
+    }
+
+    await queueSongs(music, left, startId, shuffleMode);
+  }
+}
+
+function readRefusedIds(cause: unknown): Set<string> {
+  const found = UNRESOLVED.exec(readMessage(cause));
+  const ids = found?.groups?.ids;
+
+  return new Set(ids ? ids.split(",").map((id) => id.trim()) : []);
+}
+
+function readMessage(cause: unknown): string {
+  if (typeof cause !== "object" || cause === null) {
+    return "";
+  }
+
+  const { message } = cause as { message?: unknown };
+
+  return typeof message === "string" ? message : "";
 }
 
 // a station is an endless queue that Apple builds and keeps filling, so the app hands

@@ -93,6 +93,55 @@ describe("playSongs", () => {
     expect(music.setQueue).toHaveBeenCalledWith(expect.objectContaining({ songs: ["i.only"] }));
   });
 
+  it("plays the songs that are left when Apple refuses one of them", async () => {
+    const three = [...SONGS, { id: "i.three", name: "Three", playId: "333" }];
+
+    music.setQueue.mockRejectedValueOnce(new Error("One or more items could not be resolved: 222"));
+
+    await playSongs(three, { startAt: 2 });
+
+    expect(music.setQueue).toHaveBeenLastCalledWith(
+      expect.objectContaining({ songs: ["111", "333"], startWith: 1 }),
+    );
+  });
+
+  it("drops every song Apple names at once", async () => {
+    const three = [...SONGS, { id: "i.three", name: "Three", playId: "333" }];
+
+    music.setQueue.mockRejectedValueOnce(
+      new Error("One or more items could not be resolved: 111, 222"),
+    );
+
+    await playSongs(three, { startAt: 2 });
+
+    expect(music.setQueue).toHaveBeenLastCalledWith(
+      expect.objectContaining({ songs: ["333"], startWith: 0 }),
+    );
+  });
+
+  it("tells a person plainly when Apple refuses the song they picked", async () => {
+    music.setQueue.mockRejectedValueOnce(new Error("One or more items could not be resolved: 222"));
+
+    await expect(playSongs(SONGS, { startAt: 1 })).rejects.toThrow(
+      "Apple Music does not have that song here.",
+    );
+  });
+
+  it("keeps the complaint of Apple when it names no song at all", async () => {
+    music.setQueue.mockRejectedValueOnce(new Error("The network stopped."));
+
+    await expect(playSongs(SONGS)).rejects.toThrow("The network stopped.");
+    expect(music.setQueue).toHaveBeenCalledTimes(1);
+  });
+
+  it("keeps the complaint of Apple when it refuses every song", async () => {
+    music.setQueue.mockRejectedValueOnce(
+      new Error("One or more items could not be resolved: 111, 222"),
+    );
+
+    await expect(playSongs(SONGS)).rejects.toThrow("could not be resolved");
+  });
+
   it("says nothing to MusicKit about an empty list", async () => {
     await playSongs([]);
 
