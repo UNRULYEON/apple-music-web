@@ -10,7 +10,7 @@ import {
   DiscAlbumIcon,
   Mic01Icon,
   MusicNote02Icon,
-  PlayListIcon,
+  Playlist01Icon,
 } from "@hugeicons/core-free-icons";
 import { HugeiconsIcon, type IconSvgElement } from "@hugeicons/react";
 
@@ -116,6 +116,12 @@ export function Nav() {
                 onClick={() => openAndClose({ name: "list", list: "recently-played" })}
               />
               <NavItem
+                icon={Playlist01Icon}
+                label="Playlists"
+                isCurrent={isPlaylists}
+                onClick={() => openAndClose({ name: "list", list: "playlists" })}
+              />
+              <NavItem
                 icon={DiscAlbumIcon}
                 label="Albums"
                 isCurrent={isAlbums}
@@ -126,12 +132,6 @@ export function Nav() {
                 label="Artists"
                 isCurrent={isArtists}
                 onClick={() => openAndClose({ name: "list", list: "artists" })}
-              />
-              <NavItem
-                icon={PlayListIcon}
-                label="Playlists"
-                isCurrent={isPlaylists}
-                onClick={() => openAndClose({ name: "list", list: "playlists" })}
               />
             </div>
             <div className="flex flex-col">
