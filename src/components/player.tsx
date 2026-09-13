@@ -1,15 +1,22 @@
 import { useIsMobile, usePlayer, usePlayerHotkeys, useSignedInQuery, useView } from "@/hooks";
 import { useAuthStatus } from "@/lib/music-kit/auth";
-import { TRANSITION, TRANSITION_CLOSE, TRANSITION_REVEAL, TRANSITION_SWAP } from "@/lib/motion";
+import {
+  EASE,
+  TRANSITION,
+  TRANSITION_CLOSE,
+  TRANSITION_REVEAL,
+  TRANSITION_SWAP,
+} from "@/lib/motion";
 import type { QueueSource } from "@/lib/music-kit/playback";
-import type { Artist } from "@/lib/music-kit/resource";
 import { isPlaylistType } from "@/lib/music-kit/playlists";
+import { artworkColors, type Artist, type Artwork } from "@/lib/music-kit/resource";
 import { songArtistsQuery } from "@/lib/music-kit/artists";
 import { songSourceQuery } from "@/lib/music-kit/song-source";
 import type { RepeatMode } from "@/lib/music-kit/player-state";
 import { PLAYER_HOTKEYS } from "@/lib/hotkeys";
 import { cn } from "@/lib/utils";
 import {
+  ArrowDown01Icon,
   Loading03Icon,
   NextIcon,
   PauseIcon,
@@ -21,15 +28,17 @@ import {
   ShuffleIcon,
 } from "@hugeicons/core-free-icons";
 import { HugeiconsIcon } from "@hugeicons/react";
-import { AnimatePresence, motion, useReducedMotion } from "motion/react";
-import type { ReactNode } from "react";
+import { MeshGradient } from "@paper-design/shaders-react";
+import { AnimatePresence, mixColor, motion, useReducedMotion, type Transition } from "motion/react";
+import { useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import { ArtistLinks } from "./artist-links";
 import { ArtworkImage } from "./artwork";
-import { PlayerProgress } from "./player-progress";
-import { PlayerVolume } from "./player-volume";
+import { PlayerProgress, PlayerProgressStacked } from "./player-progress";
+import { PlayerVolume, PlayerVolumeSlider } from "./player-volume";
 import { Button } from "./ui/button";
 
 const ARTWORK_SIZE = 64;
+const EXPANDED_ARTWORK_SIZE = 512;
 
 // The room the artwork, the text and the bar take, when the viewport gives it.
 // It sits on the column itself, so a narrow viewport can take room back from it
@@ -52,6 +61,18 @@ const ICON_SHOWN = { opacity: 1, scale: 1, filter: "blur(0px)" };
 const ART_HIDDEN = { opacity: 0, scale: 0.96, filter: "blur(2px)" };
 const ART_SHOWN = { opacity: 1, scale: 1, filter: "blur(0px)" };
 
+const DETAILS_HIDDEN = { opacity: 0, y: 12, filter: "blur(2px)" };
+const DETAILS_SHOWN = { opacity: 1, y: 0, filter: "blur(0px)" };
+
+const BACKDROP_OPACITY = 0.28;
+const BACKDROP_WASH = 900;
+const BACKDROP_CATCH = 320;
+const BACKDROP_STEPS = 12;
+const BACKDROP_STEP = 80;
+const BACKDROP_PIXELS = 640 * 360;
+const BACKDROP_SPEED = 0.4;
+const BACKDROP_FADE = { duration: BACKDROP_WASH / 1000, ease: EASE } as const;
+
 const BAR_GAP = 16;
 
 const GROUP_COLLAPSED = { width: 0, opacity: 0, filter: "blur(2px)" };
@@ -71,11 +92,26 @@ const OPAQUE = { opacity: 1 };
 const FOCUS_RING =
   "outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1 focus-visible:ring-offset-background";
 
+const ARTWORK_LAYOUT = "player-artwork";
+
+const CONTROLS = 'button, a, input, [role="slider"], [role="dialog"], [data-slot="slider-control"]';
+
+function isControl(target: EventTarget | null): boolean {
+  return target instanceof Element && target.closest(CONTROLS) !== null;
+}
+
 const REPEAT_LABELS: Record<RepeatMode, string> = {
   off: "Repeat off",
   queue: "Repeat the queue",
   song: "Repeat the song",
 };
+
+type ControlSize = "icon-xs" | "icon" | "icon-lg" | "icon-xl";
+
+interface ControlProps {
+  size?: ControlSize;
+  iconSize?: number;
+}
 
 // the album or the playlist the queue was built from. A queue with none of its own,
 // such as one kept before the app held on to it, falls back to the album the song is on.
@@ -99,12 +135,8 @@ function useNowPlayingArtists(): Artist[] | undefined {
   return known && known.length > 0 ? known : found;
 }
 
-function sourceLabel(source?: QueueSource): string | undefined {
-  if (!source) {
-    return undefined;
-  }
-
-  return isPlaylistType(source.type) ? "Show the playlist" : "Show the album";
+function sourceLabel(name: string, source: QueueSource): string {
+  return isPlaylistType(source.type) ? `${name}. Show the playlist.` : `${name}. Show the album.`;
 }
 
 // opens the album or the playlist the queue was built from. A queue with no source,
@@ -112,12 +144,14 @@ function sourceLabel(source?: QueueSource): string | undefined {
 function PlayingFrom({
   className,
   hoverClassName,
-  label,
+  name,
+  onNavigate,
   children,
 }: {
   className?: string;
   hoverClassName?: string;
-  label?: string;
+  name: string;
+  onNavigate?: () => void;
   children: ReactNode;
 }) {
   const source = usePlayingFrom();
@@ -130,16 +164,185 @@ function PlayingFrom({
   return (
     <button
       type="button"
-      aria-label={label}
-      className={cn(className, hoverClassName, "cursor-pointer rounded-sm text-left", FOCUS_RING)}
-      onClick={() => open({ name: "detail", type: source.type, id: source.id })}
+      aria-label={sourceLabel(name, source)}
+      className={cn("cursor-pointer rounded-sm text-left", FOCUS_RING, className, hoverClassName)}
+      onClick={() => {
+        open({ name: "detail", type: source.type, id: source.id });
+        onNavigate?.();
+      }}
     >
       {children}
     </button>
   );
 }
 
-function PlayButton({ size = "icon" }: { size?: "icon" | "icon-lg" }) {
+function ArtworkStack({
+  artwork,
+  size,
+  iconSize,
+  className,
+  blurs = true,
+}: {
+  artwork?: Artwork;
+  size: number;
+  iconSize: number;
+  className: string;
+  blurs?: boolean;
+}) {
+  const prefersReducedMotion = useReducedMotion();
+  const soft = blurs && !prefersReducedMotion;
+  const hidden = soft ? ART_HIDDEN : FADED;
+  const shown = soft ? ART_SHOWN : OPAQUE;
+
+  return (
+    <AnimatePresence initial={false}>
+      <motion.div
+        key={artwork?.url ?? "no-artwork"}
+        data-slot="player-artwork"
+        className="absolute inset-0"
+        initial={hidden}
+        animate={shown}
+        exit={hidden}
+        transition={prefersReducedMotion ? NO_TRANSITION : TRANSITION_SWAP}
+      >
+        <ArtworkImage
+          artwork={artwork}
+          size={size}
+          iconSize={iconSize}
+          className={className}
+          blurs={blurs}
+        />
+      </motion.div>
+    </AnimatePresence>
+  );
+}
+
+function NowPlayingArtwork({
+  className,
+  size,
+  iconSize,
+  artworkClassName,
+  transition,
+  onClick,
+  label,
+  blurs,
+}: {
+  className: string;
+  size: number;
+  iconSize: number;
+  artworkClassName: string;
+  transition: Transition;
+  onClick?: () => void;
+  label?: string;
+  blurs?: boolean;
+}) {
+  const { nowPlaying } = usePlayer();
+  const prefersReducedMotion = useReducedMotion();
+
+  const stack = (
+    <ArtworkStack
+      artwork={nowPlaying?.artwork}
+      size={size}
+      iconSize={iconSize}
+      className={artworkClassName}
+      blurs={blurs}
+    />
+  );
+
+  return (
+    <motion.div
+      layoutId={prefersReducedMotion ? undefined : ARTWORK_LAYOUT}
+      className={cn("relative shrink-0", className)}
+      transition={transition}
+    >
+      {onClick ? (
+        <button
+          type="button"
+          aria-label={label}
+          onClick={onClick}
+          className={cn(
+            "absolute inset-0 cursor-pointer rounded-xl",
+            "transition-transform duration-(--duration-quick) ease-(--ease-smooth-out) motion-reduce:transition-none hover:scale-101",
+            FOCUS_RING,
+          )}
+        >
+          {stack}
+        </button>
+      ) : (
+        stack
+      )}
+    </motion.div>
+  );
+}
+
+function ShuffleButton({ size = "icon-xs", iconSize = 16 }: ControlProps) {
+  const { isShuffled, toggleShuffle } = usePlayer();
+
+  return (
+    <Button
+      onClick={toggleShuffle}
+      variant="ghost"
+      size={size}
+      aria-label="Shuffle"
+      aria-keyshortcuts={PLAYER_HOTKEYS.shuffle}
+      aria-pressed={isShuffled}
+    >
+      <HugeiconsIcon
+        icon={ShuffleIcon}
+        size={iconSize}
+        strokeWidth={2}
+        className={cn(
+          "transition-opacity duration-(--duration-quick) ease-(--ease-smooth-out) motion-reduce:transition-none",
+          isShuffled ? "opacity-100" : "opacity-40",
+        )}
+      />
+    </Button>
+  );
+}
+
+function RepeatButton({ size = "icon-xs", iconSize = 16 }: ControlProps) {
+  const { repeat, cycleRepeat } = usePlayer();
+
+  return (
+    <Button
+      onClick={cycleRepeat}
+      variant="ghost"
+      size={size}
+      aria-label={REPEAT_LABELS[repeat]}
+      aria-keyshortcuts={PLAYER_HOTKEYS.repeat}
+      aria-pressed={repeat !== "off"}
+    >
+      <HugeiconsIcon
+        icon={repeat === "song" ? RepeatOne02Icon : RepeatIcon}
+        size={iconSize}
+        strokeWidth={2}
+        className={cn(
+          "transition-opacity duration-(--duration-quick) ease-(--ease-smooth-out) motion-reduce:transition-none",
+          repeat === "off" ? "opacity-40" : "opacity-100",
+        )}
+      />
+    </Button>
+  );
+}
+
+function PreviousButton({ size = "icon-xs", iconSize = 16 }: ControlProps) {
+  const { canSkipPrevious, previous } = usePlayer();
+
+  return (
+    <Button
+      onClick={previous}
+      disabled={!canSkipPrevious}
+      variant="ghost"
+      size={size}
+      aria-label="Previous song"
+      aria-keyshortcuts={PLAYER_HOTKEYS.previous}
+    >
+      <HugeiconsIcon icon={PreviousIcon} size={iconSize} strokeWidth={2} />
+    </Button>
+  );
+}
+
+function PlayButton({ size = "icon", iconSize = 16 }: ControlProps) {
   const { isPlaying, isLoading, toggle } = usePlayer();
   const prefersReducedMotion = useReducedMotion();
 
@@ -161,7 +364,7 @@ function PlayButton({ size = "icon" }: { size?: "icon" | "icon-lg" }) {
         >
           <HugeiconsIcon
             icon={isLoading ? Loading03Icon : isPlaying ? PauseIcon : PlayIcon}
-            size={16}
+            size={iconSize}
             strokeWidth={2}
             className={cn(isLoading && "animate-spin")}
           />
@@ -171,7 +374,7 @@ function PlayButton({ size = "icon" }: { size?: "icon" | "icon-lg" }) {
   );
 }
 
-function NextButton({ size = "icon-xs" }: { size?: "icon-xs" | "icon-lg" }) {
+function NextButton({ size = "icon-xs", iconSize = 16 }: ControlProps) {
   const { canSkipNext, next } = usePlayer();
 
   return (
@@ -183,23 +386,275 @@ function NextButton({ size = "icon-xs" }: { size?: "icon-xs" | "icon-lg" }) {
       aria-label="Next song"
       aria-keyshortcuts={PLAYER_HOTKEYS.next}
     >
-      <HugeiconsIcon icon={NextIcon} size={16} strokeWidth={2} />
+      <HugeiconsIcon icon={NextIcon} size={iconSize} strokeWidth={2} />
     </Button>
+  );
+}
+
+function colorPairs(from: string[], to: string[]): [string, string][] {
+  const length = Math.max(from.length, to.length);
+
+  return Array.from({ length }, (_, i) => [
+    from[Math.min(i, from.length - 1)] as string,
+    to[Math.min(i, to.length - 1)] as string,
+  ]);
+}
+
+function washedOut(at: number): number {
+  return 1 - (1 - at) ** 5;
+}
+
+function useWashedColors(colors: string[]): string[] {
+  const [shown, setShown] = useState(colors);
+  const prefersReducedMotion = useReducedMotion();
+  const onScreen = useRef(colors);
+  const asked = useRef(colors);
+  const isWashing = useRef(false);
+  const wanted = colors.join();
+
+  asked.current = colors;
+
+  useEffect(() => {
+    const to = asked.current;
+    const from = onScreen.current;
+
+    if (from.join() === wanted) {
+      return;
+    }
+
+    if (prefersReducedMotion || from.length === 0 || to.length === 0) {
+      onScreen.current = to;
+      setShown(to);
+      return;
+    }
+
+    const span = isWashing.current ? BACKDROP_CATCH : BACKDROP_WASH;
+    const gap = Math.min(BACKDROP_STEP, span / BACKDROP_STEPS);
+    const mixers = colorPairs(from, to).map(([a, b]) => mixColor(a, b));
+    const started = performance.now();
+    let sent = 0;
+    let frame = 0;
+
+    isWashing.current = true;
+
+    function step(now: number) {
+      const at = Math.min((now - started) / span, 1);
+
+      if (at < 1 && now - sent < gap) {
+        frame = requestAnimationFrame(step);
+        return;
+      }
+
+      sent = now;
+
+      const next = at === 1 ? to : mixers.map((mixer) => mixer(washedOut(at)) as string);
+
+      onScreen.current = next;
+      setShown(next);
+
+      if (at < 1) {
+        frame = requestAnimationFrame(step);
+        return;
+      }
+
+      isWashing.current = false;
+    }
+
+    frame = requestAnimationFrame(step);
+
+    return () => cancelAnimationFrame(frame);
+  }, [wanted, prefersReducedMotion]);
+
+  return shown;
+}
+
+function ExpandedBackdrop() {
+  const { nowPlaying } = usePlayer();
+  const prefersReducedMotion = useReducedMotion();
+  const colors = useMemo(() => artworkColors(nowPlaying?.artwork), [nowPlaying?.artwork]);
+  const washed = useWashedColors(colors);
+  const wash = prefersReducedMotion ? NO_TRANSITION : BACKDROP_FADE;
+
+  return (
+    <AnimatePresence>
+      {washed.length > 0 && (
+        <motion.div
+          data-slot="player-backdrop"
+          className="absolute inset-0 pointer-events-none"
+          initial={FADED}
+          animate={{ opacity: BACKDROP_OPACITY, transition: wash }}
+          exit={{ ...FADED, transition: prefersReducedMotion ? NO_TRANSITION : TRANSITION_CLOSE }}
+        >
+          <MeshGradient
+            className="size-full"
+            colors={washed}
+            distortion={0}
+            swirl={0}
+            grainMixer={1}
+            grainOverlay={1}
+            speed={prefersReducedMotion ? 0 : BACKDROP_SPEED}
+            minPixelRatio={1}
+            maxPixelCount={BACKDROP_PIXELS}
+          />
+        </motion.div>
+      )}
+    </AnimatePresence>
+  );
+}
+
+function ExpandedPlayer({ onCollapse }: { onCollapse: () => void }) {
+  const { nowPlaying, isPlaying, isLoading, toggle } = usePlayer();
+  const artists = useNowPlayingArtists();
+  const prefersReducedMotion = useReducedMotion();
+
+  useEffect(() => {
+    function onKeyDown(event: KeyboardEvent) {
+      if (event.key === "Escape" && !event.defaultPrevented) {
+        onCollapse();
+      }
+    }
+
+    document.addEventListener("keydown", onKeyDown);
+
+    return () => document.removeEventListener("keydown", onKeyDown);
+  }, [onCollapse]);
+
+  if (!nowPlaying) {
+    return null;
+  }
+
+  const blurred = prefersReducedMotion ? FADED : BLURRED;
+  const sharp = prefersReducedMotion ? OPAQUE : SHARP;
+  const detailsHidden = prefersReducedMotion ? FADED : DETAILS_HIDDEN;
+  const detailsShown = prefersReducedMotion ? OPAQUE : DETAILS_SHOWN;
+
+  const openTransition = prefersReducedMotion ? NO_TRANSITION : TRANSITION_REVEAL;
+  const closeTransition = prefersReducedMotion ? NO_TRANSITION : TRANSITION_CLOSE;
+  const swapTransition = prefersReducedMotion ? NO_TRANSITION : TRANSITION_SWAP;
+
+  return (
+    <motion.section
+      aria-label="Now playing"
+      className={cn(
+        "fixed inset-0 z-50 flex flex-col select-none",
+        "bg-neutral-100 dark:bg-neutral-950 theme-fade",
+      )}
+      initial={FADED}
+      animate={{ ...OPAQUE, transition: openTransition }}
+      exit={{ ...FADED, transition: closeTransition }}
+    >
+      <ExpandedBackdrop />
+
+      <div className="relative flex justify-center p-2">
+        <Button
+          onClick={onCollapse}
+          variant="ghost"
+          size="icon"
+          aria-label="Collapse the player"
+          className="cursor-s-resize"
+        >
+          <HugeiconsIcon icon={ArrowDown01Icon} size={16} strokeWidth={2} />
+        </Button>
+      </div>
+
+      <div className="relative flex flex-col items-center justify-center grow gap-8 px-6 pb-12 min-h-0 overflow-y-auto">
+        <NowPlayingArtwork
+          className="aspect-square w-[min(72vw,44vh,20rem)]"
+          size={EXPANDED_ARTWORK_SIZE}
+          iconSize={48}
+          artworkClassName="size-full rounded-xl"
+          transition={openTransition}
+          blurs={false}
+          onClick={toggle}
+          label={
+            isLoading ? "Stop loading the song" : isPlaying ? "Pause the song" : "Play the song"
+          }
+        />
+
+        <motion.div
+          className="flex flex-col items-center gap-6 w-[min(88vw,24rem)]"
+          initial={detailsHidden}
+          animate={{ ...detailsShown, transition: openTransition }}
+          exit={{ ...detailsHidden, transition: closeTransition }}
+        >
+          <div className="flex flex-col items-center gap-1 w-full text-center">
+            <PlayingFrom
+              className="relative w-full h-7 text-center"
+              hoverClassName="hover:underline"
+              name={nowPlaying.name}
+              onNavigate={onCollapse}
+            >
+              <AnimatePresence initial={false}>
+                <motion.span
+                  key={nowPlaying.name}
+                  className="absolute inset-x-0 top-0 truncate text-lg font-bold"
+                  initial={blurred}
+                  animate={sharp}
+                  exit={blurred}
+                  transition={swapTransition}
+                >
+                  {nowPlaying.name}
+                </motion.span>
+              </AnimatePresence>
+            </PlayingFrom>
+            <div className="relative w-full h-5">
+              <AnimatePresence initial={false}>
+                <motion.span
+                  key={nowPlaying.artist?.name ?? "no-artist"}
+                  className="absolute inset-x-0 top-0 truncate text-sm text-neutral-500 dark:text-neutral-400 theme-fade-text"
+                  initial={blurred}
+                  animate={sharp}
+                  exit={blurred}
+                  transition={swapTransition}
+                >
+                  <ArtistLinks
+                    artists={artists}
+                    fallback={nowPlaying.artist?.name}
+                    onNavigate={onCollapse}
+                  />
+                </motion.span>
+              </AnimatePresence>
+            </div>
+          </div>
+
+          <PlayerProgressStacked
+            className="w-full text-xs cursor-default"
+            songId={nowPlaying.id}
+            durationInMillis={nowPlaying.durationInMillis}
+          />
+
+          <div className="flex flex-col items-center gap-3 w-full">
+            <div className="flex items-center gap-1">
+              <ShuffleButton size="icon" iconSize={18} />
+              <PreviousButton size="icon-lg" iconSize={22} />
+              <PlayButton size="icon-xl" iconSize={26} />
+              <NextButton size="icon-lg" iconSize={22} />
+              <RepeatButton size="icon" iconSize={18} />
+            </div>
+            <PlayerVolumeSlider className="w-full cursor-default" />
+          </div>
+        </motion.div>
+      </div>
+    </motion.section>
   );
 }
 
 export function Player() {
   const artists = useNowPlayingArtists();
-  const { nowPlaying, isShuffled, repeat, canSkipPrevious, toggleShuffle, cycleRepeat, previous } =
-    usePlayer();
-  const source = usePlayingFrom();
+  const { nowPlaying } = usePlayer();
   const status = useAuthStatus();
   const prefersReducedMotion = useReducedMotion();
   const isMobile = useIsMobile();
 
+  const [isExpanded, setIsExpanded] = useState(false);
+
   // the bar belongs to the person who signed in, so it goes with them and does not wait
   // for MusicKit to let the queue go
   const isShown = Boolean(nowPlaying) && status !== "signed-out";
+
+  if (!isShown && isExpanded) {
+    setIsExpanded(false);
+  }
 
   usePlayerHotkeys(isShown);
 
@@ -207,8 +662,6 @@ export function Player() {
   const shown = prefersReducedMotion ? OPAQUE : SHOWN;
   const blurred = prefersReducedMotion ? FADED : BLURRED;
   const sharp = prefersReducedMotion ? OPAQUE : SHARP;
-  const artHidden = prefersReducedMotion ? FADED : ART_HIDDEN;
-  const artShown = prefersReducedMotion ? OPAQUE : ART_SHOWN;
 
   const openTransition = prefersReducedMotion ? NO_TRANSITION : TRANSITION_REVEAL;
   const closeTransition = prefersReducedMotion ? NO_TRANSITION : TRANSITION_CLOSE;
@@ -217,10 +670,15 @@ export function Player() {
 
   return (
     <AnimatePresence>
-      {nowPlaying && isShown && (
+      {nowPlaying && isShown && !isExpanded && (
         <div
           key="player"
-          className="absolute inset-x-0 bottom-0 flex justify-center p-2 pointer-events-none"
+          className="absolute inset-x-0 bottom-0 flex justify-center p-2 pointer-events-none cursor-n-resize"
+          onClick={(event) => {
+            if (!isControl(event.target)) {
+              setIsExpanded(true);
+            }
+          }}
         >
           <motion.div
             className="min-w-0"
@@ -251,54 +709,11 @@ export function Player() {
                     transition={shapeTransition}
                   >
                     <div className="flex items-center w-max">
-                      <Button
-                        onClick={toggleShuffle}
-                        variant="ghost"
-                        size="icon-xs"
-                        aria-label="Shuffle"
-                        aria-keyshortcuts={PLAYER_HOTKEYS.shuffle}
-                        aria-pressed={isShuffled}
-                      >
-                        <HugeiconsIcon
-                          icon={ShuffleIcon}
-                          size={16}
-                          strokeWidth={2}
-                          className={cn(
-                            "transition-opacity duration-(--duration-quick) ease-(--ease-smooth-out) motion-reduce:transition-none",
-                            isShuffled ? "opacity-100" : "opacity-40",
-                          )}
-                        />
-                      </Button>
-                      <Button
-                        onClick={previous}
-                        disabled={!canSkipPrevious}
-                        variant="ghost"
-                        size="icon-xs"
-                        aria-label="Previous song"
-                        aria-keyshortcuts={PLAYER_HOTKEYS.previous}
-                      >
-                        <HugeiconsIcon icon={PreviousIcon} size={16} strokeWidth={2} />
-                      </Button>
+                      <ShuffleButton />
+                      <PreviousButton />
                       <PlayButton />
                       <NextButton />
-                      <Button
-                        onClick={cycleRepeat}
-                        variant="ghost"
-                        size="icon-xs"
-                        aria-label={REPEAT_LABELS[repeat]}
-                        aria-keyshortcuts={PLAYER_HOTKEYS.repeat}
-                        aria-pressed={repeat !== "off"}
-                      >
-                        <HugeiconsIcon
-                          icon={repeat === "song" ? RepeatOne02Icon : RepeatIcon}
-                          size={16}
-                          strokeWidth={2}
-                          className={cn(
-                            "transition-opacity duration-(--duration-quick) ease-(--ease-smooth-out) motion-reduce:transition-none",
-                            repeat === "off" ? "opacity-40" : "opacity-100",
-                          )}
-                        />
-                      </Button>
+                      <RepeatButton />
                     </div>
                   </motion.div>
                 )}
@@ -307,37 +722,24 @@ export function Player() {
                 <div
                   className={cn("flex items-center gap-2 pt-2 min-w-0", isMobile ? "pb-2" : "pb-0")}
                 >
-                  <PlayingFrom
-                    className="relative size-8 shrink-0"
-                    hoverClassName="transition-transform duration-(--duration-quick) ease-(--ease-smooth-out) motion-reduce:transition-none hover:scale-101"
-                    label={sourceLabel(source)}
-                  >
-                    <AnimatePresence initial={false}>
-                      <motion.div
-                        key={nowPlaying.artwork?.url ?? "no-artwork"}
-                        data-slot="player-artwork"
-                        className="absolute inset-0"
-                        initial={artHidden}
-                        animate={artShown}
-                        exit={artHidden}
-                        transition={swapTransition}
-                      >
-                        <ArtworkImage
-                          artwork={nowPlaying.artwork}
-                          size={ARTWORK_SIZE}
-                          iconSize={16}
-                          className="size-8 rounded-sm"
-                        />
-                      </motion.div>
-                    </AnimatePresence>
-                  </PlayingFrom>
+                  <NowPlayingArtwork
+                    className="size-8"
+                    size={ARTWORK_SIZE}
+                    iconSize={16}
+                    artworkClassName="size-8 rounded-sm"
+                    transition={closeTransition}
+                  />
 
                   <div className="flex flex-col grow min-w-0">
-                    <PlayingFrom className="relative min-w-0" hoverClassName="hover:underline">
+                    <PlayingFrom
+                      className="relative min-w-0 self-start"
+                      hoverClassName="hover:underline"
+                      name={nowPlaying.name}
+                    >
                       <AnimatePresence mode="popLayout" initial={false}>
                         <motion.span
                           key={nowPlaying.name}
-                          className="block truncate text-xs font-bold"
+                          className="block truncate text-xs font-bold self-start"
                           initial={blurred}
                           animate={sharp}
                           exit={blurred}
@@ -367,7 +769,7 @@ export function Player() {
                   {!isMobile && (
                     <motion.div
                       key="progress"
-                      className="overflow-hidden"
+                      className="overflow-hidden cursor-default"
                       initial={ROW_COLLAPSED}
                       animate={ROW_EXPANDED}
                       exit={ROW_COLLAPSED}
@@ -417,6 +819,9 @@ export function Player() {
             </div>
           </motion.div>
         </div>
+      )}
+      {nowPlaying && isShown && isExpanded && (
+        <ExpandedPlayer key="expanded" onCollapse={() => setIsExpanded(false)} />
       )}
     </AnimatePresence>
   );

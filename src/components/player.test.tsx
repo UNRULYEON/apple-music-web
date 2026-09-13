@@ -17,7 +17,7 @@ import { getMusicKit } from "@/lib/music-kit/instance";
 import { resetPlaybackTime } from "@/lib/music-kit/playback-time";
 import { resetPlayerState } from "@/lib/music-kit/player-state";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { act, cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
+import { act, cleanup, fireEvent, render, screen, waitFor, within } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 vi.mock("@/lib/music-kit/instance", () => ({ getMusicKit: vi.fn() }));
@@ -72,7 +72,6 @@ function elapsed(): string {
 }
 const COVER = { url: "https://example.com/{w}x{h}{c}.{f}", width: 300, height: 300 };
 const OTHER_COVER = { ...COVER, url: "https://example.com/other-{w}x{h}{c}.{f}" };
-
 function item(id: string, name: string, artwork = COVER, artistName = "The Band") {
   return { id, attributes: { name, artistName, artwork } };
 }
@@ -126,6 +125,16 @@ async function renderPlayer() {
   await waitFor(() => expect(music.addEventListener).toHaveBeenCalled());
 
   return seen;
+}
+
+function shownArtwork(): Element {
+  const found = document.querySelector(ARTWORK);
+
+  if (!found) {
+    throw new Error("the player shows no artwork");
+  }
+
+  return found;
 }
 
 function loadQueue(items: MusicKit.MediaItem[], index = 0) {
@@ -525,15 +534,39 @@ describe("Player", () => {
     expect(screen.queryByLabelText("Play")).toBeNull();
   });
 
-  it("opens the album the queue was built from when a person taps the artwork", async () => {
+  it("opens the expanded player when a person taps the artwork", async () => {
+    await renderPlayer();
+
+    loadQueue([item("1", "First")]);
+
+    fireEvent.click(shownArtwork());
+
+    expect(await screen.findByLabelText("Collapse the player")).toBeTruthy();
+  });
+
+  it("opens the album from the expanded title and gets out of the way", async () => {
     const seen = await renderPlayer();
 
     act(() => seen.current?.play(SONGS, { from: { type: "albums", id: "a1" } }));
     loadQueue([item("1", "First")]);
 
-    fireEvent.click(await screen.findByLabelText("Show the album"));
+    fireEvent.click(shownArtwork());
+    const panel = await screen.findByLabelText("Now playing");
+    fireEvent.click(within(panel).getByRole("button", { name: "First. Show the album." }));
 
     expect(openView).toHaveBeenCalledWith({ name: "detail", type: "albums", id: "a1" });
+    await waitFor(() => expect(screen.queryByLabelText("Collapse the player")).toBeNull());
+  });
+
+  it("plays the song from the expanded artwork", async () => {
+    await renderPlayer();
+
+    loadQueue([item("1", "First")]);
+
+    fireEvent.click(shownArtwork());
+    fireEvent.click(await screen.findByLabelText("Play the song"));
+
+    await waitFor(() => expect(music.play).toHaveBeenCalledOnce());
   });
 
   it("opens it from the song title as well", async () => {
@@ -542,18 +575,20 @@ describe("Player", () => {
     act(() => seen.current?.play(SONGS, { from: { type: "library-playlists", id: "p.1" } }));
     loadQueue([item("1", "First")]);
 
-    fireEvent.click(await screen.findByRole("button", { name: "First" }));
+    fireEvent.click(await screen.findByRole("button", { name: "First. Show the playlist." }));
 
     expect(openView).toHaveBeenCalledWith({ name: "detail", type: "library-playlists", id: "p.1" });
   });
 
-  it("names the playlist a queue came from", async () => {
+  it("opens the playlist a queue came from", async () => {
     const seen = await renderPlayer();
 
     act(() => seen.current?.play(SONGS, { from: { type: "playlists", id: "p.1" } }));
     loadQueue([item("1", "First")]);
 
-    expect(await screen.findByLabelText("Show the playlist")).toBeTruthy();
+    fireEvent.click(await screen.findByRole("button", { name: "First. Show the playlist." }));
+
+    expect(openView).toHaveBeenCalledWith({ name: "detail", type: "playlists", id: "p.1" });
   });
 
   it("plays and pauses with Space", async () => {
