@@ -64,7 +64,7 @@ function VolumeHint({
             className={cn(
               "px-2 py-1 text-xs font-medium tabular-nums select-none",
               "bg-neutral-100 dark:bg-neutral-950 border border-neutral-50 dark:border-neutral-800 rounded-full",
-              "transition-[translate,opacity] duration-(--hint-in-dur) ease-(--hint-ease)",
+              "transition-[translate,opacity,background-color,border-color] duration-(--hint-in-dur) ease-(--hint-ease)",
               "data-starting-style:translate-y-(--hint-in-offset) data-starting-style:opacity-0",
               "data-ending-style:opacity-0",
               "data-ending-style:duration-(--hint-out-dur)",
@@ -119,7 +119,7 @@ export function PlayerVolume() {
                 // it grows out of the corner of the button it belongs to, which the
                 // positioner works out again whenever the popup has to move
                 "origin-(--transform-origin) will-change-[transform,opacity]",
-                "transition-[transform,opacity] duration-(--dropdown-open-dur) ease-(--dropdown-ease)",
+                "transition-[transform,opacity,background-color,border-color] duration-(--dropdown-open-dur) ease-(--dropdown-ease)",
                 "data-starting-style:scale-(--dropdown-pre-scale) data-starting-style:opacity-0",
                 "data-ending-style:scale-(--dropdown-closing-scale) data-ending-style:opacity-0",
                 "data-ending-style:duration-(--dropdown-close-dur)",

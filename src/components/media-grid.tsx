@@ -192,7 +192,7 @@ function MediaTile({ name, credit, artwork, onClick }: MediaTileItem) {
     >
       <ArtworkImage artwork={artwork} size={ARTWORK_SIZE} className="rounded-xl" />
       <div className="flex flex-col">
-        <div className="truncate text-xs text-neutral-600 dark:text-neutral-300 select-none">
+        <div className="truncate text-xs text-neutral-600 dark:text-neutral-300 select-none theme-fade-text">
           {name}
         </div>
         {credit && (

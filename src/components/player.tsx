@@ -1,6 +1,6 @@
 import { useIsMobile, usePlayer, usePlayerHotkeys, useSignedInQuery, useView } from "@/hooks";
 import { useAuthStatus } from "@/lib/music-kit/auth";
-import { TRANSITION, TRANSITION_REVEAL, TRANSITION_SWAP } from "@/lib/motion";
+import { TRANSITION, TRANSITION_CLOSE, TRANSITION_REVEAL, TRANSITION_SWAP } from "@/lib/motion";
 import type { QueueSource } from "@/lib/music-kit/playback";
 import type { Artist } from "@/lib/music-kit/resource";
 import { isPlaylistType } from "@/lib/music-kit/playlists";
@@ -211,7 +211,7 @@ export function Player() {
   const artShown = prefersReducedMotion ? OPAQUE : ART_SHOWN;
 
   const openTransition = prefersReducedMotion ? NO_TRANSITION : TRANSITION_REVEAL;
-  const closeTransition = prefersReducedMotion ? NO_TRANSITION : TRANSITION;
+  const closeTransition = prefersReducedMotion ? NO_TRANSITION : TRANSITION_CLOSE;
   const swapTransition = prefersReducedMotion ? NO_TRANSITION : TRANSITION_SWAP;
   const shapeTransition = prefersReducedMotion ? NO_TRANSITION : TRANSITION;
 
@@ -235,6 +235,7 @@ export function Player() {
                 isMobile ? "pl-4 pr-4 py-1" : "px-4 pt-0 pb-0",
                 "bg-neutral-100 dark:bg-neutral-950",
                 "border border-neutral-50 dark:border-neutral-800",
+                "theme-fade",
                 "rounded-full",
                 "select-none",
               )}
@@ -263,7 +264,7 @@ export function Player() {
                           size={16}
                           strokeWidth={2}
                           className={cn(
-                            "transition-opacity",
+                            "transition-opacity duration-(--duration-quick) ease-(--ease-smooth-out) motion-reduce:transition-none",
                             isShuffled ? "opacity-100" : "opacity-40",
                           )}
                         />
@@ -293,7 +294,7 @@ export function Player() {
                           size={16}
                           strokeWidth={2}
                           className={cn(
-                            "transition-opacity",
+                            "transition-opacity duration-(--duration-quick) ease-(--ease-smooth-out) motion-reduce:transition-none",
                             repeat === "off" ? "opacity-40" : "opacity-100",
                           )}
                         />
@@ -308,7 +309,7 @@ export function Player() {
                 >
                   <PlayingFrom
                     className="relative size-8 shrink-0"
-                    hoverClassName="transition-transform hover:scale-105"
+                    hoverClassName="transition-transform duration-(--duration-quick) ease-(--ease-smooth-out) motion-reduce:transition-none hover:scale-101"
                     label={sourceLabel(source)}
                   >
                     <AnimatePresence initial={false}>
@@ -350,7 +351,7 @@ export function Player() {
                       <AnimatePresence mode="popLayout" initial={false}>
                         <motion.span
                           key={nowPlaying.artist?.name ?? "no-artist"}
-                          className="block truncate text-xs text-neutral-500 dark:text-neutral-400"
+                          className="block truncate text-xs text-neutral-500 dark:text-neutral-400 theme-fade-text"
                           initial={blurred}
                           animate={sharp}
                           exit={blurred}

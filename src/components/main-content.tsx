@@ -1,6 +1,6 @@
 import { PLAYER_SPACE } from "@/components/player";
 import { usePlayer } from "@/hooks";
-import { TRANSITION, TRANSITION_REVEAL } from "@/lib/motion";
+import { TRANSITION_CLOSE, TRANSITION_REVEAL } from "@/lib/motion";
 import { motion, useReducedMotion } from "motion/react";
 import type { ReactNode } from "react";
 
@@ -14,7 +14,9 @@ export function MainContent({ children }: { children: ReactNode }) {
       className="flex min-h-full"
       initial={false}
       animate={{ paddingBottom: isShown ? PLAYER_SPACE : 0 }}
-      transition={prefersReducedMotion ? { duration: 0 } : isShown ? TRANSITION_REVEAL : TRANSITION}
+      transition={
+        prefersReducedMotion ? { duration: 0 } : isShown ? TRANSITION_REVEAL : TRANSITION_CLOSE
+      }
     >
       {children}
     </motion.main>

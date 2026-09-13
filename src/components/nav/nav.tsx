@@ -159,7 +159,7 @@ function NavItem({
     <Button
       variant="ghost"
       className={cn(
-        "justify-start",
+        "justify-start transition-colors duration-(--duration-quick) ease-(--ease-smooth-out) motion-reduce:transition-none",
         isCurrent && "bg-sidebar-accent font-medium text-sidebar-accent-foreground",
       )}
       aria-current={isCurrent ? "page" : undefined}

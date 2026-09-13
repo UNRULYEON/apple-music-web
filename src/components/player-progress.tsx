@@ -75,7 +75,7 @@ export function PlayerProgress({ songId, durationInMillis, className }: PlayerPr
 
   return (
     <div className={cn("flex items-center gap-1 min-w-0 text-[9px] tabular-nums", className)}>
-      <span className="shrink-0 text-neutral-500 dark:text-neutral-400">
+      <span className="shrink-0 text-neutral-500 dark:text-neutral-400 theme-fade-text">
         <RollingClock seconds={at} slot="player-elapsed" />
       </span>
       <SliderPrimitive.Root
@@ -91,15 +91,15 @@ export function PlayerProgress({ songId, durationInMillis, className }: PlayerPr
         onValueCommitted={seek}
       >
         <SliderPrimitive.Control className="group flex w-full touch-none select-none items-center py-2 data-disabled:pointer-events-none data-disabled:opacity-40">
-          <SliderPrimitive.Track className="relative h-1 w-full rounded-full bg-neutral-300 dark:bg-neutral-800">
-            <SliderPrimitive.Indicator className="h-full rounded-full bg-neutral-900 dark:bg-neutral-100" />
+          <SliderPrimitive.Track className="relative h-1 w-full rounded-full bg-neutral-300 dark:bg-neutral-800 theme-fade">
+            <SliderPrimitive.Indicator className="h-full rounded-full bg-neutral-900 dark:bg-neutral-100 theme-fade" />
             <SliderPrimitive.Thumb
               index={0}
               aria-label="Seek"
               getAriaValueText={(_, value) => clockTime(value)}
               className={cn(
                 "size-2.5 rounded-full bg-neutral-900 dark:bg-neutral-100",
-                "outline-none transition-[scale,opacity]",
+                "outline-none transition-[scale,opacity,background-color]",
                 "opacity-0 group-hover:opacity-100 data-dragging:opacity-100 has-focus-visible:opacity-100",
                 "data-dragging:scale-125",
                 "has-focus-visible:ring-2 has-focus-visible:ring-neutral-500",
@@ -119,7 +119,7 @@ export function PlayerProgress({ songId, durationInMillis, className }: PlayerPr
         className={cn(
           "shrink-0 text-right tabular-nums",
           "text-neutral-500 dark:text-neutral-400",
-          "transition-colors hover:text-neutral-900 dark:hover:text-neutral-100",
+          "transition-colors duration-(--duration-quick) ease-(--ease-smooth-out) motion-reduce:transition-none hover:text-neutral-900 dark:hover:text-neutral-100",
           "outline-none focus-visible:ring-2 focus-visible:ring-neutral-500",
         )}
       >

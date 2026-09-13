@@ -37,7 +37,7 @@ export function DetailsHeader({
           {subtitle && <span className="text-base">{subtitle}</span>}
         </div>
         {meta && (
-          <div className="flex flex-col gap-1 items-center sm:items-start text-center sm:text-left text-xs text-neutral-500 dark:text-neutral-400">
+          <div className="flex flex-col gap-1 items-center sm:items-start text-center sm:text-left text-xs text-neutral-500 dark:text-neutral-400 theme-fade-text">
             {meta}
           </div>
         )}

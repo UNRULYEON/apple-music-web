@@ -33,7 +33,7 @@ export function SearchInput() {
             type="button"
             aria-label="Clear the search"
             onClick={() => setTerm("")}
-            className="flex mr-2 cursor-pointer rounded-sm text-muted-foreground outline-none transition-colors hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring"
+            className="flex mr-2 cursor-pointer rounded-sm text-muted-foreground outline-none transition-colors duration-(--duration-quick) ease-(--ease-smooth-out) motion-reduce:transition-none hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring"
           >
             <HugeiconsIcon icon={Cancel01Icon} size={14} strokeWidth={2} />
           </button>

@@ -120,7 +120,7 @@ export function TrackList({
               type="button"
               data-playing={playsNow ? "" : undefined}
               onClick={() => play(songs, { startAt: i, from: source })}
-              className="flex items-center text-left gap-4 px-2 sm:px-4 h-14 sm:h-16 hover:bg-neutral-600/15 hover:dark:bg-neutral-400/15 cursor-pointer rounded-xl backdrop-blur-3xl"
+              className="flex items-center text-left gap-4 px-2 sm:px-4 h-14 sm:h-16 transition-colors duration-(--duration-quick) ease-(--ease-smooth-out) motion-reduce:transition-none hover:bg-neutral-600/15 hover:dark:bg-neutral-400/15 cursor-pointer rounded-xl backdrop-blur-3xl"
             >
               {showArtwork ? (
                 <div className="relative size-10 shrink-0">
@@ -160,12 +160,12 @@ export function TrackList({
                   </AnimatePresence>
                 </div>
               ) : (
-                <span className="grid min-w-6 place-items-center tabular-nums text-sm text-neutral-600 dark:text-neutral-400">
+                <span className="grid min-w-6 place-items-center tabular-nums text-sm text-neutral-600 dark:text-neutral-400 theme-fade-text">
                   <AnimatePresence initial={false}>
                     {playsNow ? (
                       <motion.span
                         key="mark"
-                        className="col-start-1 row-start-1 flex text-neutral-900 dark:text-neutral-100"
+                        className="col-start-1 row-start-1 flex text-neutral-900 dark:text-neutral-100 theme-fade-text"
                         initial={hidden}
                         animate={shown}
                         exit={hidden}
@@ -204,18 +204,18 @@ export function TrackList({
                   <span className="truncate">{song.name}</span>
                   {isExplicit(song) && <ExplicitMark />}
                 </span>
-                <span className="truncate text-sm text-neutral-600 dark:text-neutral-400">
+                <span className="truncate text-sm text-neutral-600 dark:text-neutral-400 theme-fade-text">
                   {song.artist?.name !== primaryArtist && (
                     <ArtistLinks artists={song.artists} fallback={song.artist?.name} />
                   )}
                 </span>
               </div>
               {marksLibrary && (
-                <span className="grid w-4 shrink-0 place-items-center text-neutral-600 dark:text-neutral-400">
+                <span className="grid w-4 shrink-0 place-items-center text-neutral-600 dark:text-neutral-400 theme-fade-text">
                   {song.inLibrary && <LibraryMark label="This song is in your library" />}
                 </span>
               )}
-              <div className="text-sm tabular-nums text-neutral-600 dark:text-neutral-400">
+              <div className="text-sm tabular-nums text-neutral-600 dark:text-neutral-400 theme-fade-text">
                 {song.durationInMillis ? songDuration(song.durationInMillis) : null}
               </div>
             </button>
@@ -228,7 +228,7 @@ export function TrackList({
 
 function DiscHeading({ number }: { number: number }) {
   return (
-    <h3 className="px-2 sm:px-4 pt-6 pb-2 text-sm font-medium text-neutral-600 dark:text-neutral-400">
+    <h3 className="px-2 sm:px-4 pt-6 pb-2 text-sm font-medium text-neutral-600 dark:text-neutral-400 theme-fade-text">
       Disc {number}
     </h3>
   );
