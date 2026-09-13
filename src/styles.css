@@ -7,6 +7,36 @@
 
 @custom-variant dark (&:is(.dark *));
 
+@utility theme-fade {
+  transition-property: background-color, border-color;
+  transition-duration: var(--duration-fast);
+  transition-timing-function: ease-in-out;
+
+  @media (prefers-reduced-motion: reduce) {
+    transition-property: none;
+  }
+}
+
+@utility theme-fade-all {
+  transition-property: color, background-color, border-color;
+  transition-duration: var(--duration-fast);
+  transition-timing-function: ease-in-out;
+
+  @media (prefers-reduced-motion: reduce) {
+    transition-property: none;
+  }
+}
+
+@utility theme-fade-text {
+  transition-property: color;
+  transition-duration: var(--duration-fast);
+  transition-timing-function: ease-in-out;
+
+  @media (prefers-reduced-motion: reduce) {
+    transition-property: none;
+  }
+}
+
 @custom-variant safari (@supports (-webkit-hyphens: none));
 @custom-variant ios (@supports (-webkit-touch-callout: none));
 
@@ -209,20 +239,38 @@ body {
   --code-highlight: --alpha(var(--color-black) / 4%);
   --artwork-outline: --alpha(var(--color-neutral-50) / 50%);
 
+  --duration-stagger: 40ms;
+  --duration-micro: 80ms;
+  --duration-quick: 150ms;
+  --duration-fast: 250ms;
+  --duration-medium: 350ms;
+  --duration-slow: 400ms;
+  --duration-very-slow: 500ms;
+
+  --ease-smooth-out: cubic-bezier(0.22, 1, 0.36, 1);
+  --ease-bounce: cubic-bezier(0.34, 1.36, 0.64, 1);
+
+  --scale-modal: 0.96;
+  --scale-dropdown: 0.97;
+  --scale-hint: 0.98;
+  --scale-closing: 0.99;
+
+  --hint-delay: var(--duration-micro);
+
   /* a surface that grows out of the button it belongs to. The close is quicker and
      quieter than the open, so leaving takes less notice than arriving. */
-  --dropdown-open-dur: 250ms;
-  --dropdown-close-dur: 150ms;
-  --dropdown-pre-scale: 0.97;
-  --dropdown-closing-scale: 0.99;
-  --dropdown-ease: cubic-bezier(0.22, 1, 0.36, 1);
+  --dropdown-open-dur: var(--duration-fast);
+  --dropdown-close-dur: var(--duration-quick);
+  --dropdown-pre-scale: var(--scale-dropdown);
+  --dropdown-closing-scale: var(--scale-closing);
+  --dropdown-ease: var(--ease-smooth-out);
 
-  --hint-in-dur: 150ms;
-  --hint-out-dur: 150ms;
+  --hint-in-dur: var(--duration-quick);
+  --hint-out-dur: var(--duration-quick);
   --hint-in-offset: 4px;
-  --hint-ease: cubic-bezier(0.22, 1, 0.36, 1);
+  --hint-ease: var(--ease-smooth-out);
 
-  --theme-fade: 250ms ease-in-out;
+  --theme-fade: var(--duration-fast) ease-in-out;
 }
 
 .dark {

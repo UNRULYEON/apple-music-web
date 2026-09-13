@@ -1,4 +1,4 @@
-import { EASE } from "@/lib/motion";
+import { EASE, TRANSITION_REVEAL } from "@/lib/motion";
 import { animate } from "motion";
 
 // the one scroll area the shell keeps for every view. The router knows it by this name
@@ -7,7 +7,7 @@ export const SCROLL_AREA_ID = "main";
 
 export const SCROLL_AREA = `[data-scroll-restoration-id="${SCROLL_AREA_ID}"]`;
 
-const GLIDE = 0.4;
+const GLIDE = TRANSITION_REVEAL.duration;
 
 const REDUCED_MOTION = "(prefers-reduced-motion: reduce)";
 
