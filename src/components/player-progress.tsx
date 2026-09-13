@@ -43,14 +43,13 @@ interface PlayerProgressProps {
   className?: string;
 }
 
-export function PlayerProgress({ songId, durationInMillis, className }: PlayerProgressProps) {
+const CLOCKS = "min-w-0 text-[9px] tabular-nums";
+
+export function usePlayerProgress(songId: string, durationInMillis?: number) {
   const { position, duration, seek } = usePlaybackTime();
 
   // where a person has put the thumb, which runs ahead of where MusicKit has arrived
   const [wanted, setWanted] = useState<number | undefined>(undefined);
-
-  // the length of the song, or what is left of it, which a person picks
-  const [showsLeft, setShowsLeft] = useState(false);
 
   // a new song starts at the beginning, so a place asked for in the song before it
   // must go, while the time a person picked stays
@@ -73,62 +72,139 @@ export function PlayerProgress({ songId, durationInMillis, className }: PlayerPr
     }
   }, [position, wanted]);
 
+  return { at, left, length, scrub: setWanted, seek };
+}
+
+export function PlayerElapsed({ seconds, className }: { seconds: number; className?: string }) {
   return (
-    <div className={cn("flex items-center gap-1 min-w-0 text-[9px] tabular-nums", className)}>
-      <span className="shrink-0 text-neutral-500 dark:text-neutral-400 theme-fade-text">
-        <RollingClock seconds={at} slot="player-elapsed" />
-      </span>
-      <SliderPrimitive.Root
-        className="grow min-w-0 px-1"
-        value={at}
-        min={0}
-        max={length || 1}
-        step={1}
-        largeStep={LARGE_STEP}
-        thumbAlignment="edge"
-        disabled={length === 0}
-        onValueChange={setWanted}
-        onValueCommitted={seek}
+    <span
+      className={cn("shrink-0 text-neutral-500 dark:text-neutral-400 theme-fade-text", className)}
+    >
+      <RollingClock seconds={seconds} slot="player-elapsed" />
+    </span>
+  );
+}
+
+export function PlayerSeek({
+  at,
+  length,
+  onScrub,
+  onSeek,
+  className,
+}: {
+  at: number;
+  length: number;
+  onScrub: (at: number) => void;
+  onSeek: (at: number) => void;
+  className?: string;
+}) {
+  return (
+    <SliderPrimitive.Root
+      className={cn("px-1 cursor-ew-resize", className)}
+      value={at}
+      min={0}
+      max={length || 1}
+      step={1}
+      largeStep={LARGE_STEP}
+      thumbAlignment="edge"
+      disabled={length === 0}
+      onValueChange={onScrub}
+      onValueCommitted={onSeek}
+    >
+      <SliderPrimitive.Control
+        data-slot="slider-control"
+        className="group flex w-full touch-none select-none items-center py-2 data-disabled:pointer-events-none data-disabled:opacity-40"
       >
-        <SliderPrimitive.Control className="group flex w-full touch-none select-none items-center py-2 data-disabled:pointer-events-none data-disabled:opacity-40">
-          <SliderPrimitive.Track className="relative h-1 w-full rounded-full bg-neutral-300 dark:bg-neutral-800 theme-fade">
-            <SliderPrimitive.Indicator className="h-full rounded-full bg-neutral-900 dark:bg-neutral-100 theme-fade" />
-            <SliderPrimitive.Thumb
-              index={0}
-              aria-label="Seek"
-              getAriaValueText={(_, value) => clockTime(value)}
-              className={cn(
-                "size-2.5 rounded-full bg-neutral-900 dark:bg-neutral-100",
-                "outline-none transition-[scale,opacity,background-color]",
-                "opacity-0 group-hover:opacity-100 data-dragging:opacity-100 has-focus-visible:opacity-100",
-                "data-dragging:scale-125",
-                "has-focus-visible:ring-2 has-focus-visible:ring-neutral-500",
-              )}
-            />
-          </SliderPrimitive.Track>
-        </SliderPrimitive.Control>
-      </SliderPrimitive.Root>
-      <button
-        type="button"
-        onClick={() => setShowsLeft(!showsLeft)}
-        aria-label={
-          showsLeft
-            ? `${clockTime(left)} left. Show the length of the song.`
-            : `The song is ${clockTime(length)} long. Show what is left of it.`
-        }
-        className={cn(
-          "shrink-0 text-right tabular-nums",
-          "text-neutral-500 dark:text-neutral-400",
-          "transition-colors duration-(--duration-quick) ease-(--ease-smooth-out) motion-reduce:transition-none hover:text-neutral-900 dark:hover:text-neutral-100",
-          "outline-none focus-visible:ring-2 focus-visible:ring-neutral-500",
-        )}
-      >
-        <RollingClock
-          seconds={showsLeft ? left : length}
-          sign={showsLeft ? "-" : undefined}
-          slot="player-length"
-        />
-      </button>
+        <SliderPrimitive.Track className="relative h-1 w-full rounded-full bg-neutral-300 dark:bg-neutral-800 theme-fade">
+          <SliderPrimitive.Indicator className="h-full rounded-full bg-neutral-900 dark:bg-neutral-100 theme-fade" />
+          <SliderPrimitive.Thumb
+            index={0}
+            aria-label="Seek"
+            getAriaValueText={(_, value) => clockTime(value)}
+            className={cn(
+              "size-2.5 rounded-full bg-neutral-900 dark:bg-neutral-100",
+              "outline-none transition-[scale,opacity,background-color]",
+              "opacity-0 group-hover:opacity-100 data-dragging:opacity-100 has-focus-visible:opacity-100",
+              "data-dragging:scale-125",
+              "has-focus-visible:ring-2 has-focus-visible:ring-neutral-500",
+            )}
+          />
+        </SliderPrimitive.Track>
+      </SliderPrimitive.Control>
+    </SliderPrimitive.Root>
+  );
+}
+
+export function PlayerLength({
+  length,
+  left,
+  className,
+}: {
+  length: number;
+  left: number;
+  className?: string;
+}) {
+  const [showsLeft, setShowsLeft] = useState(false);
+
+  return (
+    <button
+      type="button"
+      onClick={() => setShowsLeft(!showsLeft)}
+      aria-label={
+        showsLeft
+          ? `${clockTime(left)} left. Show the length of the song.`
+          : `The song is ${clockTime(length)} long. Show what is left of it.`
+      }
+      className={cn(
+        "shrink-0 text-right tabular-nums",
+        "text-neutral-500 dark:text-neutral-400",
+        "transition-colors duration-(--duration-quick) ease-(--ease-smooth-out) motion-reduce:transition-none hover:text-neutral-900 dark:hover:text-neutral-100",
+        "outline-none focus-visible:ring-2 focus-visible:ring-neutral-500",
+        "cursor-pointer",
+        className,
+      )}
+    >
+      <RollingClock
+        seconds={showsLeft ? left : length}
+        sign={showsLeft ? "-" : undefined}
+        slot="player-length"
+      />
+    </button>
+  );
+}
+
+export function PlayerProgress({ songId, durationInMillis, className }: PlayerProgressProps) {
+  const { at, left, length, scrub, seek } = usePlayerProgress(songId, durationInMillis);
+
+  return (
+    <div className={cn("flex items-center gap-1 cursor-ew-resize", CLOCKS, className)}>
+      <PlayerElapsed seconds={at} />
+      <PlayerSeek at={at} length={length} onScrub={scrub} onSeek={seek} className="grow min-w-0" />
+      <PlayerLength length={length} left={left} />
+    </div>
+  );
+}
+
+export function PlayerProgressStacked({
+  songId,
+  durationInMillis,
+  className,
+}: PlayerProgressProps) {
+  const { at, left, length, scrub, seek } = usePlayerProgress(songId, durationInMillis);
+
+  return (
+    <div className={cn("flex flex-col", CLOCKS, className)}>
+      <PlayerSeek
+        at={at}
+        length={length}
+        onScrub={scrub}
+        onSeek={seek}
+        className="w-full cursor-ew-resize"
+      />
+      <div className="flex items-center justify-between px-1">
+        <PlayerElapsed seconds={at} />
+        <PlayerLength length={length} left={left} />
+      </div>
     </div>
   );
 }

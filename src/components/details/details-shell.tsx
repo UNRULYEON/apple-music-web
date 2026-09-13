@@ -3,7 +3,7 @@ import { useBackdrop } from "@/hooks";
 import { VIEW_INSET } from "@/lib/layout";
 import { cn } from "@/lib/utils";
 import { TRANSITION_REVEAL } from "@/lib/motion";
-import type { Artwork } from "@/lib/music-kit/resource";
+import { artworkColors, type Artwork } from "@/lib/music-kit/resource";
 import { AnimatePresence, motion } from "motion/react";
 import { useMemo, type ReactNode } from "react";
 
@@ -21,17 +21,7 @@ export function DetailsShell({
   isPending: boolean;
   children: ReactNode;
 }) {
-  const colors = useMemo(
-    () =>
-      [
-        artwork?.bgColor,
-        artwork?.textColor1,
-        artwork?.textColor2,
-        artwork?.textColor3,
-        artwork?.textColor4,
-      ].filter((color) => color !== undefined),
-    [artwork],
-  );
+  const colors = useMemo(() => artworkColors(artwork), [artwork]);
 
   useBackdrop(colors.length > 0 ? colors : undefined);
 

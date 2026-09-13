@@ -23,6 +23,16 @@ export interface Artwork {
   textColor4?: string;
 }
 
+export function artworkColors(artwork?: Artwork): string[] {
+  return [
+    artwork?.bgColor,
+    artwork?.textColor1,
+    artwork?.textColor2,
+    artwork?.textColor3,
+    artwork?.textColor4,
+  ].filter((color) => color !== undefined);
+}
+
 export function readItems(data: unknown): unknown[] {
   if (typeof data !== "object" || data === null || !("data" in data)) {
     return [];

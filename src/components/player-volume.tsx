@@ -79,6 +79,109 @@ function VolumeHint({
   );
 }
 
+function useVolumeKeys(adjust: (by: number) => void) {
+  useHotkeys(
+    [
+      { hotkey: PLAYER_HOTKEYS.louder, callback: () => adjust(LARGE_STEP) },
+      { hotkey: PLAYER_HOTKEYS.quieter, callback: () => adjust(-LARGE_STEP) },
+    ],
+    { conflictBehavior: "replace" },
+  );
+}
+
+export function VolumeSlider({
+  volume,
+  change,
+  orientation = "vertical",
+  className,
+}: {
+  volume: number;
+  change: (volume: number) => void;
+  orientation?: "vertical" | "horizontal";
+  className?: string;
+}) {
+  return (
+    <SliderPrimitive.Root
+      className={className}
+      value={volume}
+      min={0}
+      max={1}
+      step={STEP}
+      largeStep={LARGE_STEP}
+      orientation={orientation}
+      thumbAlignment="edge"
+      onValueChange={change}
+    >
+      <SliderPrimitive.Control
+        data-slot="slider-control"
+        className={cn(
+          "group flex touch-none select-none",
+          "data-[orientation=vertical]:h-24 data-[orientation=vertical]:w-4 data-[orientation=vertical]:justify-center",
+          "data-[orientation=horizontal]:w-full data-[orientation=horizontal]:items-center data-[orientation=horizontal]:py-2",
+          orientation === "vertical" ? "cursor-ns-resize" : "cursor-ew-resize",
+        )}
+      >
+        <SliderPrimitive.Track
+          className={cn(
+            "relative rounded-full bg-neutral-300 dark:bg-neutral-800 theme-fade",
+            "data-[orientation=vertical]:h-full data-[orientation=vertical]:w-1",
+            "data-[orientation=horizontal]:h-1 data-[orientation=horizontal]:w-full",
+          )}
+        >
+          <SliderPrimitive.Indicator
+            className={cn(
+              "rounded-full bg-neutral-900 dark:bg-neutral-100 theme-fade",
+              "data-[orientation=horizontal]:h-full",
+            )}
+          />
+          <SliderPrimitive.Thumb
+            index={0}
+            aria-label="Volume level"
+            getAriaValueText={(_, value) => `${percent(value)} percent`}
+            className={cn(
+              "rounded-full bg-neutral-900 dark:bg-neutral-100",
+              "outline-none transition-[scale,opacity,background-color]",
+              "has-focus-visible:ring-2 has-focus-visible:ring-neutral-500",
+              "data-[orientation=horizontal]:size-2.5",
+              "data-[orientation=horizontal]:opacity-0 group-hover:data-[orientation=horizontal]:opacity-100",
+              "data-dragging:opacity-100 has-focus-visible:opacity-100 data-dragging:scale-125",
+            )}
+          />
+        </SliderPrimitive.Track>
+      </SliderPrimitive.Control>
+    </SliderPrimitive.Root>
+  );
+}
+
+export function PlayerVolumeSlider({ className }: { className?: string }) {
+  const { volume, change } = useVolume();
+
+  useVolumeKeys((by) => change(nudge(volume, by)));
+
+  return (
+    <div className={cn("flex items-center gap-2 min-w-0 px-12", className)}>
+      <HugeiconsIcon
+        icon={VolumeMute02Icon}
+        size={14}
+        strokeWidth={2}
+        className="shrink-0 opacity-40"
+      />
+      <VolumeSlider
+        volume={volume}
+        change={change}
+        orientation="horizontal"
+        className="grow min-w-0"
+      />
+      <HugeiconsIcon
+        icon={VolumeHighIcon}
+        size={14}
+        strokeWidth={2}
+        className="shrink-0 opacity-40"
+      />
+    </div>
+  );
+}
+
 export function PlayerVolume() {
   const { volume, change } = useVolume();
   const [isOpen, setOpen] = useState(false);
@@ -95,10 +198,7 @@ export function PlayerVolume() {
     hintTimer.current = setTimeout(() => setHinted(false), HINT_HOLD);
   }
 
-  useHotkeys([
-    { hotkey: PLAYER_HOTKEYS.louder, callback: () => adjust(LARGE_STEP) },
-    { hotkey: PLAYER_HOTKEYS.quieter, callback: () => adjust(-LARGE_STEP) },
-  ]);
+  useVolumeKeys(adjust);
 
   return (
     <>
@@ -112,10 +212,10 @@ export function PlayerVolume() {
           <HugeiconsIcon icon={volumeIcon(volume)} size={16} strokeWidth={2} />
         </PopoverPrimitive.Trigger>
         <PopoverPrimitive.Portal>
-          <PopoverPrimitive.Positioner sideOffset={24}>
+          <PopoverPrimitive.Positioner sideOffset={6}>
             <PopoverPrimitive.Popup
               className={cn(
-                "px-0.5 py-2 bg-neutral-100 dark:bg-neutral-950 border border-neutral-50 dark:border-neutral-800 rounded-full",
+                "px-0.5 py-2 bg-neutral-100 dark:bg-neutral-950 border border-neutral-200 dark:border-neutral-800 rounded-full",
                 // it grows out of the corner of the button it belongs to, which the
                 // positioner works out again whenever the popup has to move
                 "origin-(--transform-origin) will-change-[transform,opacity]",
@@ -126,32 +226,7 @@ export function PlayerVolume() {
                 "motion-reduce:transition-none",
               )}
             >
-              <SliderPrimitive.Root
-                value={volume}
-                min={0}
-                max={1}
-                step={STEP}
-                largeStep={LARGE_STEP}
-                orientation="vertical"
-                thumbAlignment="edge"
-                onValueChange={change}
-              >
-                <SliderPrimitive.Control className="group flex h-24 w-4 touch-none select-none justify-center">
-                  <SliderPrimitive.Track className="relative h-full w-1 rounded-full bg-neutral-300 dark:bg-neutral-800">
-                    <SliderPrimitive.Indicator className="rounded-full bg-neutral-900 dark:bg-neutral-100" />
-                    <SliderPrimitive.Thumb
-                      index={0}
-                      aria-label="Volume level"
-                      getAriaValueText={(_, value) => `${percent(value)} percent`}
-                      className={cn(
-                        "rounded-full bg-neutral-900 dark:bg-neutral-100",
-                        "outline-none transition-[scale]",
-                        "has-focus-visible:ring-2 has-focus-visible:ring-neutral-500",
-                      )}
-                    />
-                  </SliderPrimitive.Track>
-                </SliderPrimitive.Control>
-              </SliderPrimitive.Root>
+              <VolumeSlider volume={volume} change={change} />
             </PopoverPrimitive.Popup>
           </PopoverPrimitive.Positioner>
         </PopoverPrimitive.Portal>

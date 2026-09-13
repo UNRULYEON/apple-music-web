@@ -10,6 +10,8 @@ import { useCallback, useRef, useState } from "react";
 const BOX = "relative aspect-square w-full overflow-hidden select-none";
 const BLURRED = { opacity: 0, filter: "blur(2px)" };
 const SHARP = { opacity: 1, filter: "blur(0px)" };
+const FADED = { opacity: 0 };
+const OPAQUE = { opacity: 1 };
 
 // the pictures a person has already been shown. A long list keeps only the rows in
 // sight, so a row that comes back would reveal its picture again, which reads as the
@@ -22,12 +24,14 @@ export function ArtworkImage({
   size,
   iconSize = 64,
   className,
+  blurs = true,
 }: {
   artwork?: Artwork;
   alt?: string;
   size: number;
   iconSize?: number;
   className?: string;
+  blurs?: boolean;
 }) {
   const url = artwork ? artworkUrl(artwork, size) : undefined;
   const wasShown = useRef(url !== undefined && shown.has(url)).current;
@@ -71,6 +75,8 @@ export function ArtworkImage({
 
   const isLoaded = status === "loaded";
   const transition = reduceMotion ? { duration: 0 } : TRANSITION_REVEAL;
+  const hidden = blurs && !reduceMotion ? BLURRED : FADED;
+  const visible = blurs && !reduceMotion ? SHARP : OPAQUE;
 
   return (
     <div className={cn(BOX, className)}>
@@ -79,7 +85,7 @@ export function ArtworkImage({
           <motion.div
             key="placeholder"
             className="absolute inset-0"
-            exit={BLURRED}
+            exit={hidden}
             transition={transition}
           >
             <Skeleton className="size-full rounded-none" />
@@ -97,8 +103,8 @@ export function ArtworkImage({
           "absolute inset-0 size-full object-cover outline-artwork-outline outline-1 -outline-offset-1",
           className,
         )}
-        initial={wasShown ? SHARP : BLURRED}
-        animate={isLoaded ? SHARP : BLURRED}
+        initial={wasShown ? visible : hidden}
+        animate={isLoaded ? visible : hidden}
         transition={transition}
       />
     </div>
