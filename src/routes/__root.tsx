@@ -157,6 +157,7 @@ function RootDocument({ children }: { children: React.ReactNode }) {
                             className="flex-1 min-w-0"
                             fill
                             scrollFade
+                            horizontal={false}
                             scrollRestorationId={SCROLL_AREA_ID}
                           >
                             <MainContent>{children}</MainContent>

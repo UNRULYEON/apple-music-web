@@ -12,6 +12,7 @@ export function ScrollArea({
   fill = false,
   clampContentMinWidth = true,
   overscrollContain = false,
+  horizontal = true,
   scrollRestorationId,
   ...props
 }: ScrollAreaPrimitive.Root.Props & {
@@ -20,6 +21,7 @@ export function ScrollArea({
   fill?: boolean;
   clampContentMinWidth?: boolean;
   overscrollContain?: boolean;
+  horizontal?: boolean;
   scrollRestorationId?: string;
 }): React.ReactElement {
   return (
@@ -32,6 +34,7 @@ export function ScrollArea({
           scrollFade &&
             "mask-t-from-[calc(100%-min(var(--fade-size),var(--scroll-area-overflow-y-start)))] mask-b-from-[calc(100%-min(var(--fade-size),var(--scroll-area-overflow-y-end)))] mask-l-from-[calc(100%-min(var(--fade-size),var(--scroll-area-overflow-x-start)))] mask-r-from-[calc(100%-min(var(--fade-size),var(--scroll-area-overflow-x-end)))] [--fade-size:1.5rem]",
           scrollbarGutter && "data-has-overflow-y:pe-2.5 data-has-overflow-x:pb-2.5",
+          !horizontal && "overflow-x-hidden!",
         )}
         data-slot="scroll-area-viewport"
         data-scroll-restoration-id={scrollRestorationId}
@@ -45,7 +48,7 @@ export function ScrollArea({
         </ScrollAreaPrimitive.Content>
       </ScrollAreaPrimitive.Viewport>
       <ScrollBar orientation="vertical" />
-      <ScrollBar orientation="horizontal" />
+      {horizontal && <ScrollBar orientation="horizontal" />}
       <ScrollAreaPrimitive.Corner data-slot="scroll-area-corner" />
     </ScrollAreaPrimitive.Root>
   );
