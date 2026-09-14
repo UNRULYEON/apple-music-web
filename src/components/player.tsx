@@ -28,6 +28,7 @@ import {
   ShuffleIcon,
 } from "@hugeicons/core-free-icons";
 import { HugeiconsIcon } from "@hugeicons/react";
+import { useHotkey } from "@tanstack/react-hotkeys";
 import { MeshGradient } from "@paper-design/shaders-react";
 import { AnimatePresence, mixColor, motion, useReducedMotion, type Transition } from "motion/react";
 import { useEffect, useMemo, useRef, useState, type ReactNode } from "react";
@@ -551,6 +552,7 @@ function ExpandedPlayer({ onCollapse }: { onCollapse: () => void }) {
           variant="ghost"
           size="icon"
           aria-label="Collapse the player"
+          aria-keyshortcuts={PLAYER_HOTKEYS.expand}
           className="cursor-s-resize"
         >
           <HugeiconsIcon icon={ArrowDown01Icon} size={16} strokeWidth={2} />
@@ -668,6 +670,11 @@ export function Player() {
   }
 
   usePlayerHotkeys(isShown);
+
+  useHotkey(PLAYER_HOTKEYS.expand, () => setIsExpanded((v) => !v), {
+    enabled: isShown,
+    requireReset: true,
+  });
 
   const hidden = prefersReducedMotion ? FADED : HIDDEN;
   const shown = prefersReducedMotion ? OPAQUE : SHOWN;

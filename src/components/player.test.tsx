@@ -641,6 +641,19 @@ describe("Player", () => {
     await waitFor(() => expect(music.repeatMode).toBe(REPEAT_MODES.all));
   });
 
+  it("opens and closes the expanded player with F", async () => {
+    await renderPlayer();
+
+    loadQueue([item("1", "First")]);
+
+    fireEvent.keyDown(document.body, { key: "f", code: "KeyF" });
+    expect(await screen.findByLabelText("Collapse the player")).toBeTruthy();
+
+    fireEvent.keyUp(document.body, { key: "f", code: "KeyF" });
+    fireEvent.keyDown(document.body, { key: "f", code: "KeyF" });
+    await waitFor(() => expect(screen.queryByLabelText("Collapse the player")).toBeNull());
+  });
+
   it("leaves the keys to the page while the player is away", async () => {
     await renderPlayer();
 

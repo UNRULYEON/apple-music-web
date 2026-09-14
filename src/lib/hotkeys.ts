@@ -12,6 +12,7 @@ export const PLAYER_HOTKEYS = {
   previous: "Shift+ArrowLeft",
   shuffle: "S",
   repeat: "R",
+  expand: "F",
   louder: "Shift+ArrowUp",
   quieter: "Shift+ArrowDown",
 } as const satisfies Record<string, Hotkey>;

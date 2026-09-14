@@ -43,6 +43,7 @@ const GROUPS: { title: string; shortcuts: Shortcut[] }[] = [
       { hotkey: PLAYER_HOTKEYS.previous, label: "Previous song" },
       { hotkey: PLAYER_HOTKEYS.shuffle, label: "Shuffle" },
       { hotkey: PLAYER_HOTKEYS.repeat, label: "Repeat" },
+      { hotkey: PLAYER_HOTKEYS.expand, label: "Open or close the full screen player" },
       { hotkey: PLAYER_HOTKEYS.louder, label: "Volume up" },
       { hotkey: PLAYER_HOTKEYS.quieter, label: "Volume down" },
     ],
