@@ -39,6 +39,12 @@
 
 @custom-variant safari (@supports (-webkit-hyphens: none));
 @custom-variant ios (@supports (-webkit-touch-callout: none));
+@custom-variant short (@media (max-height: 37.5rem));
+@custom-variant short-wide (@media (max-height: 37.5rem) and (min-width: 52rem));
+
+:root {
+  --player-chrome: 18.75rem;
+}
 
 * {
   box-sizing: border-box;

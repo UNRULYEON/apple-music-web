@@ -545,7 +545,7 @@ function ExpandedPlayer({ onCollapse }: { onCollapse: () => void }) {
     >
       <ExpandedBackdrop />
 
-      <div className="relative flex justify-center p-2">
+      <div className="relative flex justify-center p-2 short:p-1">
         <Button
           onClick={onCollapse}
           variant="ghost"
@@ -557,9 +557,20 @@ function ExpandedPlayer({ onCollapse }: { onCollapse: () => void }) {
         </Button>
       </div>
 
-      <div className="relative flex flex-col items-center justify-center grow gap-8 px-6 pb-12 min-h-0 overflow-y-auto">
+      <div
+        className={cn(
+          "relative flex flex-col items-center justify-center-safe grow min-h-0 px-6",
+          "gap-8 pb-12 short:gap-4 short:pb-4",
+          "short-wide:flex-row short-wide:gap-6",
+          "overflow-y-auto overscroll-contain",
+        )}
+      >
         <NowPlayingArtwork
-          className="aspect-square w-[min(72vw,44vh,20rem)]"
+          className={cn(
+            "aspect-square w-[min(72vw,44vh,20rem)]",
+            "short:w-[min(72vw,calc(100svh-var(--player-chrome)))]",
+            "short-wide:w-[min(40vw,70vh)]",
+          )}
           size={EXPANDED_ARTWORK_SIZE}
           iconSize={48}
           artworkClassName="size-full rounded-xl"
@@ -572,7 +583,7 @@ function ExpandedPlayer({ onCollapse }: { onCollapse: () => void }) {
         />
 
         <motion.div
-          className="flex flex-col items-center gap-6 w-[min(88vw,24rem)]"
+          className="flex flex-col items-center gap-6 short:gap-4 w-[min(88vw,24rem)] shrink-0"
           initial={detailsHidden}
           animate={{ ...detailsShown, transition: openTransition }}
           exit={{ ...detailsHidden, transition: closeTransition }}
