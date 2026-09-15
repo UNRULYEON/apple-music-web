@@ -5,7 +5,7 @@ import {
   EmptyMedia,
   EmptyTitle,
 } from "@/components/ui/empty";
-import { PlayListIcon } from "@hugeicons/core-free-icons";
+import { Playlist01Icon } from "@hugeicons/core-free-icons";
 import { HugeiconsIcon } from "@hugeicons/react";
 
 export function NoPlaylists() {
@@ -13,7 +13,7 @@ export function NoPlaylists() {
     <Empty>
       <EmptyHeader>
         <EmptyMedia variant="icon">
-          <HugeiconsIcon icon={PlayListIcon} />
+          <HugeiconsIcon icon={Playlist01Icon} />
         </EmptyMedia>
         <EmptyTitle>No playlists</EmptyTitle>
         <EmptyDescription>Make a playlist to see it here.</EmptyDescription>
