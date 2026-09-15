@@ -1,10 +1,28 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { getMusicKit } from "@/lib/music-kit/instance";
-import { fetchLibraryPlaylists, fetchPlaylist, isPlaylistType } from "@/lib/music-kit/playlists";
+import {
+  fetchDemoPlaylists,
+  fetchLibraryPlaylists,
+  fetchPlaylist,
+  isPlaylistType,
+} from "@/lib/music-kit/playlists";
 import { fetchStorefront } from "@/lib/music-kit/storefront";
 
 vi.mock("@/lib/music-kit/instance", () => ({ getMusicKit: vi.fn() }));
 vi.mock("@/lib/music-kit/storefront", () => ({ fetchStorefront: vi.fn() }));
+vi.mock("@/lib/demo/library", () => {
+  const playlist = {
+    id: "demo.mix",
+    name: "Mix",
+    songs: ["s1", "s2"],
+  };
+
+  return {
+    DEMO_CURATOR: "Amar Kisoensingh",
+    DEMO_LIBRARY: { recentlyPlayed: [], albums: [], playlists: [playlist] },
+    findDemoPlaylist: (id: string) => (id === playlist.id ? playlist : undefined),
+  };
+});
 
 const loadMusicKit = vi.mocked(getMusicKit);
 const loadStorefront = vi.mocked(fetchStorefront);
@@ -207,5 +225,52 @@ describe("fetchPlaylist", () => {
     await expect(fetchPlaylist("playlists", "pl.u-123")).rejects.toThrow(
       "Apple Music returned no playlist for pl.u-123.",
     );
+  });
+});
+
+function catalogSong(id: string, cover: string) {
+  return {
+    id,
+    type: "songs",
+    attributes: { name: `Song ${id}`, artwork: { url: cover, width: 600, height: 600 } },
+  };
+}
+
+describe("fetchDemoPlaylists", () => {
+  it("gives a playlist with fewer than four albums the cover of its first song", async () => {
+    music.mockResolvedValueOnce({
+      data: { data: [catalogSong("s1", "cover-1"), catalogSong("s2", "cover-2")] },
+    });
+
+    const [playlist] = await fetchDemoPlaylists([
+      { id: "demo.mix", name: "Mix", songs: ["s1", "s2"] },
+    ]);
+
+    expect(playlist).toMatchObject({
+      id: "demo.mix",
+      type: "library-playlists",
+      name: "Mix",
+      artwork: { url: "cover-1" },
+    });
+    expect(music).toHaveBeenCalledWith("/v1/catalog/nl/songs", { ids: "s1,s2" });
+  });
+});
+
+describe("fetchPlaylist for a demo playlist", () => {
+  it("builds the playlist out of its songs in the catalog", async () => {
+    music.mockResolvedValueOnce({
+      data: { data: [catalogSong("s2", "cover-2"), catalogSong("s1", "cover-1")] },
+    });
+
+    const playlist = await fetchPlaylist("library-playlists", "demo.mix");
+
+    expect(playlist.name).toBe("Mix");
+    expect(playlist.curator).toEqual({ name: "Amar Kisoensingh" });
+    expect(playlist.songs.map((song) => song.id)).toEqual(["s1", "s2"]);
+    expect(playlist.artwork?.url).toBe("cover-1");
+    expect(music).toHaveBeenCalledWith("/v1/catalog/nl/songs", {
+      include: "artists",
+      ids: "s1,s2",
+    });
   });
 });

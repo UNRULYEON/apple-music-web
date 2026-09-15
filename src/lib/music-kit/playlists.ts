@@ -1,4 +1,9 @@
-import { DEMO_LIBRARY } from "@/lib/demo/library";
+import {
+  DEMO_CURATOR,
+  DEMO_LIBRARY,
+  findDemoPlaylist,
+  type DemoPlaylist,
+} from "@/lib/demo/library";
 import { demoQueryKey, readDemoMode } from "@/lib/demo/mode";
 import { fetchCatalogResources } from "@/lib/music-kit/catalog-resources";
 import { getMusicKit } from "@/lib/music-kit/instance";
@@ -6,6 +11,7 @@ import {
   hasNextPage,
   readArtwork,
   readCurator,
+  mosaicArtwork,
   readItems,
   readRelated,
   readStandard,
@@ -83,12 +89,47 @@ export async function fetchLibraryPlaylists(): Promise<LibraryPlaylist[]> {
 
 export const LIBRARY_PLAYLISTS_STALE = 5 * 60 * 1000;
 
-export async function fetchCatalogPlaylists(ids: readonly string[]): Promise<LibraryPlaylist[]> {
-  const items = await fetchCatalogResources(ids.map((id) => ({ type: "playlists", id })));
+export async function fetchDemoPlaylists(
+  playlists: readonly DemoPlaylist[],
+): Promise<LibraryPlaylist[]> {
+  const ids = [...new Set(playlists.flatMap((playlist) => playlist.songs))];
+  const items = await fetchCatalogResources(ids.map((id) => ({ type: "songs", id })));
+  const artworkById = new Map(
+    items
+      .map(readSong)
+      .filter((song) => song !== undefined)
+      .map((song) => [song.id, song.artwork]),
+  );
 
-  return items
-    .map((item) => readLibraryPlaylist("playlists", item))
-    .filter((playlist) => playlist !== undefined);
+  return playlists.map((playlist) => ({
+    id: playlist.id,
+    type: "library-playlists",
+    name: playlist.name,
+    artwork: mosaicArtwork(playlist.songs.map((id) => artworkById.get(id))),
+    canEdit: false,
+    hasCatalog: false,
+    isPublic: false,
+  }));
+}
+
+async function fetchDemoPlaylist(playlist: DemoPlaylist): Promise<Playlist> {
+  const items = await fetchCatalogResources(
+    playlist.songs.map((id) => ({ type: "songs", id })),
+    { include: "artists" },
+  );
+  const songs = items.map(readSong).filter((song) => song !== undefined);
+
+  return {
+    id: playlist.id,
+    type: "library-playlists",
+    name: playlist.name,
+    curator: { name: DEMO_CURATOR },
+    artwork: mosaicArtwork(songs.map((song) => song.artwork)),
+    canEdit: false,
+    hasCatalog: false,
+    isPublic: false,
+    songs,
+  };
 }
 
 export function libraryPlaylistsQuery() {
@@ -96,12 +137,18 @@ export function libraryPlaylistsQuery() {
 
   return {
     queryKey: isDemo ? demoQueryKey("library-playlists") : ["music-kit", "library-playlists"],
-    queryFn: isDemo ? () => fetchCatalogPlaylists(DEMO_LIBRARY.playlists) : fetchLibraryPlaylists,
+    queryFn: isDemo ? () => fetchDemoPlaylists(DEMO_LIBRARY.playlists) : fetchLibraryPlaylists,
     staleTime: LIBRARY_PLAYLISTS_STALE,
   };
 }
 
 export async function fetchPlaylist(type: PlaylistType, id: string): Promise<Playlist> {
+  const demo = findDemoPlaylist(id);
+
+  if (demo) {
+    return fetchDemoPlaylist(demo);
+  }
+
   const path = await playlistPath(type, id);
   const music = await getMusicKit();
   const { data } = await music.api.music(path, SONG_PARAMS);
