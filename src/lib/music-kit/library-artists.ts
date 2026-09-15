@@ -1,10 +1,24 @@
+import { DEMO_LIBRARY } from "@/lib/demo/library";
+import { demoQueryKey, readDemoMode } from "@/lib/demo/mode";
 import type { LibraryAlbum } from "@/lib/music-kit/album";
+import { fetchCatalogResources } from "@/lib/music-kit/catalog-resources";
 import { getMusicKit } from "@/lib/music-kit/instance";
-import { readArtistRef, readItems, readRelated, type Artwork } from "@/lib/music-kit/resource";
+import {
+  hasNextPage,
+  readArtistRef,
+  readArtwork,
+  readItems,
+  readRelated,
+  type Artwork,
+} from "@/lib/music-kit/resource";
 import { fetchStorefront } from "@/lib/music-kit/storefront";
 import { matchesSearch } from "@/lib/search";
 
 const STALE = 60 * 60 * 1000;
+const LIBRARY_ARTISTS_PATH = "/v1/me/library/artists";
+const PAGE_SIZE = 100;
+
+export type ArtistPictures = Record<string, Artwork>;
 
 export interface LibraryArtist {
   name: string;
@@ -34,6 +48,106 @@ export function readLibraryArtists(albums: LibraryAlbum[]): LibraryArtist[] {
   }
 
   return [...byName.values()].toSorted((a, b) => a.name.localeCompare(b.name));
+}
+
+export function withPictures(
+  artists: LibraryArtist[],
+  pictures: ArtistPictures | undefined,
+): LibraryArtist[] {
+  if (!pictures) {
+    return artists;
+  }
+
+  return artists.map((artist) => ({
+    name: artist.name,
+    albumCount: artist.albumCount,
+    artwork: Object.hasOwn(pictures, artist.name) ? pictures[artist.name] : artist.artwork,
+  }));
+}
+
+export async function fetchArtistPictures(): Promise<ArtistPictures> {
+  const items = await fetchLibraryArtistsFrom(0);
+
+  return readPictures(items, (attributes, relationships) => ({
+    name: attributes.name,
+    artwork: firstArtwork(relationships, "catalog"),
+  }));
+}
+
+async function fetchLibraryArtistsFrom(offset: number): Promise<unknown[]> {
+  const music = await getMusicKit();
+  const { data } = await music.api.music(LIBRARY_ARTISTS_PATH, {
+    include: "catalog",
+    limit: PAGE_SIZE,
+    offset,
+  });
+  const items = readItems(data);
+
+  if (!hasNextPage(data) || items.length < PAGE_SIZE) {
+    return items;
+  }
+
+  return [...items, ...(await fetchLibraryArtistsFrom(offset + PAGE_SIZE))];
+}
+
+export async function fetchCatalogArtistPictures(
+  albumIds: readonly string[],
+): Promise<ArtistPictures> {
+  const items = await fetchCatalogResources(
+    albumIds.map((id) => ({ type: "albums", id })),
+    { include: "artists" },
+  );
+
+  return readPictures(items, (attributes, relationships) => ({
+    name: attributes.artistName,
+    artwork: firstArtwork(relationships, "artists"),
+  }));
+}
+
+function readPictures(
+  items: unknown[],
+  read: (
+    attributes: Record<string, unknown>,
+    relationships: unknown,
+  ) => { name: unknown; artwork?: Artwork },
+): ArtistPictures {
+  const pictures: ArtistPictures = {};
+
+  for (const item of items) {
+    if (typeof item !== "object" || item === null) {
+      continue;
+    }
+
+    const { attributes, relationships } = item as {
+      attributes?: Record<string, unknown>;
+      relationships?: unknown;
+    };
+    const { name, artwork } = read(attributes ?? {}, relationships);
+
+    if (typeof name === "string" && artwork && !Object.hasOwn(pictures, name)) {
+      pictures[name] = artwork;
+    }
+  }
+
+  return pictures;
+}
+
+function firstArtwork(relationships: unknown, name: string): Artwork | undefined {
+  const [first] = readRelated(relationships, name, (value) =>
+    readArtwork((value as { attributes?: { artwork?: unknown } } | null)?.attributes?.artwork),
+  );
+
+  return first;
+}
+
+export function artistPicturesQuery() {
+  const isDemo = readDemoMode();
+
+  return {
+    queryKey: isDemo ? demoQueryKey("artist-pictures") : ["music-kit", "artist-pictures"],
+    queryFn: isDemo ? () => fetchCatalogArtistPictures(DEMO_LIBRARY.albums) : fetchArtistPictures,
+    staleTime: STALE,
+  };
 }
 
 export function searchArtists(artists: LibraryArtist[], term: string): LibraryArtist[] {

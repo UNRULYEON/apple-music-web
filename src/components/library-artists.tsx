@@ -4,7 +4,12 @@ import { LoadingState } from "@/components/loading-state";
 import { MediaGrid } from "@/components/media-grid";
 import { useSearch, useSignedInQuery, useView } from "@/hooks";
 import { libraryAlbumsQuery } from "@/lib/music-kit/album";
-import { readLibraryArtists, searchArtists } from "@/lib/music-kit/library-artists";
+import {
+  artistPicturesQuery,
+  readLibraryArtists,
+  searchArtists,
+  withPictures,
+} from "@/lib/music-kit/library-artists";
 import { count } from "@/lib/format";
 import { VIEW_INSET } from "@/lib/layout";
 import { cn } from "@/lib/utils";
@@ -16,7 +21,12 @@ export function LibraryArtists() {
   const { term } = useSearch();
   const { data: albums, isPending, isError } = useSignedInQuery(libraryAlbumsQuery());
 
-  const artists = useMemo(() => readLibraryArtists(albums ?? []), [albums]);
+  const { data: pictures } = useSignedInQuery(artistPicturesQuery());
+
+  const artists = useMemo(
+    () => withPictures(readLibraryArtists(albums ?? []), pictures),
+    [albums, pictures],
+  );
 
   const tiles = useMemo(
     () =>

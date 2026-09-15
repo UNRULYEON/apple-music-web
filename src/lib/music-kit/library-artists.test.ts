@@ -1,11 +1,52 @@
-import { describe, expect, it } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import type { LibraryAlbum } from "@/lib/music-kit/album";
+import { getMusicKit } from "@/lib/music-kit/instance";
 import {
   albumsOfArtist,
+  fetchArtistPictures,
+  fetchCatalogArtistPictures,
   pickArtistId,
   readLibraryArtists,
   searchArtists,
+  withPictures,
 } from "@/lib/music-kit/library-artists";
+import { fetchStorefront } from "@/lib/music-kit/storefront";
+
+vi.mock("@/lib/music-kit/instance", () => ({ getMusicKit: vi.fn() }));
+vi.mock("@/lib/music-kit/storefront", () => ({ fetchStorefront: vi.fn() }));
+
+const music = vi.fn();
+
+beforeEach(() => {
+  vi.mocked(getMusicKit).mockResolvedValue({
+    api: { music },
+  } as unknown as MusicKit.MusicKitInstance);
+  vi.mocked(fetchStorefront).mockResolvedValue({ id: "nl", name: "Netherlands" });
+});
+
+afterEach(() => {
+  vi.clearAllMocks();
+});
+
+function picture(url: string) {
+  return { url, width: 1000, height: 1000 };
+}
+
+function libraryArtist(name: string, artworkUrl?: string) {
+  return {
+    id: `r.${name}`,
+    type: "library-artists",
+    attributes: { name },
+    relationships: {
+      catalog: {
+        data:
+          artworkUrl === undefined
+            ? []
+            : [{ id: `c.${name}`, attributes: { name, artwork: picture(artworkUrl) } }],
+      },
+    },
+  };
+}
 
 function album(id: string, name: string, artist?: string, artwork?: string): LibraryAlbum {
   return {
@@ -114,5 +155,85 @@ describe("albumsOfArtist", () => {
 
   it("gives no album for a name the library does not hold", () => {
     expect(albumsOfArtist([album("1", "Kid A", "Radiohead")], "Björk")).toEqual([]);
+  });
+});
+
+describe("withPictures", () => {
+  it("gives an artist its own picture and keeps the album cover for the rest", () => {
+    const artists = readLibraryArtists([
+      album("1", "Seychelles", "Masayoshi Takanaka", "cover-1"),
+      album("2", "Headphones", "Een Glish", "cover-2"),
+    ]);
+
+    const shown = withPictures(artists, { "Masayoshi Takanaka": picture("takanaka") });
+
+    expect(shown.map((artist) => artist.artwork?.url)).toEqual(["cover-2", "takanaka"]);
+  });
+
+  it("keeps the album covers while there are no pictures", () => {
+    const artists = readLibraryArtists([album("1", "Kid A", "Radiohead", "cover")]);
+
+    expect(withPictures(artists, undefined)).toBe(artists);
+  });
+
+  it("does not take a name like constructor for a picture", () => {
+    const artists = readLibraryArtists([album("1", "Record", "constructor", "cover")]);
+
+    expect(withPictures(artists, {})[0]?.artwork?.url).toBe("cover");
+  });
+});
+
+describe("fetchArtistPictures", () => {
+  it("reads the catalog picture of every library artist on every page", async () => {
+    const full = Array.from({ length: 100 }, (_, index) => libraryArtist(`Artist ${index}`));
+    music
+      .mockResolvedValueOnce({
+        data: {
+          data: [libraryArtist("Radiohead", "radiohead"), ...full.slice(1)],
+          next: "/v1/me/library/artists?offset=100",
+        },
+      })
+      .mockResolvedValueOnce({ data: { data: [libraryArtist("Björk", "bjork")] } });
+
+    const pictures = await fetchArtistPictures();
+
+    expect(pictures).toEqual({ Radiohead: picture("radiohead"), Björk: picture("bjork") });
+    expect(music).toHaveBeenCalledWith("/v1/me/library/artists", {
+      include: "catalog",
+      limit: 100,
+      offset: 100,
+    });
+  });
+});
+
+describe("fetchCatalogArtistPictures", () => {
+  it("names the picture of the first artist after the credit on the album", async () => {
+    music.mockResolvedValueOnce({
+      data: {
+        data: [
+          {
+            id: "1779566450",
+            type: "albums",
+            attributes: { name: "KAYTRAMINÉ", artistName: "KAYTRAMINÉ, Aminé & KAYTRANADA" },
+            relationships: {
+              artists: {
+                data: [
+                  { id: "1", attributes: { name: "KAYTRAMINÉ", artwork: picture("kaytramine") } },
+                  { id: "2", attributes: { name: "Aminé", artwork: picture("amine") } },
+                ],
+              },
+            },
+          },
+        ],
+      },
+    });
+
+    await expect(fetchCatalogArtistPictures(["1779566450"])).resolves.toEqual({
+      "KAYTRAMINÉ, Aminé & KAYTRANADA": picture("kaytramine"),
+    });
+    expect(music).toHaveBeenCalledWith("/v1/catalog/nl/albums", {
+      include: "artists",
+      ids: "1779566450",
+    });
   });
 });

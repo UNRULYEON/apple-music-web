@@ -7,7 +7,10 @@ export interface CatalogRef {
   id: string;
 }
 
-export async function fetchCatalogResources(refs: readonly CatalogRef[]): Promise<unknown[]> {
+export async function fetchCatalogResources(
+  refs: readonly CatalogRef[],
+  params: Record<string, string> = {},
+): Promise<unknown[]> {
   if (refs.length === 0) {
     return [];
   }
@@ -19,6 +22,7 @@ export async function fetchCatalogResources(refs: readonly CatalogRef[]): Promis
   const responses = await Promise.all(
     types.map((type) =>
       music.api.music(`/v1/catalog/${storefront.id}/${type}`, {
+        ...params,
         ids: refs
           .filter((ref) => ref.type === type)
           .map((ref) => ref.id)

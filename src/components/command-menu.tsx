@@ -30,8 +30,10 @@ import { count } from "@/lib/format";
 import { libraryAlbumsQuery, type LibraryAlbum } from "@/lib/music-kit/album";
 import { catalogSearchQuery, type CatalogItem } from "@/lib/music-kit/catalog-search";
 import {
+  artistPicturesQuery,
   readLibraryArtists,
   searchArtists,
+  withPictures,
   type LibraryArtist,
 } from "@/lib/music-kit/library-artists";
 import { libraryPlaylistsQuery, type LibraryPlaylist } from "@/lib/music-kit/playlists";
@@ -160,7 +162,12 @@ function useLibraryResults(query: string): Found {
   const albums = useSignedInQuery(libraryAlbumsQuery());
   const playlists = useSignedInQuery(libraryPlaylistsQuery());
 
-  const artists = useMemo(() => readLibraryArtists(albums.data ?? []), [albums.data]);
+  const pictures = useSignedInQuery(artistPicturesQuery());
+
+  const artists = useMemo(
+    () => withPictures(readLibraryArtists(albums.data ?? []), pictures.data),
+    [albums.data, pictures.data],
+  );
 
   const groups = useMemo<ResultGroup[]>(
     () => [
