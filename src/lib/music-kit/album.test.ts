@@ -6,7 +6,10 @@ import {
   fetchLibraryAlbumSongs,
   isAlbumInLibrary,
   isAlbumType,
+  libraryAlbumsQuery,
   markInLibrary,
+  sortAlbums,
+  type LibraryAlbum,
 } from "@/lib/music-kit/album";
 import type { Song } from "@/lib/music-kit/track";
 import { getMusicKit } from "@/lib/music-kit/instance";
@@ -405,6 +408,35 @@ describe("isAlbumInLibrary", () => {
 
   it("does not take an album with no songs", () => {
     expect(isAlbumInLibrary(songsOf([]))).toBe(false);
+  });
+});
+
+function named(name: string): LibraryAlbum {
+  return { id: name, type: "albums", name };
+}
+
+describe("sortAlbums", () => {
+  it("puts the albums in the order of their names", () => {
+    const albums = [named("the red"), named("Ca$ino"), named("DAMN."), named("All of Me")];
+
+    expect(sortAlbums(albums).map((album) => album.name)).toEqual([
+      "All of Me",
+      "Ca$ino",
+      "DAMN.",
+      "the red",
+    ]);
+  });
+
+  it("leaves the list it was given as it was", () => {
+    const albums = [named("B"), named("A")];
+
+    sortAlbums(albums);
+
+    expect(albums.map((album) => album.name)).toEqual(["B", "A"]);
+  });
+
+  it("sorts what the albums query gives", () => {
+    expect(libraryAlbumsQuery().select).toBe(sortAlbums);
   });
 });
 

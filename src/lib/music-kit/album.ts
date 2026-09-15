@@ -294,6 +294,11 @@ export function libraryAlbumsQuery() {
   return {
     queryKey: isDemo ? demoQueryKey("library-albums") : ["music-kit", "library-albums"],
     queryFn: isDemo ? () => fetchCatalogAlbums(DEMO_LIBRARY.albums) : fetchLibraryAlbums,
+    select: sortAlbums,
     staleTime: LIBRARY_ALBUMS_STALE,
   };
+}
+
+export function sortAlbums(albums: LibraryAlbum[]): LibraryAlbum[] {
+  return albums.toSorted((a, b) => a.name.localeCompare(b.name));
 }
