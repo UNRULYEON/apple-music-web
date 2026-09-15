@@ -10,7 +10,7 @@ export function DetailsArtwork({ artwork, name }: { artwork?: Artwork; name: str
       alt={name}
       size={ARTWORK_SIZE}
       iconSize={96}
-      className="rounded-xl outline-artwork-outline outline-2 -outline-offset-2"
+      className="rounded-xl"
     />
   );
 }

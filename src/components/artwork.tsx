@@ -99,10 +99,7 @@ export function ArtworkImage({
         draggable={false}
         onLoad={load}
         onError={() => setStatus("error")}
-        className={cn(
-          "absolute inset-0 size-full object-cover outline-artwork-outline outline-1 -outline-offset-1",
-          className,
-        )}
+        className={cn("absolute inset-0 size-full object-cover", className)}
         initial={wasShown ? visible : hidden}
         animate={isLoaded ? visible : hidden}
         transition={transition}
