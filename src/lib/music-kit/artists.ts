@@ -3,11 +3,13 @@ import {
   readArtist,
   readArtistRef,
   readArtwork,
+  readCurator,
   readItems,
   readRelated,
   readText,
   type Artist,
   type Artwork,
+  type Curator,
 } from "@/lib/music-kit/resource";
 import { matchesSearch } from "@/lib/search";
 import { readSong, type Song } from "@/lib/music-kit/track";
@@ -16,7 +18,8 @@ import { fetchStorefront } from "@/lib/music-kit/storefront";
 const STALE = 60 * 60 * 1000;
 
 // what the screen shows. Apple sends a view only when the request names it.
-const VIEWS = "top-songs,full-albums,singles";
+const VIEWS =
+  "top-songs,full-albums,singles,featured-playlists,compilation-albums,appears-on-albums";
 
 export interface ArtistAlbum {
   id: string;
@@ -24,6 +27,13 @@ export interface ArtistAlbum {
   artist?: Artist;
   artwork?: Artwork;
   releaseDate?: string;
+}
+
+export interface ArtistPlaylist {
+  id: string;
+  name: string;
+  curator?: Curator;
+  artwork?: Artwork;
 }
 
 export interface ArtistDetail {
@@ -34,11 +44,18 @@ export interface ArtistDetail {
   topSongs: Song[];
   albums: ArtistAlbum[];
   singles: ArtistAlbum[];
+  playlists: ArtistPlaylist[];
+  compilations: ArtistAlbum[];
+  appearsOn: ArtistAlbum[];
 }
 
 // a person looks for an album by what the tile shows: its name and who made it
 export function searchAlbums(albums: ArtistAlbum[], term: string): ArtistAlbum[] {
   return albums.filter((album) => matchesSearch(term, album.name, album.artist?.name));
+}
+
+export function searchPlaylists(playlists: ArtistPlaylist[], term: string): ArtistPlaylist[] {
+  return playlists.filter((playlist) => matchesSearch(term, playlist.name));
 }
 
 export async function fetchArtist(id: string): Promise<ArtistDetail> {
@@ -112,6 +129,9 @@ function readArtistDetail(value: unknown): ArtistDetail | undefined {
     topSongs: readRelated(candidate.views, "top-songs", readSong),
     albums: readRelated(candidate.views, "full-albums", readArtistAlbum),
     singles: readRelated(candidate.views, "singles", readArtistAlbum),
+    playlists: readRelated(candidate.views, "featured-playlists", readArtistPlaylist),
+    compilations: readRelated(candidate.views, "compilation-albums", readArtistAlbum),
+    appearsOn: readRelated(candidate.views, "appears-on-albums", readArtistAlbum),
   };
 }
 
@@ -133,6 +153,26 @@ function readArtistAlbum(value: unknown): ArtistAlbum | undefined {
     artist: readArtist(attributes.artistName),
     artwork: readArtwork(attributes.artwork),
     releaseDate: readText(attributes.releaseDate),
+  };
+}
+
+function readArtistPlaylist(value: unknown): ArtistPlaylist | undefined {
+  if (typeof value !== "object" || value === null) {
+    return undefined;
+  }
+
+  const candidate = value as { id?: unknown; attributes?: Record<string, unknown> };
+  const attributes = candidate.attributes;
+
+  if (typeof candidate.id !== "string" || typeof attributes?.name !== "string") {
+    return undefined;
+  }
+
+  return {
+    id: candidate.id,
+    name: attributes.name,
+    curator: readCurator(attributes.curatorName),
+    artwork: readArtwork(attributes.artwork),
   };
 }
 

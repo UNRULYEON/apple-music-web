@@ -2,7 +2,9 @@ import {
   fetchArtist,
   fetchSongArtists,
   searchAlbums,
+  searchPlaylists,
   type ArtistAlbum,
+  type ArtistPlaylist,
 } from "@/lib/music-kit/artists";
 import { getMusicKit } from "@/lib/music-kit/instance";
 import { fetchStorefront } from "@/lib/music-kit/storefront";
@@ -22,6 +24,14 @@ function album(id: string, attributes: Record<string, unknown> = {}) {
     id,
     type: "albums",
     attributes: { name: `Album ${id}`, artistName: "boygenius", ...attributes },
+  };
+}
+
+function playlist(id: string) {
+  return {
+    id,
+    type: "playlists",
+    attributes: { name: `Playlist ${id}`, curatorName: "Apple Music" },
   };
 }
 
@@ -47,7 +57,8 @@ describe("fetchArtist", () => {
     await fetchArtist("1440846798");
 
     expect(music).toHaveBeenCalledWith("/v1/catalog/nl/artists/1440846798", {
-      views: "top-songs,full-albums,singles",
+      views:
+        "top-songs,full-albums,singles,featured-playlists,compilation-albums,appears-on-albums",
     });
   });
 
@@ -93,6 +104,27 @@ describe("fetchArtist", () => {
     expect(artist.singles.map((one) => one.id)).toEqual(["s1", "s2"]);
   });
 
+  it("reads the artist playlists, the compilations and the albums it appears on", async () => {
+    music.mockResolvedValue(
+      artistResponse(
+        { name: "boygenius" },
+        {
+          "featured-playlists": { data: [playlist("pl.1")] },
+          "compilation-albums": { data: [album("c1")] },
+          "appears-on-albums": { data: [album("o1", { artistName: "Phoebe Bridgers" })] },
+        },
+      ),
+    );
+
+    const artist = await fetchArtist("1440846798");
+
+    expect(artist.playlists).toEqual([
+      { id: "pl.1", name: "Playlist pl.1", curator: { name: "Apple Music" }, artwork: undefined },
+    ]);
+    expect(artist.compilations.map((one) => one.id)).toEqual(["c1"]);
+    expect(artist.appearsOn.map((one) => one.artist?.name)).toEqual(["Phoebe Bridgers"]);
+  });
+
   it("keeps the day an album came out, which the tile shows as a year", async () => {
     music.mockResolvedValue(
       artistResponse(
@@ -114,6 +146,9 @@ describe("fetchArtist", () => {
     expect(artist.topSongs).toEqual([]);
     expect(artist.albums).toEqual([]);
     expect(artist.singles).toEqual([]);
+    expect(artist.playlists).toEqual([]);
+    expect(artist.compilations).toEqual([]);
+    expect(artist.appearsOn).toEqual([]);
   });
 
   it("complains when Apple Music sends back no artist", async () => {
@@ -144,6 +179,17 @@ describe("searchAlbums", () => {
 
   it("gives back no album when nothing matches", () => {
     expect(searchAlbums(ALBUMS, "nirvana")).toEqual([]);
+  });
+});
+
+describe("searchPlaylists", () => {
+  const playlists: ArtistPlaylist[] = [
+    { id: "pl.1", name: "boygenius Essentials" },
+    { id: "pl.2", name: "Inspired by boygenius" },
+  ];
+
+  it("looks at the name of the playlist", () => {
+    expect(searchPlaylists(playlists, "essentials").map((one) => one.id)).toEqual(["pl.1"]);
   });
 });
 

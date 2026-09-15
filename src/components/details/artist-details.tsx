@@ -5,7 +5,13 @@ import { TrackList } from "@/components/details/track-list";
 import { EmptyStates } from "@/components/empty-states";
 import { MediaGrid, type MediaTileItem } from "@/components/media-grid";
 import { useSearch, useSignedInQuery, useView } from "@/hooks";
-import { artistQuery, searchAlbums, type ArtistAlbum } from "@/lib/music-kit/artists";
+import {
+  artistQuery,
+  searchAlbums,
+  searchPlaylists,
+  type ArtistAlbum,
+  type ArtistPlaylist,
+} from "@/lib/music-kit/artists";
 import { searchSongs } from "@/lib/music-kit/track";
 import { releaseYear } from "@/lib/format";
 import { useMemo, type ReactNode } from "react";
@@ -21,21 +27,32 @@ export function ArtistDetails({ id }: { id: string }) {
   const topSongs = artist?.topSongs;
   const songs = useMemo(() => searchSongs(topSongs ?? [], term), [topSongs, term]);
 
-  // a search looks through everything the screen holds, so the albums and the singles
-  // answer it as one list. An album Apple puts in both views must show up once.
   const everyAlbum = useMemo(
     () => [
       ...new Map(
-        [...(artist?.albums ?? []), ...(artist?.singles ?? [])].map((album) => [album.id, album]),
+        [
+          ...(artist?.albums ?? []),
+          ...(artist?.singles ?? []),
+          ...(artist?.compilations ?? []),
+          ...(artist?.appearsOn ?? []),
+        ].map((album) => [album.id, album]),
       ).values(),
     ],
-    [artist?.albums, artist?.singles],
+    [artist?.albums, artist?.singles, artist?.compilations, artist?.appearsOn],
   );
   const foundAlbums = useMemo(() => searchAlbums(everyAlbum, term), [everyAlbum, term]);
+  const foundPlaylists = useMemo(
+    () => searchPlaylists(artist?.playlists ?? [], term),
+    [artist?.playlists, term],
+  );
 
   const albums = useTiles(artist?.albums, open);
   const singles = useTiles(artist?.singles, open);
+  const compilations = useTiles(artist?.compilations, open);
+  const appearsOn = useTiles(artist?.appearsOn, open, { showArtist: true });
+  const playlists = usePlaylistTiles(artist?.playlists, open);
   const found = useTiles(foundAlbums, open);
+  const foundPlaylistTiles = usePlaylistTiles(foundPlaylists, open);
 
   return (
     <DetailsShell id={`artists-${id}`} artwork={artist?.artwork} isPending={isPending}>
@@ -50,12 +67,26 @@ export function ArtistDetails({ id }: { id: string }) {
           />
           {isSearching ? (
             <>
-              {found.length === 0 && songs.length === 0 && <EmptyStates.NoMatches />}
+              {found.length === 0 && foundPlaylistTiles.length === 0 && songs.length === 0 && (
+                <EmptyStates.NoMatches />
+              )}
               {found.length > 0 && (
                 <Section title="Albums">
                   <div className="flex flex-col gap-4">
                     <MediaGrid items={found} />
                     <HiddenItems noun="albums" shown={found.length} total={everyAlbum.length} />
+                  </div>
+                </Section>
+              )}
+              {foundPlaylistTiles.length > 0 && (
+                <Section title="Artist Playlists">
+                  <div className="flex flex-col gap-4">
+                    <MediaGrid items={foundPlaylistTiles} />
+                    <HiddenItems
+                      noun="playlists"
+                      shown={foundPlaylistTiles.length}
+                      total={artist.playlists.length}
+                    />
                   </div>
                 </Section>
               )}
@@ -85,6 +116,21 @@ export function ArtistDetails({ id }: { id: string }) {
                   <MediaGrid items={singles} />
                 </Section>
               )}
+              {playlists.length > 0 && (
+                <Section title="Artist Playlists">
+                  <MediaGrid items={playlists} />
+                </Section>
+              )}
+              {compilations.length > 0 && (
+                <Section title="Compilations">
+                  <MediaGrid items={compilations} />
+                </Section>
+              )}
+              {appearsOn.length > 0 && (
+                <Section title="Appears On">
+                  <MediaGrid items={appearsOn} />
+                </Section>
+              )}
             </>
           )}
         </>
@@ -105,17 +151,38 @@ function Section({ title, children }: { title: string; children: ReactNode }) {
 function useTiles(
   albums: ArtistAlbum[] | undefined,
   open: ReturnType<typeof useView>["open"],
+  { showArtist = false }: { showArtist?: boolean } = {},
 ): MediaTileItem[] {
   return useMemo(
     () =>
       albums?.map((album) => ({
         id: album.id,
         name: album.name,
-        // every album here is by the same artist, so the year tells a person more
-        credit: album.releaseDate ? releaseYear(album.releaseDate) : undefined,
+        credit: showArtist
+          ? album.artist?.name
+          : album.releaseDate
+            ? releaseYear(album.releaseDate)
+            : undefined,
         artwork: album.artwork,
         onClick: () => open({ name: "detail", type: "albums", id: album.id }),
       })) ?? [],
-    [albums, open],
+    [albums, open, showArtist],
+  );
+}
+
+function usePlaylistTiles(
+  playlists: ArtistPlaylist[] | undefined,
+  open: ReturnType<typeof useView>["open"],
+): MediaTileItem[] {
+  return useMemo(
+    () =>
+      playlists?.map((playlist) => ({
+        id: playlist.id,
+        name: playlist.name,
+        credit: playlist.curator?.name,
+        artwork: playlist.artwork,
+        onClick: () => open({ name: "detail", type: "playlists", id: playlist.id }),
+      })) ?? [],
+    [playlists, open],
   );
 }

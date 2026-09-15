@@ -6,7 +6,7 @@ const KEY = "apple-music-web.cache";
 
 // a stored cache that this app can no longer read is thrown away instead of guessed
 // at. Raise the number whenever the shape of what is stored changes.
-export const CACHE_VERSION = "2";
+export const CACHE_VERSION = "3";
 
 // a day, after which what Apple Music said is too old to show while the new answer
 // is on its way
