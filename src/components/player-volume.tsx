@@ -109,7 +109,6 @@ export function VolumeSlider({
       step={STEP}
       largeStep={LARGE_STEP}
       orientation={orientation}
-      thumbAlignment="edge"
       onValueChange={change}
     >
       <SliderPrimitive.Control

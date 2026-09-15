@@ -26,10 +26,8 @@ function trigger() {
   return screen.getByRole("button", { name: /^Volume,/ });
 }
 
-// the thumb keeps itself out of sight until it has measured the track, so the label
-// finds it where a role query cannot
 function slider() {
-  return screen.queryByLabelText("Volume level");
+  return screen.queryByRole("slider", { name: "Volume level" });
 }
 
 async function openPopover() {
@@ -149,7 +147,7 @@ describe("PlayerVolume", () => {
     render(<PlayerVolume />);
     await openPopover();
 
-    fireEvent.keyDown(document.body, { key: "ArrowDown", shiftKey: true });
+    fireEvent.keyDown(slider()!, { key: "ArrowDown", shiftKey: true });
 
     await waitFor(() => expect(music.volume).toBe(0.9));
     expect(screen.queryByRole("status")).toBeNull();
