@@ -704,6 +704,24 @@ describe("PlayerProvider", () => {
     expect(seen.current?.source).toBeUndefined();
   });
 
+  it("lets a person close the player, which clears the queue and forgets it", async () => {
+    act(() => setAuthStatus("signed-in"));
+    const seen = await renderProvider();
+
+    act(() => seen.current?.play(SONGS, { startAt: 0, from: { type: "albums", id: "a1" } }));
+    music.queue.items = [songItem("111", "One"), songItem("222", "Two")];
+    act(() => music.emit("queueItemsDidChange", music.queue.items));
+    await waitFor(() => expect(readStoredQueue()).toBeDefined());
+
+    act(() => seen.current?.close());
+
+    await waitFor(() => expect(music.clearQueue).toHaveBeenCalled());
+    expect(music.stop).toHaveBeenCalled();
+    expect(seen.current?.source).toBeUndefined();
+    expect(seen.current?.isPlaying).toBe(false);
+    await waitFor(() => expect(readStoredQueue()).toBeUndefined());
+  });
+
   it("leaves the queue alone while nobody is signed in", async () => {
     writeStoredQueue({ songs: ["111"], index: 0 });
 

@@ -534,6 +534,32 @@ describe("Player", () => {
     expect(screen.queryByLabelText("Play")).toBeNull();
   });
 
+  it("closes the player from the menu of the bar", async () => {
+    await renderPlayer();
+
+    loadQueue([item("1", "First")]);
+    fireEvent.contextMenu(screen.getByText("First"));
+
+    fireEvent.click(await screen.findByRole("menuitem", { name: "Close Player" }));
+
+    await waitFor(() => expect(music.clearQueue).toHaveBeenCalled());
+    expect(screen.queryByLabelText("Collapse the player")).toBeNull();
+
+    loadQueue([]);
+
+    await waitFor(() => expect(screen.queryByText("First")).toBeNull());
+  });
+
+  it("leaves the menu out on a control of the bar", async () => {
+    await renderPlayer();
+
+    loadQueue([item("1", "First")]);
+    fireEvent.contextMenu(screen.getByLabelText("Play"));
+
+    await act(async () => undefined);
+    expect(screen.queryByRole("menuitem", { name: "Close Player" })).toBeNull();
+  });
+
   it("opens the expanded player when a person taps the artwork", async () => {
     await renderPlayer();
 

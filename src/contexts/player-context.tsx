@@ -68,6 +68,7 @@ export type PlayerContextType = PlayerState & {
   toggle: () => void;
   toggleShuffle: () => void;
   cycleRepeat: () => void;
+  close: () => void;
 };
 
 // long enough to gather a burst of taps, short enough that one tap still feels direct
@@ -481,6 +482,19 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
     });
   }, [song]);
 
+  const close = useCallback(() => {
+    pending.current = undefined;
+    dropPlaybackTime();
+    setSource(undefined);
+    setWanted(undefined);
+    setWantsSound(false);
+    startsNoMore();
+
+    void clearPlayback()
+      .catch(() => undefined)
+      .finally(forgetStoredQueue);
+  }, [startsNoMore]);
+
   const toggleShuffle = useCallback(() => {
     void setShuffleMode(!isShuffled).catch(reportPlaybackProblem);
   }, [isShuffled]);
@@ -511,9 +525,11 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
       toggle,
       toggleShuffle,
       cycleRepeat,
+      close,
     }),
     [
       addToQueue,
+      close,
       cycleRepeat,
       isStarting,
       next,

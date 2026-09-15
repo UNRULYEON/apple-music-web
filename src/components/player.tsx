@@ -16,7 +16,14 @@ import type { RepeatMode } from "@/lib/music-kit/player-state";
 import { PLAYER_HOTKEYS } from "@/lib/hotkeys";
 import { cn } from "@/lib/utils";
 import {
+  ContextMenu,
+  ContextMenuItem,
+  ContextMenuPopup,
+  ContextMenuTrigger,
+} from "@/components/ui/context-menu";
+import {
   ArrowDown01Icon,
+  Cancel01Icon,
   Loading03Icon,
   NextIcon,
   PauseIcon,
@@ -95,7 +102,14 @@ const FOCUS_RING =
 
 const ARTWORK_LAYOUT = "player-artwork";
 
-const CONTROLS = 'button, a, input, [role="slider"], [role="dialog"], [data-slot="slider-control"]';
+const CONTROLS =
+  'button, a, input, [role="slider"], [role="dialog"], [role="menu"], [data-slot="slider-control"]';
+
+function keepControlMenus(event: { target: EventTarget | null; preventBaseUIHandler: () => void }) {
+  if (isControl(event.target)) {
+    event.preventBaseUIHandler();
+  }
+}
 
 function isControl(target: EventTarget | null): boolean {
   return target instanceof Element && target.closest(CONTROLS) !== null;
@@ -654,7 +668,7 @@ function ExpandedPlayer({ onCollapse }: { onCollapse: () => void }) {
 
 export function Player() {
   const artists = useNowPlayingArtists();
-  const { nowPlaying } = usePlayer();
+  const { nowPlaying, close } = usePlayer();
   const status = useAuthStatus();
   const prefersReducedMotion = useReducedMotion();
   const isMobile = useIsMobile();
@@ -704,137 +718,151 @@ export function Player() {
             animate={{ ...shown, transition: openTransition }}
             exit={{ ...hidden, transition: closeTransition }}
           >
-            <div
-              className={cn(
-                "pointer-events-auto",
-                "flex items-center max-w-full",
-                isMobile ? "pl-4 pr-4 py-1" : "px-4 pt-0 pb-0",
-                "bg-neutral-100 dark:bg-neutral-950",
-                "border border-neutral-50 dark:border-neutral-800",
-                "theme-fade",
-                "rounded-full",
-                "select-none",
-              )}
-            >
-              <AnimatePresence initial={false}>
-                {!isMobile && (
-                  <motion.div
-                    key="controls"
-                    className="shrink-0 overflow-hidden"
-                    initial={GROUP_AT_END}
-                    animate={GROUP_BEFORE_END}
-                    exit={GROUP_AT_END}
-                    transition={shapeTransition}
-                  >
-                    <div className="flex items-center w-max">
-                      <ShuffleButton />
-                      <PreviousButton />
-                      <PlayButton />
-                      <NextButton />
-                      <RepeatButton />
-                    </div>
-                  </motion.div>
+            <ContextMenu>
+              <ContextMenuTrigger
+                render={<div />}
+                onContextMenu={keepControlMenus}
+                onTouchStart={keepControlMenus}
+                className={cn(
+                  "pointer-events-auto",
+                  "flex items-center max-w-full",
+                  isMobile ? "pl-4 pr-4 py-1" : "px-4 pt-0 pb-0",
+                  "bg-neutral-100 dark:bg-neutral-950",
+                  "border border-neutral-50 dark:border-neutral-800",
+                  "theme-fade",
+                  "rounded-full",
+                  "select-none",
                 )}
-              </AnimatePresence>
-              <div className="flex flex-col min-w-0" style={{ width: META_WIDTH }}>
-                <div
-                  className={cn("flex items-center gap-2 pt-2 min-w-0", isMobile ? "pb-2" : "pb-0")}
-                >
-                  <NowPlayingArtwork
-                    className="size-8"
-                    size={ARTWORK_SIZE}
-                    iconSize={16}
-                    artworkClassName="size-8 rounded-sm"
-                    transition={closeTransition}
-                  />
-
-                  <div className="flex flex-col grow min-w-0">
-                    <PlayingFrom
-                      className="relative min-w-0 self-start"
-                      hoverClassName="hover:underline"
-                      name={nowPlaying.name}
-                    >
-                      <AnimatePresence mode="popLayout" initial={false}>
-                        <motion.span
-                          key={nowPlaying.name}
-                          className="block truncate text-xs font-bold self-start"
-                          initial={blurred}
-                          animate={sharp}
-                          exit={blurred}
-                          transition={swapTransition}
-                        >
-                          {nowPlaying.name}
-                        </motion.span>
-                      </AnimatePresence>
-                    </PlayingFrom>
-                    <div className="relative min-w-0">
-                      <AnimatePresence mode="popLayout" initial={false}>
-                        <motion.span
-                          key={nowPlaying.artist?.name ?? "no-artist"}
-                          className="block truncate text-xs text-neutral-500 dark:text-neutral-400 theme-fade-text"
-                          initial={blurred}
-                          animate={sharp}
-                          exit={blurred}
-                          transition={swapTransition}
-                        >
-                          <ArtistLinks artists={artists} fallback={nowPlaying.artist?.name} />
-                        </motion.span>
-                      </AnimatePresence>
-                    </div>
-                  </div>
-                </div>
+              >
                 <AnimatePresence initial={false}>
                   {!isMobile && (
                     <motion.div
-                      key="progress"
-                      className="overflow-hidden cursor-default"
-                      initial={ROW_COLLAPSED}
-                      animate={ROW_EXPANDED}
-                      exit={ROW_COLLAPSED}
+                      key="controls"
+                      className="shrink-0 overflow-hidden"
+                      initial={GROUP_AT_END}
+                      animate={GROUP_BEFORE_END}
+                      exit={GROUP_AT_END}
                       transition={shapeTransition}
                     >
-                      <PlayerProgress
-                        songId={nowPlaying.id}
-                        durationInMillis={nowPlaying.durationInMillis}
-                      />
+                      <div className="flex items-center w-max">
+                        <ShuffleButton />
+                        <PreviousButton />
+                        <PlayButton />
+                        <NextButton />
+                        <RepeatButton />
+                      </div>
                     </motion.div>
                   )}
                 </AnimatePresence>
-              </div>
-              <AnimatePresence initial={false}>
-                {isMobile ? (
-                  <motion.div
-                    key="compact-controls"
-                    className="shrink-0 overflow-hidden"
-                    initial={GROUP_AT_START}
-                    animate={GROUP_AFTER_START}
-                    exit={GROUP_AT_START}
-                    transition={shapeTransition}
+                <div className="flex flex-col min-w-0" style={{ width: META_WIDTH }}>
+                  <div
+                    className={cn(
+                      "flex items-center gap-2 pt-2 min-w-0",
+                      isMobile ? "pb-2" : "pb-0",
+                    )}
                   >
-                    <div className="flex items-center w-max">
-                      <PlayButton size="icon-lg" />
-                      <NextButton size="icon-lg" />
+                    <NowPlayingArtwork
+                      className="size-8"
+                      size={ARTWORK_SIZE}
+                      iconSize={16}
+                      artworkClassName="size-8 rounded-sm"
+                      transition={closeTransition}
+                    />
+
+                    <div className="flex flex-col grow min-w-0">
+                      <PlayingFrom
+                        className="relative min-w-0 self-start"
+                        hoverClassName="hover:underline"
+                        name={nowPlaying.name}
+                      >
+                        <AnimatePresence mode="popLayout" initial={false}>
+                          <motion.span
+                            key={nowPlaying.name}
+                            className="block truncate text-xs font-bold self-start"
+                            initial={blurred}
+                            animate={sharp}
+                            exit={blurred}
+                            transition={swapTransition}
+                          >
+                            {nowPlaying.name}
+                          </motion.span>
+                        </AnimatePresence>
+                      </PlayingFrom>
+                      <div className="relative min-w-0">
+                        <AnimatePresence mode="popLayout" initial={false}>
+                          <motion.span
+                            key={nowPlaying.artist?.name ?? "no-artist"}
+                            className="block truncate text-xs text-neutral-500 dark:text-neutral-400 theme-fade-text"
+                            initial={blurred}
+                            animate={sharp}
+                            exit={blurred}
+                            transition={swapTransition}
+                          >
+                            <ArtistLinks artists={artists} fallback={nowPlaying.artist?.name} />
+                          </motion.span>
+                        </AnimatePresence>
+                      </div>
                     </div>
-                  </motion.div>
-                ) : (
-                  <motion.div
-                    key="queue"
-                    className="shrink-0 overflow-hidden"
-                    initial={GROUP_AT_START}
-                    animate={GROUP_AFTER_START}
-                    exit={GROUP_AT_START}
-                    transition={shapeTransition}
-                  >
-                    <div className="flex items-center w-max">
-                      <Button variant="ghost" size="icon" aria-label="Queue">
-                        <HugeiconsIcon icon={Playlist03Icon} size={16} strokeWidth={2} />
-                      </Button>
-                      <PlayerVolume />
-                    </div>
-                  </motion.div>
-                )}
-              </AnimatePresence>
-            </div>
+                  </div>
+                  <AnimatePresence initial={false}>
+                    {!isMobile && (
+                      <motion.div
+                        key="progress"
+                        className="overflow-hidden cursor-default"
+                        initial={ROW_COLLAPSED}
+                        animate={ROW_EXPANDED}
+                        exit={ROW_COLLAPSED}
+                        transition={shapeTransition}
+                      >
+                        <PlayerProgress
+                          songId={nowPlaying.id}
+                          durationInMillis={nowPlaying.durationInMillis}
+                        />
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+                </div>
+                <AnimatePresence initial={false}>
+                  {isMobile ? (
+                    <motion.div
+                      key="compact-controls"
+                      className="shrink-0 overflow-hidden"
+                      initial={GROUP_AT_START}
+                      animate={GROUP_AFTER_START}
+                      exit={GROUP_AT_START}
+                      transition={shapeTransition}
+                    >
+                      <div className="flex items-center w-max">
+                        <PlayButton size="icon-lg" />
+                        <NextButton size="icon-lg" />
+                      </div>
+                    </motion.div>
+                  ) : (
+                    <motion.div
+                      key="queue"
+                      className="shrink-0 overflow-hidden"
+                      initial={GROUP_AT_START}
+                      animate={GROUP_AFTER_START}
+                      exit={GROUP_AT_START}
+                      transition={shapeTransition}
+                    >
+                      <div className="flex items-center w-max">
+                        <Button variant="ghost" size="icon" aria-label="Queue">
+                          <HugeiconsIcon icon={Playlist03Icon} size={16} strokeWidth={2} />
+                        </Button>
+                        <PlayerVolume />
+                      </div>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </ContextMenuTrigger>
+              <ContextMenuPopup align="start">
+                <ContextMenuItem onClick={close}>
+                  <HugeiconsIcon icon={Cancel01Icon} strokeWidth={2} aria-hidden="true" />
+                  Close Player
+                </ContextMenuItem>
+              </ContextMenuPopup>
+            </ContextMenu>
           </motion.div>
         </div>
       )}
