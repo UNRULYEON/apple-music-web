@@ -1,6 +1,6 @@
 import { Skeleton } from "@/components/ui/skeleton";
 import { TRANSITION_REVEAL } from "@/lib/motion";
-import { artworkUrl, type Artwork } from "@/lib/music-kit/resource";
+import { artworkUrl, MOSAIC_SIZE, type Artwork } from "@/lib/music-kit/resource";
 import { cn } from "@/lib/utils";
 import { MusicNote02Icon } from "@hugeicons/core-free-icons";
 import { HugeiconsIcon } from "@hugeicons/react";
@@ -18,21 +18,49 @@ const OPAQUE = { opacity: 1 };
 // list flashing while it scrolls.
 const shown = new Set<string>();
 
-export function ArtworkImage({
-  artwork,
-  alt = "",
-  size,
-  iconSize = 64,
-  className,
-  blurs = true,
-}: {
+interface ArtworkImageProps {
   artwork?: Artwork;
   alt?: string;
   size: number;
   iconSize?: number;
   className?: string;
   blurs?: boolean;
-}) {
+}
+
+export function ArtworkImage(props: ArtworkImageProps) {
+  const pieces = props.artwork?.mosaic;
+
+  if (pieces?.length === MOSAIC_SIZE) {
+    return (
+      <div
+        role={props.alt ? "img" : undefined}
+        aria-label={props.alt || undefined}
+        className={cn(BOX, "grid grid-cols-2", props.className)}
+      >
+        {pieces.map((piece) => (
+          <SingleArtworkImage
+            key={piece.url}
+            artwork={piece}
+            size={props.size / 2}
+            iconSize={props.iconSize}
+            blurs={props.blurs}
+          />
+        ))}
+      </div>
+    );
+  }
+
+  return <SingleArtworkImage {...props} />;
+}
+
+function SingleArtworkImage({
+  artwork,
+  alt = "",
+  size,
+  iconSize = 64,
+  className,
+  blurs = true,
+}: ArtworkImageProps) {
   const url = artwork ? artworkUrl(artwork, size) : undefined;
   const wasShown = useRef(url !== undefined && shown.has(url)).current;
   const [status, setStatus] = useState<"loading" | "loaded" | "error">(

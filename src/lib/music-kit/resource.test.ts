@@ -1,6 +1,7 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 import {
   artworkUrl,
+  mosaicArtwork,
   readArtist,
   readArtwork,
   readCurator,
@@ -109,5 +110,34 @@ describe("readArtwork", () => {
 
   it("gives no artwork for a value that is not artwork", () => {
     expect(readArtwork("boygenius")).toBeUndefined();
+  });
+});
+
+function art(url: string): Artwork {
+  return { url, width: 600, height: 600 };
+}
+
+describe("mosaicArtwork", () => {
+  it("makes a mosaic of the first four different covers", () => {
+    const mosaic = mosaicArtwork([
+      art("a"),
+      art("a"),
+      art("b"),
+      undefined,
+      art("c"),
+      art("d"),
+      art("e"),
+    ]);
+
+    expect(mosaic?.url).toBe("a");
+    expect(mosaic?.mosaic?.map((piece) => piece.url)).toEqual(["a", "b", "c", "d"]);
+  });
+
+  it("gives the first cover when there are fewer than four", () => {
+    expect(mosaicArtwork([art("a"), art("b"), art("a")])).toEqual(art("a"));
+  });
+
+  it("gives nothing when no song has a cover", () => {
+    expect(mosaicArtwork([undefined])).toBeUndefined();
   });
 });

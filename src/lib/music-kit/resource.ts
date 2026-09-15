@@ -21,6 +21,28 @@ export interface Artwork {
   textColor2?: string;
   textColor3?: string;
   textColor4?: string;
+  mosaic?: Artwork[];
+}
+
+export const MOSAIC_SIZE = 4;
+
+export function mosaicArtwork(artworks: (Artwork | undefined)[]): Artwork | undefined {
+  const byUrl = new Map<string, Artwork>();
+
+  for (const artwork of artworks) {
+    if (artwork && !byUrl.has(artwork.url)) {
+      byUrl.set(artwork.url, artwork);
+    }
+  }
+
+  const covers = [...byUrl.values()];
+  const [first] = covers;
+
+  if (!first || covers.length < MOSAIC_SIZE) {
+    return first;
+  }
+
+  return { ...first, mosaic: covers.slice(0, MOSAIC_SIZE) };
 }
 
 export function artworkColors(artwork?: Artwork): string[] {

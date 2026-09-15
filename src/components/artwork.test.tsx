@@ -74,3 +74,27 @@ describe("ArtworkImage", () => {
     expect(screen.queryByAltText("Cover")).toBeNull();
   });
 });
+
+describe("ArtworkImage with a mosaic", () => {
+  it("shows the four covers of the mosaic in one box", () => {
+    const pieces = ["a", "b", "c", "d"].map(cover);
+
+    show({ ...cover("a"), mosaic: pieces });
+
+    const box = screen.getByRole("img", { name: "Cover" });
+    const urls = [...box.querySelectorAll("img")].map((img) => img.getAttribute("src"));
+
+    expect(urls).toEqual([
+      "https://example.com/a-32x32bb.jpg",
+      "https://example.com/b-32x32bb.jpg",
+      "https://example.com/c-32x32bb.jpg",
+      "https://example.com/d-32x32bb.jpg",
+    ]);
+  });
+
+  it("shows one cover when the mosaic is not full", () => {
+    show({ ...cover("a"), mosaic: [cover("a"), cover("b")] });
+
+    expect(document.querySelectorAll("img")).toHaveLength(1);
+  });
+});
