@@ -1,4 +1,6 @@
 import { toastManager } from "@/components/ui/toast";
+import { usePlayer } from "@/hooks/use-player";
+import { isDemoSource } from "@/lib/demo/library";
 import { DEMO_MODE_HOTKEY } from "@/lib/hotkeys";
 import { DEMO_QUERY_KEY, readDemoMode, setDemoMode } from "@/lib/demo/mode";
 import { useAuthStatus } from "@/lib/music-kit/auth";
@@ -10,6 +12,7 @@ const TOAST_ID = "demo-mode";
 export function useDemoModeHotkey(): void {
   const status = useAuthStatus();
   const client = useQueryClient();
+  const { nowPlaying, source, close } = usePlayer();
 
   useHotkey(
     DEMO_MODE_HOTKEY,
@@ -17,6 +20,11 @@ export function useDemoModeHotkey(): void {
       const isOn = !readDemoMode();
 
       setDemoMode(isOn);
+
+      if (isOn && nowPlaying && !isDemoSource(source)) {
+        close();
+      }
+
       client.removeQueries({ queryKey: DEMO_QUERY_KEY });
       void client.invalidateQueries({ refetchType: "none" });
 

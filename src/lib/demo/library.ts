@@ -154,3 +154,14 @@ export const DEMO_LIBRARY: DemoLibrary = {
 export function findDemoPlaylist(id: string): DemoPlaylist | undefined {
   return PLAYLISTS.find((playlist) => playlist.id === id);
 }
+
+export function isDemoSource(source?: { type: string; id: string }): boolean {
+  switch (source?.type) {
+    case "albums":
+      return ALBUMS.includes(source.id);
+    case "library-playlists":
+      return findDemoPlaylist(source.id) !== undefined;
+    default:
+      return false;
+  }
+}
