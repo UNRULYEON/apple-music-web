@@ -1,5 +1,6 @@
 import { getMusicKit } from "@/lib/music-kit/instance";
 import {
+  hasNextPage,
   readArtist,
   readArtistRef,
   readArtwork,
@@ -20,6 +21,16 @@ const STALE = 60 * 60 * 1000;
 // what the screen shows. Apple sends a view only when the request names it.
 const VIEWS =
   "top-songs,full-albums,singles,featured-playlists,compilation-albums,appears-on-albums";
+
+const LISTED_VIEWS = [
+  "full-albums",
+  "singles",
+  "featured-playlists",
+  "compilation-albums",
+  "appears-on-albums",
+];
+const VIEW_LIMIT = 100;
+const VIEW_LIMITS = Object.fromEntries(LISTED_VIEWS.map((name) => [`limit[${name}]`, VIEW_LIMIT]));
 
 export interface ArtistAlbum {
   id: string;
@@ -62,15 +73,47 @@ export async function fetchArtist(id: string): Promise<ArtistDetail> {
   const storefront = await fetchStorefront();
   const music = await getMusicKit();
   const path = `/v1/catalog/${storefront.id}/artists/${encodeURIComponent(id)}`;
-  const { data } = await music.api.music(path, { views: VIEWS });
+  const { data } = await music.api.music(path, { views: VIEWS, ...VIEW_LIMITS });
   const [first] = readItems(data);
-  const artist = readArtistDetail(first);
+  const artist = readArtistDetail(await withEveryPage(path, first));
 
   if (!artist) {
     throw new Error(`Apple Music returned no artist for ${id}.`);
   }
 
   return artist;
+}
+
+async function withEveryPage(path: string, artist: unknown): Promise<unknown> {
+  const views = (artist as { views?: unknown } | undefined)?.views;
+
+  if (typeof views !== "object" || views === null) {
+    return artist;
+  }
+
+  const listed = await Promise.all(
+    LISTED_VIEWS.map(async (name) => {
+      const view = (views as Record<string, unknown>)[name];
+      const items = readItems(view);
+      const rest = hasNextPage(view) ? await fetchViewFrom(path, name, items.length) : [];
+
+      return [name, { data: [...items, ...rest] }] as const;
+    }),
+  );
+
+  return { ...(artist as object), views: { ...views, ...Object.fromEntries(listed) } };
+}
+
+async function fetchViewFrom(path: string, name: string, offset: number): Promise<unknown[]> {
+  const music = await getMusicKit();
+  const { data } = await music.api.music(`${path}/view/${name}`, { limit: VIEW_LIMIT, offset });
+  const items = readItems(data);
+
+  if (!hasNextPage(data) || items.length < VIEW_LIMIT) {
+    return items;
+  }
+
+  return [...items, ...(await fetchViewFrom(path, name, offset + VIEW_LIMIT))];
 }
 
 export function artistQuery(id: string) {

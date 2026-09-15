@@ -59,6 +59,50 @@ describe("fetchArtist", () => {
     expect(music).toHaveBeenCalledWith("/v1/catalog/nl/artists/1440846798", {
       views:
         "top-songs,full-albums,singles,featured-playlists,compilation-albums,appears-on-albums",
+      "limit[full-albums]": 100,
+      "limit[singles]": 100,
+      "limit[featured-playlists]": 100,
+      "limit[compilation-albums]": 100,
+      "limit[appears-on-albums]": 100,
+    });
+    expect(music).toHaveBeenCalledOnce();
+  });
+
+  it("asks for the rest of a view that holds more than one page", async () => {
+    const firstPage = Array.from({ length: 100 }, (_, index) => album(`a${index}`));
+    const secondPage = Array.from({ length: 100 }, (_, index) => album(`a${index + 100}`));
+
+    music
+      .mockResolvedValueOnce(
+        artistResponse(
+          { name: "Masayoshi Takanaka" },
+          {
+            "full-albums": {
+              data: firstPage,
+              next: "/v1/catalog/nl/artists/1440846798/view/full-albums?offset=100",
+            },
+          },
+        ),
+      )
+      .mockResolvedValueOnce({
+        data: {
+          data: secondPage,
+          next: "/v1/catalog/nl/artists/1440846798/view/full-albums?offset=200",
+        },
+      })
+      .mockResolvedValueOnce({ data: { data: [album("a200")] } });
+
+    const artist = await fetchArtist("1440846798");
+
+    expect(artist.albums).toHaveLength(201);
+    expect(artist.albums.at(-1)?.id).toBe("a200");
+    expect(music).toHaveBeenCalledWith("/v1/catalog/nl/artists/1440846798/view/full-albums", {
+      limit: 100,
+      offset: 100,
+    });
+    expect(music).toHaveBeenCalledWith("/v1/catalog/nl/artists/1440846798/view/full-albums", {
+      limit: 100,
+      offset: 200,
     });
   });
 
