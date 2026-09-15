@@ -12,6 +12,7 @@ import { HotkeyKeys } from "@/components/hotkey-keys";
 import { useCloseSidebarOnMobile } from "@/hooks";
 import {
   COMMAND_MENU_HOTKEY,
+  DEMO_MODE_HOTKEY,
   PLAYER_HOTKEYS,
   SHORTCUTS_HOTKEY,
   SIDEBAR_HOTKEY,
@@ -33,6 +34,7 @@ const GROUPS: { title: string; shortcuts: Shortcut[] }[] = [
       { hotkey: COMMAND_MENU_HOTKEY, label: "Search your library" },
       { hotkey: SIDEBAR_HOTKEY, label: "Open or close the sidebar" },
       { hotkey: SHORTCUTS_HOTKEY, label: "Show the shortcuts" },
+      { hotkey: DEMO_MODE_HOTKEY, label: "Turn demo mode on or off" },
     ],
   },
   {

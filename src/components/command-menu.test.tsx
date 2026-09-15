@@ -21,21 +21,34 @@ vi.mock("@/hooks/use-view", () => ({
 }));
 
 const ALBUMS: LibraryAlbum[] = [
-  { id: "l.1", name: "Homogenic", artist: { id: "a.1", name: "Björk" } },
-  { id: "l.2", name: "OK Computer", artist: { id: "a.2", name: "Radiohead" } },
-  { id: "l.3", name: "Kid A", artist: { id: "a.2", name: "Radiohead" } },
+  { id: "l.1", type: "library-albums", name: "Homogenic", artist: { id: "a.1", name: "Björk" } },
+  {
+    id: "l.2",
+    type: "library-albums",
+    name: "OK Computer",
+    artist: { id: "a.2", name: "Radiohead" },
+  },
+  { id: "l.3", type: "library-albums", name: "Kid A", artist: { id: "a.2", name: "Radiohead" } },
 ];
 
 const PLAYLISTS: LibraryPlaylist[] = [
   {
     id: "p.1",
+    type: "library-playlists",
     name: "Late night",
     description: "Quiet songs for the dark",
     canEdit: true,
     hasCatalog: false,
     isPublic: false,
   },
-  { id: "p.2", name: "Runs", canEdit: true, hasCatalog: false, isPublic: false },
+  {
+    id: "p.2",
+    type: "library-playlists",
+    name: "Runs",
+    canEdit: true,
+    hasCatalog: false,
+    isPublic: false,
+  },
 ];
 
 const CATALOG: CatalogResults = {

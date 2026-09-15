@@ -15,7 +15,7 @@ export function LibraryArtistDetails({ id }: { id: string }) {
   const first = mine[0];
 
   const { data: artistId, isPending: isLookingUp } = useSignedInQuery(
-    catalogArtistIdQuery(first?.id, id),
+    catalogArtistIdQuery(first, id),
   );
 
   if (artistId) {
@@ -51,7 +51,7 @@ function OwnAlbums({
           id: album.id,
           name: album.name,
           artwork: album.artwork,
-          onClick: () => open({ name: "detail", type: "library-albums", id: album.id }),
+          onClick: () => open({ name: "detail", type: album.type, id: album.id }),
         })),
     [albums, open, term],
   );

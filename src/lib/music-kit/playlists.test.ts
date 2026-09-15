@@ -60,6 +60,7 @@ describe("fetchLibraryPlaylists", () => {
     await expect(fetchLibraryPlaylists()).resolves.toEqual([
       {
         id: "p.1",
+        type: "library-playlists",
         name: "Late night",
         description: "For the small hours.",
         artwork: { url: "https://example.com/{w}x{h}bb.jpg", width: 3000, height: 3000 },

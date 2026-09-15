@@ -10,6 +10,7 @@ import {
 function album(id: string, name: string, artist?: string, artwork?: string): LibraryAlbum {
   return {
     id,
+    type: "library-albums",
     name,
     artist: artist === undefined ? undefined : { name: artist },
     artwork: artwork === undefined ? undefined : { url: artwork, width: 1200, height: 1200 },

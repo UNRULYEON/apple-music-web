@@ -1,6 +1,7 @@
 import type { LibraryAlbum } from "@/lib/music-kit/album";
 import { getMusicKit } from "@/lib/music-kit/instance";
 import { readArtistRef, readItems, readRelated, type Artwork } from "@/lib/music-kit/resource";
+import { fetchStorefront } from "@/lib/music-kit/storefront";
 import { matchesSearch } from "@/lib/search";
 
 const STALE = 60 * 60 * 1000;
@@ -49,11 +50,14 @@ export function pickArtistId(artists: { id?: string; name: string }[], name: str
   return found?.id ?? "";
 }
 
-export async function fetchCatalogArtistId(albumId: string, name: string): Promise<string> {
+export async function fetchCatalogArtistId(
+  album: Pick<LibraryAlbum, "type" | "id">,
+  name: string,
+): Promise<string> {
   const music = await getMusicKit();
-  const path = `/v1/me/library/albums/${encodeURIComponent(albumId)}/catalog`;
 
   try {
+    const path = await catalogAlbumPath(album);
     const { data } = await music.api.music(path, { include: "artists" });
     const [first] = readItems(data);
     const relationships = (first as { relationships?: unknown } | undefined)?.relationships;
@@ -64,11 +68,21 @@ export async function fetchCatalogArtistId(albumId: string, name: string): Promi
   }
 }
 
-export function catalogArtistIdQuery(albumId: string | undefined, name: string) {
+async function catalogAlbumPath({ type, id }: Pick<LibraryAlbum, "type" | "id">): Promise<string> {
+  if (type === "library-albums") {
+    return `/v1/me/library/albums/${encodeURIComponent(id)}/catalog`;
+  }
+
+  const storefront = await fetchStorefront();
+
+  return `/v1/catalog/${storefront.id}/albums/${encodeURIComponent(id)}`;
+}
+
+export function catalogArtistIdQuery(album: LibraryAlbum | undefined, name: string) {
   return {
-    queryKey: ["music-kit", "catalog-artist-id", name],
-    queryFn: () => fetchCatalogArtistId(albumId ?? "", name),
-    enabled: albumId !== undefined,
+    queryKey: ["music-kit", "catalog-artist-id", album?.type, name],
+    queryFn: () => fetchCatalogArtistId(album ?? { type: "library-albums", id: "" }, name),
+    enabled: album !== undefined,
     staleTime: STALE,
   };
 }

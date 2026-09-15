@@ -1,5 +1,6 @@
 // @vitest-environment happy-dom
 import { useSignedInQuery } from "@/hooks";
+import { readDemoMode, setDemoMode } from "@/lib/demo/mode";
 import { setAuthStatus } from "@/lib/music-kit/auth";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { act, cleanup, render, waitFor } from "@testing-library/react";
@@ -16,6 +17,7 @@ beforeEach(() => {
 afterEach(() => {
   cleanup();
   act(() => setAuthStatus("checking"));
+  act(() => setDemoMode(false));
   vi.clearAllMocks();
 });
 
@@ -59,6 +61,33 @@ describe("useSignedInQuery", () => {
     act(() => setAuthStatus("signed-in"));
 
     await waitFor(() => expect(queryFn).toHaveBeenCalledOnce());
+  });
+
+  it("asks again for the query of the new mode when demo mode changes", async () => {
+    const demoFn = vi.fn(async () => "a demo album");
+
+    function DemoProbe() {
+      useSignedInQuery(
+        readDemoMode()
+          ? { queryKey: ["music-kit", "demo", "album"], queryFn: demoFn }
+          : { queryKey: ["music-kit", "album"], queryFn },
+      );
+      return null;
+    }
+
+    act(() => setAuthStatus("signed-in"));
+
+    render(
+      <QueryClientProvider client={client}>
+        <DemoProbe />
+      </QueryClientProvider>,
+    );
+
+    await waitFor(() => expect(queryFn).toHaveBeenCalledOnce());
+
+    act(() => setDemoMode(true));
+
+    await waitFor(() => expect(demoFn).toHaveBeenCalledOnce());
   });
 
   it("leaves a query that asks to wait alone", async () => {

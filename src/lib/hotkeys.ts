@@ -6,6 +6,8 @@ export const SHORTCUTS_HOTKEY = "Shift+?" as Hotkey;
 
 export const COMMAND_MENU_HOTKEY = "Mod+K" satisfies Hotkey;
 
+export const DEMO_MODE_HOTKEY = "Shift+D" satisfies Hotkey;
+
 export const PLAYER_HOTKEYS = {
   toggle: "Space",
   next: "Shift+ArrowRight",

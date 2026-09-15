@@ -10,7 +10,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Spinner } from "@/components/ui/spinner";
-import { usePersistedCache, useResetWhenSignedOut } from "@/hooks";
+import { useDemoModeHotkey, usePersistedCache, useResetWhenSignedOut } from "@/hooks";
 import { fireConfetti } from "@/lib/confetti";
 import { loadAuthorization, readAuthStatus, signIn, useAuthStatus } from "@/lib/music-kit/auth";
 import { TRANSITION } from "@/lib/motion";
@@ -28,6 +28,7 @@ export function MusicKitGate({ children }: { children: React.ReactNode }): React
 
   useResetWhenSignedOut();
   usePersistedCache();
+  useDemoModeHotkey();
 
   useEffect(() => {
     void loadAuthorization();

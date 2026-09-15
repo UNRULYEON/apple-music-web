@@ -24,7 +24,7 @@ export function LibraryPlaylists() {
           name: playlist.name,
           credit: playlist.description,
           artwork: playlist.artwork,
-          onClick: () => open({ name: "detail", type: "library-playlists", id: playlist.id }),
+          onClick: () => open({ name: "detail", type: playlist.type, id: playlist.id }),
         })) ?? [],
     [playlists, open, term],
   );

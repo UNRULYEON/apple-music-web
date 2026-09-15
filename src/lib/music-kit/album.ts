@@ -1,3 +1,6 @@
+import { DEMO_LIBRARY } from "@/lib/demo/library";
+import { demoQueryKey, readDemoMode } from "@/lib/demo/mode";
+import { fetchCatalogResources } from "@/lib/music-kit/catalog-resources";
 import { getMusicKit } from "@/lib/music-kit/instance";
 import {
   hasNextPage,
@@ -33,6 +36,7 @@ export interface AlbumArtist {
 
 export interface LibraryAlbum {
   id: string;
+  type: AlbumType;
   name: string;
   artist?: Artist;
   artwork?: Artwork;
@@ -171,7 +175,7 @@ export async function fetchLibraryAlbums(): Promise<LibraryAlbum[]> {
     const items = readItems(data);
 
     for (const item of items) {
-      const album = readLibraryAlbum(item);
+      const album = readLibraryAlbum("library-albums", item);
 
       if (album) {
         albums.push(album);
@@ -184,7 +188,15 @@ export async function fetchLibraryAlbums(): Promise<LibraryAlbum[]> {
   }
 }
 
-function readLibraryAlbum(value: unknown): LibraryAlbum | undefined {
+export async function fetchCatalogAlbums(ids: readonly string[]): Promise<LibraryAlbum[]> {
+  const items = await fetchCatalogResources(ids.map((id) => ({ type: "albums", id })));
+
+  return items
+    .map((item) => readLibraryAlbum("albums", item))
+    .filter((album) => album !== undefined);
+}
+
+function readLibraryAlbum(type: AlbumType, value: unknown): LibraryAlbum | undefined {
   if (typeof value !== "object" || value === null) {
     return undefined;
   }
@@ -198,6 +210,7 @@ function readLibraryAlbum(value: unknown): LibraryAlbum | undefined {
 
   return {
     id: candidate.id,
+    type,
     name: attributes.name,
     artist: readArtist(attributes.artistName),
     artwork: readArtwork(attributes.artwork),
@@ -276,9 +289,11 @@ export const LIBRARY_ALBUMS_STALE = 5 * 60 * 1000;
 
 // one place for the query, so the view and any early fetch cannot drift apart
 export function libraryAlbumsQuery() {
+  const isDemo = readDemoMode();
+
   return {
-    queryKey: ["music-kit", "library-albums"],
-    queryFn: fetchLibraryAlbums,
+    queryKey: isDemo ? demoQueryKey("library-albums") : ["music-kit", "library-albums"],
+    queryFn: isDemo ? () => fetchCatalogAlbums(DEMO_LIBRARY.albums) : fetchLibraryAlbums,
     staleTime: LIBRARY_ALBUMS_STALE,
   };
 }

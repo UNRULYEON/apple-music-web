@@ -13,4 +13,5 @@ export { usePrefetchRecentlyPlayed } from "./use-prefetch-recently-played";
 export { useSignedInQuery } from "./use-signed-in-query";
 export { useResetWhenSignedOut } from "./use-reset-when-signed-out";
 export { usePersistedCache } from "./use-persisted-cache";
+export { useDemoModeHotkey } from "./use-demo-mode-hotkey";
 export { useVolume } from "./use-volume";

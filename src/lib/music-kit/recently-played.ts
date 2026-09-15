@@ -1,3 +1,6 @@
+import { DEMO_LIBRARY } from "@/lib/demo/library";
+import { demoQueryKey, readDemoMode } from "@/lib/demo/mode";
+import { fetchCatalogResources, type CatalogRef } from "@/lib/music-kit/catalog-resources";
 import { getMusicKit } from "@/lib/music-kit/instance";
 import {
   hasNextPage,
@@ -55,6 +58,14 @@ export async function fetchRecentlyPlayed(limit = PAGE_SIZE): Promise<RecentlyPl
   return played.slice(0, limit);
 }
 
+export async function fetchRecentlyPlayedFromCatalog(
+  refs: readonly CatalogRef[],
+): Promise<RecentlyPlayedItem[]> {
+  const items = await fetchCatalogResources(refs);
+
+  return items.map(readItem).filter((item) => item !== undefined);
+}
+
 function readItem(value: unknown): RecentlyPlayedItem | undefined {
   if (typeof value !== "object" || value === null) {
     return undefined;
@@ -91,9 +102,15 @@ export const RECENTLY_PLAYED_STALE = 5 * 60 * 1000;
 // one place for the query, so the view that shows it and the view that fetches it
 // early cannot drift into asking two different questions
 export function recentlyPlayedQuery() {
+  const isDemo = readDemoMode();
+
   return {
-    queryKey: ["music-kit", "recently-played", RECENTLY_PLAYED_LIMIT],
-    queryFn: () => fetchRecentlyPlayed(RECENTLY_PLAYED_LIMIT),
+    queryKey: isDemo
+      ? demoQueryKey("recently-played")
+      : ["music-kit", "recently-played", RECENTLY_PLAYED_LIMIT],
+    queryFn: isDemo
+      ? () => fetchRecentlyPlayedFromCatalog(DEMO_LIBRARY.recentlyPlayed)
+      : () => fetchRecentlyPlayed(RECENTLY_PLAYED_LIMIT),
     staleTime: RECENTLY_PLAYED_STALE,
   };
 }

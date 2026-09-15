@@ -1,3 +1,4 @@
+import { useDemoMode } from "@/lib/demo/mode";
 import { useAuthStatus } from "@/lib/music-kit/auth";
 import {
   useQuery,
@@ -15,6 +16,7 @@ export function useSignedInQuery<
   TQueryKey extends QueryKey = QueryKey,
 >(options: UseQueryOptions<TQueryFnData, TError, TData, TQueryKey>): UseQueryResult<TData, TError> {
   const status = useAuthStatus();
+  useDemoMode();
 
   return useQuery({ ...options, enabled: status === "signed-in" && options.enabled !== false });
 }

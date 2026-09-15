@@ -86,11 +86,11 @@ interface Found {
 
 function albumResult(album: LibraryAlbum): Result {
   return {
-    id: `library-albums:${album.id}`,
+    id: `${album.type}:${album.id}`,
     name: album.name,
     credit: album.artist?.name,
     artwork: album.artwork,
-    view: { name: "detail", type: "library-albums", id: album.id },
+    view: { name: "detail", type: album.type, id: album.id },
   };
 }
 
@@ -106,11 +106,11 @@ function artistResult(artist: LibraryArtist): Result {
 
 function playlistResult(playlist: LibraryPlaylist): Result {
   return {
-    id: `library-playlists:${playlist.id}`,
+    id: `${playlist.type}:${playlist.id}`,
     name: playlist.name,
     credit: playlist.description,
     artwork: playlist.artwork,
-    view: { name: "detail", type: "library-playlists", id: playlist.id },
+    view: { name: "detail", type: playlist.type, id: playlist.id },
   };
 }
 

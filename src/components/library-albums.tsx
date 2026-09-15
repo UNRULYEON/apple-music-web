@@ -24,7 +24,7 @@ export function LibraryAlbums() {
           name: album.name,
           credit: album.artist?.name,
           artwork: album.artwork,
-          onClick: () => open({ name: "detail", type: "library-albums", id: album.id }),
+          onClick: () => open({ name: "detail", type: album.type, id: album.id }),
         })) ?? [],
     [albums, open, term],
   );

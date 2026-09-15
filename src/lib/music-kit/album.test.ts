@@ -1,6 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import {
   fetchAlbum,
+  fetchCatalogAlbums,
   fetchLibraryAlbums,
   fetchLibraryAlbumSongs,
   isAlbumInLibrary,
@@ -312,6 +313,7 @@ describe("fetchLibraryAlbums", () => {
     await expect(fetchLibraryAlbums()).resolves.toEqual([
       {
         id: "l.AbCdEf",
+        type: "library-albums",
         name: "The record",
         artist: { name: "boygenius" },
         artwork: { url: "https://example.com/{w}x{h}bb.jpg", width: 3000, height: 3000 },
@@ -403,5 +405,24 @@ describe("isAlbumInLibrary", () => {
 
   it("does not take an album with no songs", () => {
     expect(isAlbumInLibrary(songsOf([]))).toBe(false);
+  });
+});
+
+describe("fetchCatalogAlbums", () => {
+  it("reads catalog albums in the order of the ids, so they open as catalog albums", async () => {
+    music.mockResolvedValueOnce({
+      data: {
+        data: [
+          { id: "2", type: "albums", attributes: { name: "Rumours", artistName: "Fleetwood Mac" } },
+          { id: "1", type: "albums", attributes: { name: "In Rainbows", artistName: "Radiohead" } },
+        ],
+      },
+    });
+
+    await expect(fetchCatalogAlbums(["1", "2"])).resolves.toMatchObject([
+      { id: "1", type: "albums", name: "In Rainbows", catalogId: undefined },
+      { id: "2", type: "albums", name: "Rumours" },
+    ]);
+    expect(music).toHaveBeenCalledWith("/v1/catalog/nl/albums", { ids: "1,2" });
   });
 });

@@ -1,3 +1,6 @@
+import { DEMO_LIBRARY } from "@/lib/demo/library";
+import { demoQueryKey, readDemoMode } from "@/lib/demo/mode";
+import { fetchCatalogResources } from "@/lib/music-kit/catalog-resources";
 import { getMusicKit } from "@/lib/music-kit/instance";
 import {
   hasNextPage,
@@ -25,6 +28,7 @@ export type PlaylistType = (typeof TYPES)[number];
 
 export interface LibraryPlaylist {
   id: string;
+  type: PlaylistType;
   name: string;
   description?: string;
   artwork?: Artwork;
@@ -64,7 +68,7 @@ export async function fetchLibraryPlaylists(): Promise<LibraryPlaylist[]> {
     const items = readItems(data);
 
     for (const item of items) {
-      const playlist = readLibraryPlaylist(item);
+      const playlist = readLibraryPlaylist("library-playlists", item);
 
       if (playlist) {
         playlists.push(playlist);
@@ -79,10 +83,20 @@ export async function fetchLibraryPlaylists(): Promise<LibraryPlaylist[]> {
 
 export const LIBRARY_PLAYLISTS_STALE = 5 * 60 * 1000;
 
+export async function fetchCatalogPlaylists(ids: readonly string[]): Promise<LibraryPlaylist[]> {
+  const items = await fetchCatalogResources(ids.map((id) => ({ type: "playlists", id })));
+
+  return items
+    .map((item) => readLibraryPlaylist("playlists", item))
+    .filter((playlist) => playlist !== undefined);
+}
+
 export function libraryPlaylistsQuery() {
+  const isDemo = readDemoMode();
+
   return {
-    queryKey: ["music-kit", "library-playlists"],
-    queryFn: fetchLibraryPlaylists,
+    queryKey: isDemo ? demoQueryKey("library-playlists") : ["music-kit", "library-playlists"],
+    queryFn: isDemo ? () => fetchCatalogPlaylists(DEMO_LIBRARY.playlists) : fetchLibraryPlaylists,
     staleTime: LIBRARY_PLAYLISTS_STALE,
   };
 }
@@ -144,7 +158,7 @@ function readPlaylist(type: PlaylistType, value: unknown): Playlist | undefined 
   };
 }
 
-function readLibraryPlaylist(value: unknown): LibraryPlaylist | undefined {
+function readLibraryPlaylist(type: PlaylistType, value: unknown): LibraryPlaylist | undefined {
   if (typeof value !== "object" || value === null) {
     return undefined;
   }
@@ -158,6 +172,7 @@ function readLibraryPlaylist(value: unknown): LibraryPlaylist | undefined {
 
   return {
     id: candidate.id,
+    type,
     name: attributes.name,
     description: readStandard(attributes.description),
     artwork: readArtwork(attributes.artwork),
