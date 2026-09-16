@@ -1,3 +1,4 @@
+import { queryOptions } from "@tanstack/react-query";
 import { DEMO_LIBRARY } from "@/lib/demo/library";
 import { demoQueryKey, readDemoMode } from "@/lib/demo/mode";
 import type { LibraryAlbum } from "@/lib/music-kit/album";
@@ -143,11 +144,11 @@ function firstArtwork(relationships: unknown, name: string): Artwork | undefined
 export function artistPicturesQuery() {
   const isDemo = readDemoMode();
 
-  return {
+  return queryOptions({
     queryKey: isDemo ? demoQueryKey("artist-pictures") : ["music-kit", "artist-pictures"],
     queryFn: isDemo ? () => fetchCatalogArtistPictures(DEMO_LIBRARY.albums) : fetchArtistPictures,
     staleTime: STALE,
-  };
+  });
 }
 
 export function searchArtists(artists: LibraryArtist[], term: string): LibraryArtist[] {
@@ -193,10 +194,10 @@ async function catalogAlbumPath({ type, id }: Pick<LibraryAlbum, "type" | "id">)
 }
 
 export function catalogArtistIdQuery(album: LibraryAlbum | undefined, name: string) {
-  return {
+  return queryOptions({
     queryKey: ["music-kit", "catalog-artist-id", album?.type, name],
     queryFn: () => fetchCatalogArtistId(album ?? { type: "library-albums", id: "" }, name),
     enabled: album !== undefined,
     staleTime: STALE,
-  };
+  });
 }

@@ -1,3 +1,4 @@
+import { queryOptions } from "@tanstack/react-query";
 import { getMusicKit } from "@/lib/music-kit/instance";
 import {
   type Artist,
@@ -115,11 +116,11 @@ async function fetchViewFrom(path: string, name: string, offset: number): Promis
 }
 
 export function artistQuery(id: string) {
-  return {
+  return queryOptions({
     queryKey: ["music-kit", "artist", id],
     queryFn: () => fetchArtist(id),
     staleTime: STALE,
-  };
+  });
 }
 
 export async function fetchSongArtists(id: string): Promise<Artist[]> {
@@ -134,12 +135,12 @@ export async function fetchSongArtists(id: string): Promise<Artist[]> {
 }
 
 export function songArtistsQuery(id?: string) {
-  return {
+  return queryOptions({
     queryKey: ["music-kit", "song-artists", id],
     queryFn: () => fetchSongArtists(id ?? ""),
     enabled: id !== undefined,
     staleTime: STALE,
-  };
+  });
 }
 
 function readArtistDetail(value: unknown): ArtistDetail | undefined {

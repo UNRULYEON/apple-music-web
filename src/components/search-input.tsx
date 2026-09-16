@@ -17,7 +17,7 @@ export function SearchInput() {
   return (
     <InputGroup className="ms-auto w-64">
       <InputGroupAddon className="size-5">
-        <HugeiconsIcon icon={Search01Icon} strokeWidth={2} />
+        <HugeiconsIcon icon={Search01Icon} strokeWidth={2} aria-hidden="true" />
       </InputGroupAddon>
       <InputGroupInput
         type="search"
@@ -35,7 +35,7 @@ export function SearchInput() {
             onClick={() => setTerm("")}
             className="mr-2 flex cursor-pointer rounded-sm text-muted-foreground transition-colors duration-(--duration-quick) ease-(--ease-smooth-out) outline-none hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring motion-reduce:transition-none"
           >
-            <HugeiconsIcon icon={Cancel01Icon} size={14} strokeWidth={2} />
+            <HugeiconsIcon icon={Cancel01Icon} size={14} strokeWidth={2} aria-hidden="true" />
           </button>
         </InputGroupAddon>
       )}

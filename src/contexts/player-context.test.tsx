@@ -1,3 +1,5 @@
+// @vitest-environment happy-dom
+
 import { act, cleanup, render, waitFor } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { usePlayer } from "@/hooks";
@@ -21,19 +23,18 @@ import {
 import { resetPlayerState } from "@/lib/music-kit/player-state";
 import type { Song } from "@/lib/music-kit/track";
 import {
+  showNowPlaying,
+  showPlaybackState,
+  showPosition,
+  subscribeToMediaKeys,
+} from "@/lib/player/media-session";
+import { notifySong } from "@/lib/player/notify";
+import {
   readStoredQueue,
   type StoredQueue,
   writeStoredPosition,
   writeStoredQueue,
-} from "@/lib/now-playing-storage";
-import {
-  handleMediaKeys,
-  showNowPlaying,
-  showPlaybackState,
-  showPosition,
-} from "@/lib/player/media-session";
-import { notifySong } from "@/lib/player/notify";
-// @vitest-environment happy-dom
+} from "@/lib/storage/now-playing";
 import { PlayerProvider } from "./player-context";
 
 vi.mock("@/lib/music-kit/instance", () => ({ getMusicKit: vi.fn() }));
@@ -45,7 +46,7 @@ vi.mock("@/lib/music-kit/storefront", () => ({
   fetchStorefront: vi.fn().mockResolvedValue({ id: "nl", name: "Netherlands" }),
 }));
 vi.mock("@/lib/player/media-session", () => ({
-  handleMediaKeys: vi.fn(() => () => undefined),
+  subscribeToMediaKeys: vi.fn(() => () => undefined),
   showNowPlaying: vi.fn(),
   showPlaybackState: vi.fn(),
   showPosition: vi.fn(),
@@ -154,7 +155,7 @@ describe("PlayerProvider", () => {
     music.queue.items = [songItem("111", "One"), songItem("222", "Two")];
     act(() => music.emit("queueItemsDidChange", music.queue.items));
 
-    const keys = vi.mocked(handleMediaKeys).mock.lastCall?.[0];
+    const keys = vi.mocked(subscribeToMediaKeys).mock.lastCall?.[0];
 
     act(() => keys?.next());
 

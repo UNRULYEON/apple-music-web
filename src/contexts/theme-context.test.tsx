@@ -1,8 +1,9 @@
 // @vitest-environment happy-dom
+
 import { act, cleanup, render } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { useTheme } from "@/hooks";
-import { preHydrationScript, type Theme } from "@/lib/theme-storage";
+import { PRE_HYDRATION_SCRIPT, type Theme } from "@/lib/storage/theme";
 import { ThemeProvider } from "./theme-context";
 
 afterEach(() => {
@@ -23,7 +24,7 @@ function setPrefersDark(dark: boolean) {
 }
 
 function runPreHydrationScript() {
-  new Function(preHydrationScript)();
+  new Function(PRE_HYDRATION_SCRIPT)();
 }
 
 function renderProvider() {
@@ -43,7 +44,7 @@ function renderProvider() {
   return seen;
 }
 
-describe("preHydrationScript", () => {
+describe("PRE_HYDRATION_SCRIPT", () => {
   it("marks a stored dark theme before the first paint", () => {
     localStorage.setItem("theme", "dark");
     setPrefersDark(false);
@@ -89,7 +90,7 @@ describe("ThemeProvider", () => {
     localStorage.setItem("theme", "dark");
     setPrefersDark(false);
 
-    const renders: Array<Theme> = [];
+    const renders: Theme[] = [];
 
     function Probe() {
       renders.push(useTheme().theme);

@@ -18,7 +18,7 @@ export function mergeDevVars(existing: string, token: string): string {
   return `${merged.join("\n")}\n`;
 }
 
-function lines(existing: string): Array<string> {
+function lines(existing: string): string[] {
   const trimmed = existing.replace(/\n+$/, "");
   return trimmed ? trimmed.split("\n") : [];
 }

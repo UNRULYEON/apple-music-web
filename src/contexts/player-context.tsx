@@ -43,19 +43,19 @@ import {
 } from "@/lib/music-kit/player-state";
 import type { Song } from "@/lib/music-kit/track";
 import {
+  showNowPlaying,
+  showPlaybackState,
+  showPosition,
+  subscribeToMediaKeys,
+} from "@/lib/player/media-session";
+import { notifySong } from "@/lib/player/notify";
+import { reportPlaybackProblem } from "@/lib/player/report";
+import {
   forgetStoredQueue,
   readStoredQueue,
   writeStoredPosition,
   writeStoredQueue,
-} from "@/lib/now-playing-storage";
-import {
-  handleMediaKeys,
-  showNowPlaying,
-  showPlaybackState,
-  showPosition,
-} from "@/lib/player/media-session";
-import { notifySong } from "@/lib/player/notify";
-import { reportPlaybackProblem } from "@/lib/player/report";
+} from "@/lib/storage/now-playing";
 
 export type PlayerContextType = PlayerState & {
   source?: QueueSource;
@@ -93,17 +93,17 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
 
   const [source, setSource] = useState<QueueSource | undefined>(undefined);
 
-  const [isStarting, setStarting] = useState(false);
+  const [isStarting, setIsStarting] = useState(false);
   const startingTimer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
 
   const startsSoon = useCallback(() => {
-    setStarting(true);
+    setIsStarting(true);
     clearTimeout(startingTimer.current);
-    startingTimer.current = setTimeout(() => setStarting(false), STARTING_LIMIT);
+    startingTimer.current = setTimeout(() => setIsStarting(false), STARTING_LIMIT);
   }, []);
 
   const startsNoMore = useCallback(() => {
-    setStarting(false);
+    setIsStarting(false);
     clearTimeout(startingTimer.current);
   }, []);
 
@@ -127,7 +127,7 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
     }
   }, [index, wanted]);
 
-  const [isRestored, setRestored] = useState(false);
+  const [isRestored, setIsRestored] = useState(false);
 
   const pending = useRef<{ index: number } | undefined>(undefined);
   const giveBack = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
@@ -137,7 +137,7 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
       return;
     }
 
-    setRestored(true);
+    setIsRestored(true);
 
     const stored = readStoredQueue();
 
@@ -215,7 +215,7 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
     setSource(undefined);
     setWanted(undefined);
     setWantsSound(false);
-    setRestored(false);
+    setIsRestored(false);
     startsNoMore();
 
     void clearPlayback().catch(() => undefined);
@@ -414,7 +414,7 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
 
   useEffect(
     () =>
-      handleMediaKeys({
+      subscribeToMediaKeys({
         play: () => !wantsSound && toggle(),
         pause: () => wantsSound && toggle(),
         next,

@@ -1,6 +1,6 @@
 const MAX_ERRORS = 5;
 
-export function collectErrors(lines: Array<string>): Array<string> {
+export function collectErrors(lines: string[]): string[] {
   return lines
     .filter((line) => line.includes("::error"))
     .map((line) => line.replace(/^.*::error[^:]*::/, "").trim())

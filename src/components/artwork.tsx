@@ -63,7 +63,7 @@ function SingleArtworkImage({
   const [status, setStatus] = useState<"loading" | "loaded" | "error">(
     wasShown ? "loaded" : "loading",
   );
-  const reduceMotion = useReducedMotion();
+  const prefersReducedMotion = useReducedMotion();
 
   const load = useCallback(() => {
     if (url) {
@@ -92,15 +92,21 @@ function SingleArtworkImage({
   if (!artwork || !url || status === "error") {
     return (
       <div className={cn(BOX, "flex items-center justify-center bg-muted", className)}>
-        <HugeiconsIcon icon={MusicNote02Icon} size={iconSize} className="text-muted-foreground" />
+        <HugeiconsIcon
+          icon={MusicNote02Icon}
+          size={iconSize}
+          strokeWidth={1.5}
+          className="text-muted-foreground"
+          aria-hidden="true"
+        />
       </div>
     );
   }
 
   const isLoaded = status === "loaded";
-  const transition = reduceMotion ? { duration: 0 } : TRANSITION_REVEAL;
-  const hidden = blurs && !reduceMotion ? BLURRED : FADED;
-  const visible = blurs && !reduceMotion ? SHARP : OPAQUE;
+  const transition = prefersReducedMotion ? { duration: 0 } : TRANSITION_REVEAL;
+  const hidden = blurs && !prefersReducedMotion ? BLURRED : FADED;
+  const visible = blurs && !prefersReducedMotion ? SHARP : OPAQUE;
 
   return (
     <div className={cn(BOX, className)}>

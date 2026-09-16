@@ -87,7 +87,7 @@ export function showPosition(position: number, duration: number): void {
   }
 }
 
-export function handleMediaKeys(keys: MediaKeys): () => void {
+export function subscribeToMediaKeys(keys: MediaKeys): () => void {
   const media = session();
 
   if (!media) {

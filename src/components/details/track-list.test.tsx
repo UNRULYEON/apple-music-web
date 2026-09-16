@@ -1,3 +1,5 @@
+// @vitest-environment happy-dom
+
 import { act, cleanup, fireEvent, render, screen, waitFor, within } from "@testing-library/react";
 import type { ComponentProps } from "react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
@@ -11,7 +13,6 @@ import { getMusicKit } from "@/lib/music-kit/instance";
 import { playSongs } from "@/lib/music-kit/playback";
 import { resetPlayerState } from "@/lib/music-kit/player-state";
 import type { Song } from "@/lib/music-kit/track";
-// @vitest-environment happy-dom
 import { showPlayingSong, TrackList } from "./track-list";
 
 vi.mock("@/lib/music-kit/instance", () => ({ getMusicKit: vi.fn() }));

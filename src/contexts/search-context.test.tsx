@@ -1,9 +1,10 @@
+// @vitest-environment happy-dom
+
 import { act, cleanup, render } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { useSearch } from "@/hooks";
 import { setAuthStatus } from "@/lib/music-kit/auth";
 import type { View } from "@/lib/views/view";
-// @vitest-environment happy-dom
 import { SearchProvider } from "./search-context";
 
 const open = vi.fn();

@@ -1,11 +1,11 @@
-export function parseEvents(text: string): Array<string> {
+export function parseEvents(text: string): string[] {
   const header = /^on:(.*)$/m.exec(text);
   if (!header) {
     return [];
   }
 
   const inline = header[1].trim();
-  let events: Array<string> = [];
+  let events: string[] = [];
 
   if (inline.startsWith("[")) {
     events = inline.slice(1, -1).split(",");

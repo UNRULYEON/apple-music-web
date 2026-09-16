@@ -12,7 +12,7 @@ import {
 } from "@/lib/music-kit/dev-session";
 import { cn } from "@/lib/utils";
 
-export function MusicKitDevtools({ theme }: { theme: "light" | "dark" }): React.ReactElement {
+export function MusicKitDevtools({ theme }: { theme: "light" | "dark" }) {
   const status = useAuthStatus();
   const [savedAt, setSavedAt] = useState<string>();
 
@@ -24,7 +24,7 @@ export function MusicKitDevtools({ theme }: { theme: "light" | "dark" }): React.
     }
   }, [status]);
 
-  function handleForget(): void {
+  function forget(): void {
     forgetSession();
     setSavedAt(undefined);
     void dropToken();
@@ -51,7 +51,7 @@ export function MusicKitDevtools({ theme }: { theme: "light" | "dark" }): React.
       <div className="flex flex-wrap gap-2">
         <Button
           disabled={status !== "signed-in"}
-          onClick={handleSignOut}
+          onClick={() => void dropToken()}
           size="sm"
           variant="outline"
         >
@@ -59,7 +59,7 @@ export function MusicKitDevtools({ theme }: { theme: "light" | "dark" }): React.
         </Button>
         <Button
           disabled={!savedAt || status === "signed-in"}
-          onClick={handleRestore}
+          onClick={() => void restoreToken()}
           size="sm"
           variant="outline"
         >
@@ -67,7 +67,7 @@ export function MusicKitDevtools({ theme }: { theme: "light" | "dark" }): React.
         </Button>
         <Button
           disabled={!savedAt && status !== "signed-in"}
-          onClick={handleForget}
+          onClick={forget}
           size="sm"
           variant="destructive-outline"
         >
@@ -87,12 +87,4 @@ export function MusicKitDevtools({ theme }: { theme: "light" | "dark" }): React.
       </div>
     </div>
   );
-}
-
-function handleSignOut(): void {
-  void dropToken();
-}
-
-function handleRestore(): void {
-  void restoreToken();
 }

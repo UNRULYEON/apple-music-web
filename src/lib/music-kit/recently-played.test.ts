@@ -15,7 +15,7 @@ function albumItem(id: string) {
   };
 }
 
-function mockPages(...pages: Array<{ data: unknown[]; next?: string }>) {
+function mockPages(...pages: { data: unknown[]; next?: string }[]) {
   for (const page of pages) {
     music.mockResolvedValueOnce({ data: page });
   }

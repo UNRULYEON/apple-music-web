@@ -4,7 +4,7 @@ import { reportMissingDrm } from "@/lib/player/report";
 
 export const NOTICE_DELAY = 3000;
 
-export function DrmNotice(): null {
+export function DrmNotice() {
   useEffect(() => {
     let dropped = false;
     let timer: ReturnType<typeof setTimeout>;

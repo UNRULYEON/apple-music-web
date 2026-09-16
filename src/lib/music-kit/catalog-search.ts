@@ -1,3 +1,4 @@
+import { queryOptions } from "@tanstack/react-query";
 import { getMusicKit } from "@/lib/music-kit/instance";
 import {
   type Artwork,
@@ -107,10 +108,10 @@ function readResults(data: unknown): Record<string, unknown> {
 }
 
 export function catalogSearchQuery(term: string) {
-  return {
+  return queryOptions({
     queryKey: ["music-kit", "catalog-search", term],
     queryFn: () => searchCatalog(term),
     enabled: term.trim() !== "",
     staleTime: STALE,
-  };
+  });
 }

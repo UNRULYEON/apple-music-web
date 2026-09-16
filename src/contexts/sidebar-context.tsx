@@ -3,6 +3,7 @@ import {
   createContext,
   type Dispatch,
   type ReactNode,
+  type SetStateAction,
   useCallback,
   useEffect,
   useLayoutEffect,
@@ -10,15 +11,15 @@ import {
 } from "react";
 import { useMediaQuery } from "@/hooks";
 import { SIDEBAR_HOTKEY } from "@/lib/hotkeys";
-import { clearPreHydrationState, readStoredOpen, writeStoredOpen } from "@/lib/sidebar-storage";
+import { clearPreHydrationState, readStoredOpen, writeStoredOpen } from "@/lib/storage/sidebar";
 
-export type SidebarContextType = {
+export interface SidebarContextType {
   isOpen: boolean;
   isPeeking: boolean;
   isMobile: boolean;
-  setOpen: Dispatch<React.SetStateAction<boolean>>;
-  setPeeking: Dispatch<React.SetStateAction<boolean>>;
-};
+  setOpen: Dispatch<SetStateAction<boolean>>;
+  setPeeking: Dispatch<SetStateAction<boolean>>;
+}
 
 export const SidebarContext = createContext<SidebarContextType | undefined>(undefined);
 

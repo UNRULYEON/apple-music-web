@@ -13,7 +13,7 @@ export function NoAlbums() {
     <Empty>
       <EmptyHeader>
         <EmptyMedia variant="icon">
-          <HugeiconsIcon icon={DiscAlbumIcon} />
+          <HugeiconsIcon icon={DiscAlbumIcon} strokeWidth={1.5} aria-hidden="true" />
         </EmptyMedia>
         <EmptyTitle>No albums</EmptyTitle>
         <EmptyDescription>Add albums to your library to see them here.</EmptyDescription>

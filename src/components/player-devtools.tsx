@@ -5,12 +5,12 @@ import { usePlayer } from "@/hooks";
 import { type DrmSupport, probeDrm } from "@/lib/music-kit/drm";
 import type { Song } from "@/lib/music-kit/track";
 import { askToNotify, isTabInFront, notifyPermission, notifySong } from "@/lib/player/notify";
+import { forgetNoticeShown, readNoticeShown } from "@/lib/storage/notification-notice";
 import { cn } from "@/lib/utils";
-import { NOTICE_KEY } from "./notification-notice";
 
 const UP_NEXT = 8;
 
-export function PlayerDevtools({ theme }: { theme: "light" | "dark" }): React.ReactElement {
+export function PlayerDevtools({ theme }: { theme: "light" | "dark" }) {
   const { queue, index, nowPlaying, upNext, isPlaying, isLoading, isShuffled, repeat } =
     usePlayer();
   const [drm, setDrm] = useState<DrmSupport[]>([]);
@@ -101,12 +101,12 @@ const PERMISSION_BADGES: Record<
 
 function Notifications({ song }: { song?: Song }) {
   const [permission, setPermission] = useState(notifyPermission);
-  const [isInFront, setInFront] = useState(isTabInFront);
-  const [wasExplained, setExplained] = useState(() => localStorage.getItem(NOTICE_KEY) !== null);
+  const [isInFront, setIsInFront] = useState(isTabInFront);
+  const [wasExplained, setWasExplained] = useState(readNoticeShown);
 
   useEffect(() => {
     function watch() {
-      setInFront(isTabInFront());
+      setIsInFront(isTabInFront());
     }
 
     document.addEventListener("visibilitychange", watch);
@@ -119,8 +119,8 @@ function Notifications({ song }: { song?: Song }) {
   }
 
   function forget() {
-    localStorage.removeItem(NOTICE_KEY);
-    setExplained(false);
+    forgetNoticeShown();
+    setWasExplained(false);
   }
 
   const badge = PERMISSION_BADGES[permission] ?? PERMISSION_BADGES.unsupported;

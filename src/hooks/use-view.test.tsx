@@ -1,3 +1,5 @@
+// @vitest-environment happy-dom
+
 import {
   createMemoryHistory,
   createRootRoute,
@@ -7,7 +9,6 @@ import {
 import { act, cleanup, render, waitFor } from "@testing-library/react";
 import { afterEach, describe, expect, it } from "vitest";
 import type { View } from "@/lib/views/view";
-// @vitest-environment happy-dom
 import { useView, type ViewNavigation } from "./use-view";
 
 const seen: { current?: ViewNavigation } = {};

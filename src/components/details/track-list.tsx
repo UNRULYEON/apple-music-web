@@ -70,7 +70,7 @@ export function TrackList({
   source?: QueueSource;
 }) {
   const { play, source: playingFrom, nowPlaying } = usePlayer();
-  const reduceMotion = useReducedMotion();
+  const prefersReducedMotion = useReducedMotion();
   const playsThisList = isSameSource(source, playingFrom);
   const marksLibrary = showLibraryMark && songs.some((song) => song.inLibrary);
   const list = useRef<HTMLDivElement>(null);
@@ -95,9 +95,9 @@ export function TrackList({
     return () => cancelAnimationFrame(frame);
   }, [playsThisList]);
 
-  const hidden = reduceMotion ? FADED : MARK_HIDDEN;
-  const shown = reduceMotion ? OPAQUE : MARK_SHOWN;
-  const transition = reduceMotion ? NO_TRANSITION : TRANSITION;
+  const hidden = prefersReducedMotion ? FADED : MARK_HIDDEN;
+  const shown = prefersReducedMotion ? OPAQUE : MARK_SHOWN;
+  const transition = prefersReducedMotion ? NO_TRANSITION : TRANSITION;
 
   return (
     <div ref={list} className={cn("flex flex-col", ROW_BLEED)}>
@@ -144,8 +144,8 @@ export function TrackList({
                               icon={PlayIcon}
                               size={16}
                               strokeWidth={2}
-                              aria-label="Playing now"
                               className="text-neutral-50"
+                              aria-label="Playing now"
                             />
                           </motion.span>
                         </motion.span>

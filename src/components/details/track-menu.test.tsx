@@ -1,3 +1,5 @@
+// @vitest-environment happy-dom
+
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { act, cleanup, fireEvent, render, screen } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
@@ -14,7 +16,6 @@ import type { QueueSource } from "@/lib/music-kit/playback";
 import { songSourceQuery } from "@/lib/music-kit/song-source";
 import type { Song } from "@/lib/music-kit/track";
 import { HOME } from "@/lib/views/view";
-// @vitest-environment happy-dom
 import { TrackList } from "./track-list";
 
 vi.mock("@/lib/music-kit/instance", () => ({ getMusicKit: vi.fn() }));
@@ -31,6 +32,8 @@ const SONG: Song = {
   artists: [{ id: "a1", name: "Masayoshi Takanaka" }],
 };
 
+const SOURCE: QueueSource = { type: "albums", id: "al1" };
+
 let music: FakeMusicKit;
 let client: QueryClient;
 
@@ -39,7 +42,7 @@ beforeEach(() => {
   music = fakeMusicKit();
   vi.mocked(getMusicKit).mockResolvedValue(music as unknown as MusicKit.MusicKitInstance);
   client = new QueryClient({ defaultOptions: { queries: { retry: false } } });
-  client.setQueryData(songSourceQuery("s1").queryKey, { type: "albums", id: "al1" });
+  client.setQueryData(songSourceQuery("s1").queryKey, SOURCE);
   act(() => setAuthStatus("signed-in"));
 });
 

@@ -1,5 +1,7 @@
 {
   "$schema": "./node_modules/oxlint/configuration_schema.json",
+  "plugins": ["typescript", "unicorn", "oxc", "import"],
+  "jsPlugins": ["./lint-rules/index.ts"],
   "categories": {
     "correctness": "error",
     "suspicious": "warn",
@@ -14,15 +16,69 @@
         "ignoreDeclarationSort": true,
         "ignoreCase": true
       }
-    ]
+    ],
+    "typescript/array-type": "error",
+    "typescript/consistent-type-definitions": ["error", "interface"],
+    "typescript/consistent-type-imports": [
+      "error",
+      {
+        "disallowTypeAnnotations": false
+      }
+    ],
+    "import/no-default-export": "error",
+    "house/constant-case": "error",
+    "house/function-return-types": "error",
+    "house/no-comments": "error",
+    "house/no-use-client": "error",
+    "house/react-named-imports": "error",
+    "house/state-names": "error"
   },
-  "ignorePatterns": [".claude/**", "src/routeTree.gen.ts"],
   "overrides": [
     {
-      "files": ["src/components/ui/**"],
+      "files": ["src/**"],
       "rules": {
-        "sort-imports": "off"
+        "house/barrel-imports": "error",
+        "house/icon-props": "error",
+        "house/query-keys": "error",
+        "house/storage-access": "error"
+      }
+    },
+    {
+      "files": ["**/*.test.ts", "**/*.test.tsx", "src/lib/music-kit/fake-music-kit.ts"],
+      "rules": {
+        "house/query-keys": "off",
+        "house/storage-access": "off",
+        "house/function-return-types": "off"
+      }
+    },
+    {
+      "files": ["*.config.ts", "lint-rules/index.ts"],
+      "rules": {
+        "import/no-default-export": "off"
+      }
+    },
+    {
+      "files": ["src/router.tsx"],
+      "rules": {
+        "house/function-return-types": "off"
+      }
+    },
+    {
+      "files": ["src/components/ui/**", "src/lib/segmented-control.ts"],
+      "rules": {
+        "sort-imports": "off",
+        "typescript/array-type": "off",
+        "typescript/consistent-type-definitions": "off",
+        "house/barrel-imports": "off",
+        "house/constant-case": "off",
+        "house/function-return-types": "off",
+        "house/icon-props": "off",
+        "house/no-comments": "off",
+        "house/no-use-client": "off",
+        "house/react-named-imports": "off",
+        "house/state-names": "off"
       }
     }
-  ]
+  ],
+  "ignorePatterns": [".claude/**", "src/routeTree.gen.ts"]
 }

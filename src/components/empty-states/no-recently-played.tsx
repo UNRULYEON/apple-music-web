@@ -13,7 +13,7 @@ export function NoRecentlyPlayed() {
     <Empty>
       <EmptyHeader>
         <EmptyMedia variant="icon">
-          <HugeiconsIcon icon={MusicNote02Icon} />
+          <HugeiconsIcon icon={MusicNote02Icon} strokeWidth={1.5} aria-hidden="true" />
         </EmptyMedia>
         <EmptyTitle>No recently played</EmptyTitle>
         <EmptyDescription>

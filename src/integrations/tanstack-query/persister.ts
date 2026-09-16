@@ -1,6 +1,7 @@
 import { createAsyncStoragePersister } from "@tanstack/query-async-storage-persister";
 import { type Persister, removeOldestQuery } from "@tanstack/query-persist-client-core";
 import { readAuthStatus } from "@/lib/music-kit/auth";
+import { removeStorage } from "@/lib/storage/local";
 
 const KEY = "apple-music-web.cache";
 
@@ -23,7 +24,5 @@ export function createCachePersister(storage: Storage): Persister {
 }
 
 export function removeStoredCache(): void {
-  try {
-    localStorage.removeItem(KEY);
-  } catch {}
+  removeStorage(KEY);
 }

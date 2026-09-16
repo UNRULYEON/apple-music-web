@@ -1,3 +1,3 @@
-export function matchWorkflow(names: Array<string>, wanted: string): string | undefined {
+export function matchWorkflow(names: string[], wanted: string): string | undefined {
   return names.find((name) => name === wanted || name.replace(/\.ya?ml$/, "") === wanted);
 }

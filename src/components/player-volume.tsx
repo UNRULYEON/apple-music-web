@@ -163,6 +163,7 @@ export function PlayerVolumeSlider({ className }: { className?: string }) {
         size={14}
         strokeWidth={2}
         className="shrink-0 opacity-40"
+        aria-hidden="true"
       />
       <VolumeSlider
         volume={volume}
@@ -175,6 +176,7 @@ export function PlayerVolumeSlider({ className }: { className?: string }) {
         size={14}
         strokeWidth={2}
         className="shrink-0 opacity-40"
+        aria-hidden="true"
       />
     </div>
   );
@@ -182,8 +184,8 @@ export function PlayerVolumeSlider({ className }: { className?: string }) {
 
 export function PlayerVolume() {
   const { volume, change } = useVolume();
-  const [isOpen, setOpen] = useState(false);
-  const [isHinted, setHinted] = useState(false);
+  const [isOpen, setIsOpen] = useState(false);
+  const [isHinted, setIsHinted] = useState(false);
   const trigger = useRef<HTMLButtonElement>(null);
   const hintTimer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
 
@@ -191,23 +193,23 @@ export function PlayerVolume() {
 
   function adjust(by: number) {
     change(nudge(volume, by));
-    setHinted(true);
+    setIsHinted(true);
     clearTimeout(hintTimer.current);
-    hintTimer.current = setTimeout(() => setHinted(false), HINT_HOLD);
+    hintTimer.current = setTimeout(() => setIsHinted(false), HINT_HOLD);
   }
 
   useVolumeKeys(adjust);
 
   return (
     <>
-      <PopoverPrimitive.Root open={isOpen} onOpenChange={setOpen}>
+      <PopoverPrimitive.Root open={isOpen} onOpenChange={setIsOpen}>
         <PopoverPrimitive.Trigger
           ref={trigger}
           render={
             <Button variant="ghost" size="icon" aria-label={`Volume, ${percent(volume)} percent`} />
           }
         >
-          <HugeiconsIcon icon={volumeIcon(volume)} size={16} strokeWidth={2} />
+          <HugeiconsIcon icon={volumeIcon(volume)} size={16} strokeWidth={2} aria-hidden="true" />
         </PopoverPrimitive.Trigger>
         <PopoverPrimitive.Portal>
           <PopoverPrimitive.Positioner sideOffset={6}>
@@ -231,7 +233,7 @@ export function PlayerVolume() {
         anchor={trigger}
         volume={volume}
         open={isHinted && !isOpen}
-        onClose={() => setHinted(false)}
+        onClose={() => setIsHinted(false)}
       />
     </>
   );

@@ -1,3 +1,5 @@
+import { readStorage, writeStorage } from "@/lib/storage/local";
+
 export type Theme = "light" | "dark" | "system";
 
 const STORAGE_KEY = "theme";
@@ -6,18 +8,13 @@ const DARK_QUERY = "(prefers-color-scheme: dark)";
 const listeners = new Set<() => void>();
 
 export function readStoredTheme(): Theme {
-  try {
-    const stored = window.localStorage.getItem(STORAGE_KEY);
-    return stored === "light" || stored === "dark" ? stored : "system";
-  } catch {
-    return "system";
-  }
+  const stored = readStorage(STORAGE_KEY);
+
+  return stored === "light" || stored === "dark" ? stored : "system";
 }
 
 export function writeStoredTheme(theme: Theme): void {
-  try {
-    window.localStorage.setItem(STORAGE_KEY, theme);
-  } catch {}
+  writeStorage(STORAGE_KEY, theme);
 
   for (const listener of listeners) {
     listener();
@@ -42,7 +39,7 @@ export function applyTheme(theme: Theme, prefersDark: boolean): void {
   document.documentElement.style.colorScheme = dark ? "dark" : "light";
 }
 
-export const preHydrationScript = `try{
+export const PRE_HYDRATION_SCRIPT = `try{
 var t=localStorage.getItem(${JSON.stringify(STORAGE_KEY)});
 var d=t==="dark"||(t!=="light"&&matchMedia(${JSON.stringify(DARK_QUERY)}).matches);
 document.documentElement.classList.toggle("dark",d);

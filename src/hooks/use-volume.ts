@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useState } from "react";
-import { FULL_VOLUME, readVolume, setVolume } from "@/lib/music-kit/volume";
+import { applyVolume, fetchVolume, FULL_VOLUME } from "@/lib/music-kit/volume";
 import { reportPlaybackProblem } from "@/lib/player/report";
-import { readStoredVolume, writeStoredVolume } from "@/lib/volume-storage";
+import { readStoredVolume, writeStoredVolume } from "@/lib/storage/volume";
 
 export interface VolumeControl {
   volume: number;
@@ -9,25 +9,25 @@ export interface VolumeControl {
 }
 
 export function useVolume(): VolumeControl {
-  const [volume, hold] = useState(FULL_VOLUME);
+  const [volume, setVolume] = useState(FULL_VOLUME);
 
   useEffect(() => {
     const stored = readStoredVolume();
 
     if (stored === undefined) {
-      void readVolume().then(hold);
+      void fetchVolume().then(setVolume);
       return;
     }
 
-    hold(stored);
-    void setVolume(stored).catch(reportPlaybackProblem);
+    setVolume(stored);
+    void applyVolume(stored).catch(reportPlaybackProblem);
   }, []);
 
   const change = useCallback((next: number) => {
-    hold(next);
+    setVolume(next);
     writeStoredVolume(next);
 
-    void setVolume(next).catch(reportPlaybackProblem);
+    void applyVolume(next).catch(reportPlaybackProblem);
   }, []);
 
   return { volume, change };

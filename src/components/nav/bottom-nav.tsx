@@ -10,7 +10,7 @@ import {
   segmentedControlItemVariants,
   segmentedControlRootClassName,
 } from "@/lib/segmented-control";
-import type { Theme } from "@/lib/theme-storage";
+import type { Theme } from "@/lib/storage/theme";
 import { cn } from "@/lib/utils";
 
 const itemClassName = segmentedControlItemVariants({
@@ -23,7 +23,7 @@ export function BottomNav() {
   const { theme, setTheme } = useTheme();
   const [isSigningOut, setIsSigningOut] = useState(false);
 
-  async function handleSignOut(): Promise<void> {
+  async function startSignOut(): Promise<void> {
     setIsSigningOut(true);
 
     try {
@@ -58,7 +58,7 @@ export function BottomNav() {
         variant="ghost"
         className="justify-start"
         loading={isSigningOut}
-        onClick={handleSignOut}
+        onClick={startSignOut}
       >
         <HugeiconsIcon icon={LogoutSquare01Icon} strokeWidth={2} aria-hidden="true" />
         Log out

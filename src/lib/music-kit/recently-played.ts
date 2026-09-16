@@ -1,3 +1,4 @@
+import { queryOptions } from "@tanstack/react-query";
 import { DEMO_LIBRARY } from "@/lib/demo/library";
 import { demoQueryKey, readDemoMode } from "@/lib/demo/mode";
 import { type CatalogRef, fetchCatalogResources } from "@/lib/music-kit/catalog-resources";
@@ -15,6 +16,8 @@ import {
 
 const PATH = "/v1/me/recent/played";
 const PAGE_SIZE = 10;
+const LIMIT = 100;
+const STALE = 5 * 60 * 1000;
 
 const TYPES = ["albums", "library-albums", "playlists", "library-playlists", "stations"] as const;
 
@@ -96,19 +99,14 @@ function isKnownType(value: unknown): value is RecentlyPlayedType {
   return TYPES.includes(value as RecentlyPlayedType);
 }
 
-export const RECENTLY_PLAYED_LIMIT = 100;
-export const RECENTLY_PLAYED_STALE = 5 * 60 * 1000;
-
 export function recentlyPlayedQuery() {
   const isDemo = readDemoMode();
 
-  return {
-    queryKey: isDemo
-      ? demoQueryKey("recently-played")
-      : ["music-kit", "recently-played", RECENTLY_PLAYED_LIMIT],
+  return queryOptions({
+    queryKey: isDemo ? demoQueryKey("recently-played") : ["music-kit", "recently-played", LIMIT],
     queryFn: isDemo
       ? () => fetchRecentlyPlayedFromCatalog(DEMO_LIBRARY.recentlyPlayed)
-      : () => fetchRecentlyPlayed(RECENTLY_PLAYED_LIMIT),
-    staleTime: RECENTLY_PLAYED_STALE,
-  };
+      : () => fetchRecentlyPlayed(LIMIT),
+    staleTime: STALE,
+  });
 }

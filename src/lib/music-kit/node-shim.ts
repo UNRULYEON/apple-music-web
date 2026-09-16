@@ -1,4 +1,4 @@
-export const preHydrationScript = `try{
+export const PRE_HYDRATION_SCRIPT = `try{
 var p=globalThis.process;
 if(p&&p.versions&&p.versions.node!==undefined){delete p.versions.node}
 localStorage.setItem("mk-hlsjs-item-preloading","1")

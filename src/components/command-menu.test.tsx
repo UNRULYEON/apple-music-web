@@ -1,3 +1,5 @@
+// @vitest-environment happy-dom
+
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { act, cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
@@ -9,7 +11,6 @@ import { setAuthStatus } from "@/lib/music-kit/auth";
 import { type CatalogResults, catalogSearchQuery } from "@/lib/music-kit/catalog-search";
 import { type LibraryPlaylist, libraryPlaylistsQuery } from "@/lib/music-kit/playlists";
 import { HOME } from "@/lib/views/view";
-// @vitest-environment happy-dom
 import { CommandMenu, CommandMenuTrigger } from "./command-menu";
 
 vi.mock("@/lib/music-kit/instance", () => ({ getMusicKit: vi.fn() }));

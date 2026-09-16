@@ -1,19 +1,19 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { insistOnBrowser, preHydrationScript, withoutNodeMark } from "@/lib/music-kit/node-shim";
+import { insistOnBrowser, PRE_HYDRATION_SCRIPT, withoutNodeMark } from "@/lib/music-kit/node-shim";
 
 afterEach(() => {
   vi.unstubAllGlobals();
 });
 
 function run(): void {
-  new Function(preHydrationScript)();
+  new Function(PRE_HYDRATION_SCRIPT)();
 }
 
 beforeEach(() => {
   vi.stubGlobal("localStorage", { setItem: () => {} });
 });
 
-describe("preHydrationScript", () => {
+describe("PRE_HYDRATION_SCRIPT", () => {
   it("asks MusicKit to fetch the next song early", () => {
     const items = new Map<string, string>();
     vi.stubGlobal("localStorage", {

@@ -19,14 +19,14 @@ import { parseArgs } from "node:util";
 import * as prompts from "@clack/prompts";
 import ora from "ora";
 import pc from "picocolors";
-import { collectErrors } from "./collect-errors";
-import { collectResults } from "./collect-results";
-import { formatDuration } from "./format-duration";
-import { isWorkflowFile } from "./is-workflow-file";
-import { matchWorkflow } from "./match-workflow";
-import { parseBranches } from "./parse-branches";
-import { parseEvents } from "./parse-events";
-import { stripAnsi } from "./strip-ansi";
+import { collectErrors } from "./collect-errors.ts";
+import { collectResults } from "./collect-results.ts";
+import { formatDuration } from "./format-duration.ts";
+import { isWorkflowFile } from "./is-workflow-file.ts";
+import { matchWorkflow } from "./match-workflow.ts";
+import { parseBranches } from "./parse-branches.ts";
+import { parseEvents } from "./parse-events.ts";
+import { stripAnsi } from "./strip-ansi.ts";
 
 const WORKFLOW_DIR = ".github/workflows";
 const RUNNER_IMAGE = "catthehacker/ubuntu:act-latest";
@@ -53,7 +53,7 @@ Options
 A remote ref such as origin/main is fetched first.
 Without a command the script asks for each answer.`;
 
-function git(args: Array<string>, cwd?: string): string {
+function git(args: string[], cwd?: string): string {
   return execFileSync("git", args, { cwd, encoding: "utf8" }).trim();
 }
 
@@ -94,7 +94,7 @@ function imageMatches(architecture: Architecture, env: NodeJS.ProcessEnv): boole
   }
 }
 
-function listWorkflows(root: string): Array<string> {
+function listWorkflows(root: string): string[] {
   const dir = join(root, WORKFLOW_DIR);
   if (!existsSync(dir)) {
     return [];
@@ -102,7 +102,7 @@ function listWorkflows(root: string): Array<string> {
   return readdirSync(dir).filter(isWorkflowFile).toSorted();
 }
 
-function branches(root: string, remote: boolean): Array<string> {
+function branches(root: string, remote: boolean): string[] {
   const args = ["branch", "--format=%(refname:short)"];
   if (remote) {
     args.splice(1, 0, "--remotes");
@@ -247,7 +247,7 @@ function prepareCheckout(root: string, repoDir: string, target: Target): string 
 
 function createLiveTail(): { push: (line: string) => void; stop: () => void } {
   const live = process.stdout.isTTY === true;
-  const buffer: Array<string> = [];
+  const buffer: string[] = [];
   const started = Date.now();
   const spinner = ora({ isEnabled: live, discardStdin: false });
 
@@ -285,17 +285,17 @@ function createLiveTail(): { push: (line: string) => void; stop: () => void } {
 }
 
 function runAct(
-  args: Array<string>,
+  args: string[],
   cwd: string,
   env: NodeJS.ProcessEnv,
 ): Promise<{
   status: number;
-  lines: Array<string>;
+  lines: string[];
 }> {
   return new Promise((resolve) => {
     const child = spawn("act", args, { cwd, env, stdio: ["ignore", "pipe", "pipe"] });
     const tail = createLiveTail();
-    const lines: Array<string> = [];
+    const lines: string[] = [];
     let pending = "";
 
     function consume(chunk: Buffer): void {
@@ -321,7 +321,7 @@ function runAct(
   });
 }
 
-function writeLog(actDir: string, name: string, lines: Array<string>): string {
+function writeLog(actDir: string, name: string, lines: string[]): string {
   const logDir = join(actDir, "logs");
   mkdirSync(logDir, { recursive: true });
 
@@ -338,7 +338,7 @@ async function runWorkflow(
   target: Target,
   architecture: Architecture,
   dryRun: boolean,
-  extraArgs: Array<string>,
+  extraArgs: string[],
 ): Promise<number> {
   const actDir = join(root, ".local/act");
   const repoDir = join(actDir, "repo");
@@ -367,7 +367,7 @@ async function runWorkflow(
   ];
 
   const started = Date.now();
-  let outcome: { status: number; lines: Array<string> };
+  let outcome: { status: number; lines: string[] };
   try {
     outcome = await runAct(args, repoDir, env);
   } finally {
