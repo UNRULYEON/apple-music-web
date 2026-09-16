@@ -14,7 +14,7 @@
 - use `interface` for object types and `T[]` for arrays. Import from `react` by name, never through `React.`
 - name a module constant that holds plain data in `SCREAMING_SNAKE_CASE`
 - name a state setter `set` plus the state name. Name a handler by what it does, never `handleX`
-- start function names with one verb: `fetch` for network requests, `read` for a synchronous read or parse, `write` and `remove` for storage, `subscribeTo` for a store, `readInitial` for a server snapshot
+- for data and store functions, use one verb: `fetch` for network requests, `read` for a synchronous read or parse, `write` and `remove` for storage, `subscribeTo` for a store, `readInitial` for a server snapshot
 - build every query with `queryOptions` in a factory in `src/lib`. Use `null` when a query finds nothing
 - read Apple Music data with the helpers in `src/lib/music-kit/resource.ts` and `src/lib/music-kit/api.ts`
 - reach browser storage only through `src/lib/storage/local.ts`

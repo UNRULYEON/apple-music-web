@@ -91,8 +91,8 @@ two badges show the authorization status and whether a copy is there.
 
 #### How it works
 
-`MusicKitGate` and the panel read one store, `useAuthStatus` in `src/lib/music-kit/auth.ts`. The
-status is `checking`, `signed-out` or `signed-in`. Each button moves that store, and the gate
+`MusicKitGate` and the panel read one store through `useAuthStatus` in
+`src/hooks/use-auth-status.ts`. The store is in `src/lib/music-kit/auth.ts`. The status is `checking`, `signed-out` or `signed-in`. Each button moves that store, and the gate
 reacts immediately. Nothing here reloads the page.
 
 `music.musicUserToken` is a setter, and one assignment does three things: it changes the token in
