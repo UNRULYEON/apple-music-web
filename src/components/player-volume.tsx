@@ -88,7 +88,7 @@ function useVolumeKeys(adjust: (by: number) => void) {
   );
 }
 
-export function VolumeSlider({
+function VolumeSlider({
   volume,
   change,
   orientation = "vertical",

@@ -66,7 +66,7 @@ const SOURCE_TITLES: Record<Source, string> = {
   catalog: "Search Apple Music",
 };
 
-export const commandMenu = CommandCreateHandle();
+const commandMenu = CommandCreateHandle();
 
 interface Result {
   id: string;

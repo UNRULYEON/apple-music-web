@@ -199,12 +199,6 @@ export async function seekTo(seconds: number): Promise<void> {
   await music.seekToTime(seconds);
 }
 
-export async function stopPlayback(): Promise<void> {
-  const music = await getMusicKit();
-
-  music.stop();
-}
-
 export async function clearPlayback(): Promise<void> {
   const music = await getMusicKit();
 

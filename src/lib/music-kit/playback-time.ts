@@ -12,7 +12,7 @@ const TIME_EVENTS = [
   "nowPlayingItemDidChange",
 ] as const;
 
-export const NO_TIME: PlaybackTime = { position: 0, duration: 0 };
+const NO_TIME: PlaybackTime = { position: 0, duration: 0 };
 
 const LANDED = 1.5;
 

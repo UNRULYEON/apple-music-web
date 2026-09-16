@@ -29,7 +29,7 @@ const STATE_EVENTS = [
   "capabilitiesChanged",
 ] as const;
 
-export const EMPTY_STATE: PlayerState = {
+const EMPTY_STATE: PlayerState = {
   queue: [],
   index: 0,
   upNext: [],

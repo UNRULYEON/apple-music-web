@@ -1,4 +1,4 @@
-export const KEY_SYSTEMS = ["com.apple.fps", "com.widevine.alpha", "com.microsoft.playready"];
+const KEY_SYSTEMS = ["com.apple.fps", "com.widevine.alpha", "com.microsoft.playready"];
 
 export interface DrmSupport {
   keySystem: string;
