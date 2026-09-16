@@ -17,14 +17,10 @@ import {
   useResetWhenSignedOut,
 } from "@/hooks";
 import { fireConfetti } from "@/lib/confetti";
-import { TRANSITION } from "@/lib/motion";
+import { GROWN, SHRUNK, TRANSITION } from "@/lib/motion";
 import { checkAuthorization, readAuthStatus, signIn } from "@/lib/music-kit/auth";
 
-const SWAP = {
-  initial: { opacity: 0, scale: 0.96, filter: "blur(2px)" },
-  animate: { opacity: 1, scale: 1, filter: "blur(0px)" },
-  exit: { opacity: 0, scale: 0.96, filter: "blur(2px)" },
-};
+const SWAP = { initial: SHRUNK, animate: GROWN, exit: SHRUNK };
 
 export function MusicKitGate({ children }: { children: ReactNode }) {
   const status = useAuthStatus();

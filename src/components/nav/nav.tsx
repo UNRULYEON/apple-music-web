@@ -10,7 +10,7 @@ import { CommandMenuTrigger } from "@/components";
 import { Button } from "@/components/ui/button";
 import { useCloseSidebarOnMobile, useSidebar, useView } from "@/hooks";
 import { SIDEBAR_WIDTH } from "@/lib/layout";
-import { TRANSITION_SLOW } from "@/lib/motion";
+import { TRANSITION_REVEAL } from "@/lib/motion";
 import { cn } from "@/lib/utils";
 import type { View } from "@/lib/views/view";
 import { BottomNav } from "./bottom-nav";
@@ -41,7 +41,7 @@ export function Nav() {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            transition={TRANSITION_SLOW}
+            transition={TRANSITION_REVEAL}
             className="fixed inset-0 z-20 bg-black/32 backdrop-blur-sm"
             data-slot="nav-backdrop"
             onClick={() => {
@@ -58,7 +58,7 @@ export function Nav() {
         animate={{
           width: isOpen ? SIDEBAR_WIDTH : 0,
         }}
-        transition={TRANSITION_SLOW}
+        transition={TRANSITION_REVEAL}
         onHoverStart={isMobile ? undefined : () => setPeeking(true)}
         onHoverEnd={isMobile ? undefined : () => setPeeking(false)}
       >
@@ -73,7 +73,7 @@ export function Nav() {
             width: SIDEBAR_WIDTH,
             x: isOpen || isPeeking ? 0 : -SIDEBAR_WIDTH,
           }}
-          transition={TRANSITION_SLOW}
+          transition={TRANSITION_REVEAL}
           drag={isMobile ? "x" : false}
           dragConstraints={{
             left: -SIDEBAR_WIDTH,
@@ -98,7 +98,7 @@ export function Nav() {
         >
           <nav
             className={cn(
-              `h-full p-2`,
+              "h-full p-2",
               "flex flex-col",
               "text-sidebar-foreground",
               "bg-sidebar/75",

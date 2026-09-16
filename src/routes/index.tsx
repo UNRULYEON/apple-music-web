@@ -1,33 +1,13 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { AnimatePresence } from "motion/react";
-import { Suspense, useMemo } from "react";
+import { Suspense } from "react";
 import {
   DetailsView,
   LibraryAlbums,
   LibraryArtists,
   LibraryPlaylists,
-  LoadingState,
-  MediaGrid,
+  RecentlyPlayed,
 } from "@/components";
-import { EmptyStates } from "@/components/empty-states";
-import { ErrorStates } from "@/components/error-states";
-import { useIsHydrated, usePlayer, useSearch, useSignedInQuery, useView } from "@/hooks";
-import { VIEW_INSET } from "@/lib/layout";
-import {
-  type RecentlyPlayedItem,
-  recentlyPlayedQuery,
-  type RecentlyPlayedType,
-} from "@/lib/music-kit/recently-played";
-import { matchesSearch } from "@/lib/search";
-import { cn } from "@/lib/utils";
-
-function isAlbum(type: RecentlyPlayedType): boolean {
-  return type === "albums" || type === "library-albums";
-}
-
-function credit(item: RecentlyPlayedItem): string | undefined {
-  return isAlbum(item.type) ? item.artist?.name : item.curator?.name;
-}
+import { useIsHydrated, useView } from "@/hooks";
 
 export const Route = createFileRoute("/")({ component: Home });
 
@@ -65,44 +45,4 @@ function HomeView() {
   }
 
   return <RecentlyPlayed />;
-}
-
-function RecentlyPlayed() {
-  const { open } = useView();
-  const { playStation } = usePlayer();
-  const { term } = useSearch();
-  const { data: played, isPending, isError } = useSignedInQuery(recentlyPlayedQuery());
-
-  const tiles = useMemo(
-    () =>
-      played
-        ?.filter((item) => matchesSearch(term, item.name, item.artist?.name, item.curator?.name))
-        .map((item) => ({
-          id: item.id,
-          name: item.name,
-          credit: credit(item),
-          artwork: item.artwork,
-          onClick: () =>
-            item.type === "stations"
-              ? playStation(item.id)
-              : open({ name: "detail", type: item.type, id: item.id }),
-        })) ?? [],
-    [played, open, playStation, term],
-  );
-
-  return (
-    <div className={cn("flex grow flex-col pb-4", VIEW_INSET)}>
-      <AnimatePresence mode="popLayout">
-        {isPending && <LoadingState key="recently-played-loading-state" />}
-        {isError && !isPending && <ErrorStates.RecentlyPlayed key="recently-played-error-state" />}
-        {played && played.length === 0 && !isPending && (
-          <EmptyStates.NoRecentlyPlayed key="recently-played-empty-state" />
-        )}
-        {played && played.length > 0 && tiles.length === 0 && !isPending && (
-          <EmptyStates.NoMatches key="recently-played-no-matches-state" />
-        )}
-        {tiles.length > 0 && !isPending && <MediaGrid key="recently-played-list" items={tiles} />}
-      </AnimatePresence>
-    </div>
-  );
 }

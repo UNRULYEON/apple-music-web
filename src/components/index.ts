@@ -15,6 +15,7 @@ export { MusicKitGate } from "./music-kit-gate";
 export { NotificationNotice } from "./notification-notice";
 export { Player } from "./player";
 export { PlayerDevtools } from "./player-devtools";
+export { RecentlyPlayed } from "./recently-played";
 export { SearchInput } from "./search-input";
 export { ShortcutsDialog } from "./shortcuts-dialog";
 export { SidebarToggle } from "./sidebar-toggle";

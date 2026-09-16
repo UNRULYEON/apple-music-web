@@ -3,15 +3,11 @@ import { HugeiconsIcon } from "@hugeicons/react";
 import { AnimatePresence, motion, useReducedMotion } from "motion/react";
 import { useCallback, useRef, useState } from "react";
 import { Skeleton } from "@/components/ui/skeleton";
-import { TRANSITION_REVEAL } from "@/lib/motion";
+import { BLURRED, FADED, NO_TRANSITION, OPAQUE, SHARP, TRANSITION_REVEAL } from "@/lib/motion";
 import { type Artwork, artworkUrl, MOSAIC_SIZE } from "@/lib/music-kit/resource";
 import { cn } from "@/lib/utils";
 
 const BOX = "relative aspect-square w-full overflow-hidden select-none";
-const BLURRED = { opacity: 0, filter: "blur(2px)" };
-const SHARP = { opacity: 1, filter: "blur(0px)" };
-const FADED = { opacity: 0 };
-const OPAQUE = { opacity: 1 };
 
 const shown = new Set<string>();
 
@@ -104,7 +100,7 @@ function SingleArtworkImage({
   }
 
   const isLoaded = status === "loaded";
-  const transition = prefersReducedMotion ? { duration: 0 } : TRANSITION_REVEAL;
+  const transition = prefersReducedMotion ? NO_TRANSITION : TRANSITION_REVEAL;
   const hidden = blurs && !prefersReducedMotion ? BLURRED : FADED;
   const visible = blurs && !prefersReducedMotion ? SHARP : OPAQUE;
 

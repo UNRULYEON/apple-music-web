@@ -1,20 +1,19 @@
 import { MeshGradient } from "@paper-design/shaders-react";
 import { AnimatePresence, motion, useReducedMotion } from "motion/react";
 import { createContext, type ReactNode, useState } from "react";
-import { EASE } from "@/lib/motion";
+import { EASE, NO_TRANSITION } from "@/lib/motion";
 
 export type SetBackdropColors = (colors: string[] | undefined) => void;
 
 const WASH = { duration: 10, ease: EASE, delay: 2 } as const;
 const BACKDROP_PIXELS = 1280 * 720;
-const NO_WASH = { duration: 0 } as const;
 
 export const BackdropContext = createContext<SetBackdropColors | undefined>(undefined);
 
 export function BackdropProvider({ children }: { children: ReactNode }) {
   const [colors, setColors] = useState<string[]>();
   const prefersReducedMotion = useReducedMotion();
-  const wash = prefersReducedMotion ? NO_WASH : WASH;
+  const wash = prefersReducedMotion ? NO_TRANSITION : WASH;
 
   return (
     <BackdropContext.Provider value={setColors}>

@@ -8,7 +8,7 @@ import {
   EmptyTitle,
 } from "@/components/ui/empty";
 
-export function Artists() {
+export function ArtistsNotLoaded() {
   return (
     <Empty>
       <EmptyHeader>
@@ -16,7 +16,7 @@ export function Artists() {
           <HugeiconsIcon icon={Mic01Icon} strokeWidth={1.5} aria-hidden="true" />
         </EmptyMedia>
         <EmptyTitle>Couldn't load your artists</EmptyTitle>
-        <EmptyDescription></EmptyDescription>
+        <EmptyDescription>Check your connection and try again.</EmptyDescription>
       </EmptyHeader>
     </Empty>
   );

@@ -4,7 +4,7 @@ import { act, cleanup, render } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { SidebarProvider } from "@/contexts";
 import { useSidebar } from "@/hooks";
-import { TRANSITION_SLOW } from "@/lib/motion";
+import { TRANSITION_REVEAL } from "@/lib/motion";
 import { SidebarToggle } from "./sidebar-toggle";
 
 const PEEK = '[data-slot="sidebar-peek"]';
@@ -49,7 +49,7 @@ function renderToggle() {
 }
 
 function runCloseAnimation() {
-  act(() => vi.advanceTimersByTime(TRANSITION_SLOW.duration * 1000));
+  act(() => vi.advanceTimersByTime(TRANSITION_REVEAL.duration * 1000));
 }
 
 describe("SidebarToggle", () => {

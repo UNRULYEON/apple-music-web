@@ -28,7 +28,7 @@ export function SearchInput() {
         aria-label={label}
       />
       {term !== "" && (
-        <InputGroupAddon align="inline-end" className="">
+        <InputGroupAddon align="inline-end">
           <button
             type="button"
             aria-label="Clear the search"

@@ -3,28 +3,16 @@ import { useEffect, useState } from "react";
 import { SliderPrimitive } from "@/components/ui/slider";
 import { usePlaybackTime } from "@/hooks";
 import { clockTime } from "@/lib/format";
+import { ROLL_DURATION } from "@/lib/motion";
 import { cn } from "@/lib/utils";
 
 const MILLIS_PER_SECOND = 1000;
-const SECONDS_PER_MINUTE = 60;
 
-const ROLL = 240;
+const SECONDS_PER_MINUTE = 60;
 
 const SECONDS_FORMAT = { minimumIntegerDigits: 2 } as const;
 
-function RollingClock({ seconds, sign, slot }: { seconds: number; sign?: string; slot: string }) {
-  const whole = Math.max(Math.round(seconds), 0);
-
-  return (
-    <span data-slot={slot}>
-      {sign}
-      <RollingNumber value={Math.floor(whole / SECONDS_PER_MINUTE)} duration={ROLL} />:
-      <RollingNumber value={whole % SECONDS_PER_MINUTE} format={SECONDS_FORMAT} duration={ROLL} />
-    </span>
-  );
-}
-
-const LARGE_STEP = 15;
+const SEEK_STEP = 15;
 
 const LANDED = 1.5;
 
@@ -35,6 +23,58 @@ interface PlayerProgressProps {
 }
 
 const CLOCKS = "min-w-0 text-[9px] tabular-nums";
+
+export function PlayerProgress({ songId, durationInMillis, className }: PlayerProgressProps) {
+  const { at, left, length, scrub, seek } = usePlayerProgress(songId, durationInMillis);
+
+  return (
+    <div className={cn("flex cursor-ew-resize items-center gap-1", CLOCKS, className)}>
+      <PlayerElapsed seconds={at} />
+      <PlayerSeek at={at} length={length} onScrub={scrub} onSeek={seek} className="min-w-0 grow" />
+      <PlayerLength length={length} left={left} />
+    </div>
+  );
+}
+
+export function PlayerProgressStacked({
+  songId,
+  durationInMillis,
+  className,
+}: PlayerProgressProps) {
+  const { at, left, length, scrub, seek } = usePlayerProgress(songId, durationInMillis);
+
+  return (
+    <div className={cn("flex flex-col", CLOCKS, className)}>
+      <PlayerSeek
+        at={at}
+        length={length}
+        onScrub={scrub}
+        onSeek={seek}
+        className="w-full cursor-ew-resize"
+      />
+      <div className="flex items-center justify-between px-1">
+        <PlayerElapsed seconds={at} />
+        <PlayerLength length={length} left={left} />
+      </div>
+    </div>
+  );
+}
+
+function RollingClock({ seconds, sign, slot }: { seconds: number; sign?: string; slot: string }) {
+  const whole = Math.max(Math.round(seconds), 0);
+
+  return (
+    <span data-slot={slot}>
+      {sign}
+      <RollingNumber value={Math.floor(whole / SECONDS_PER_MINUTE)} duration={ROLL_DURATION} />:
+      <RollingNumber
+        value={whole % SECONDS_PER_MINUTE}
+        format={SECONDS_FORMAT}
+        duration={ROLL_DURATION}
+      />
+    </span>
+  );
+}
 
 function usePlayerProgress(songId: string, durationInMillis?: number) {
   const { position, duration, seek } = usePlaybackTime();
@@ -91,7 +131,7 @@ function PlayerSeek({
       min={0}
       max={length || 1}
       step={1}
-      largeStep={LARGE_STEP}
+      largeStep={SEEK_STEP}
       thumbAlignment="edge"
       disabled={length === 0}
       onValueChange={onScrub}
@@ -156,41 +196,5 @@ function PlayerLength({
         slot="player-length"
       />
     </button>
-  );
-}
-
-export function PlayerProgress({ songId, durationInMillis, className }: PlayerProgressProps) {
-  const { at, left, length, scrub, seek } = usePlayerProgress(songId, durationInMillis);
-
-  return (
-    <div className={cn("flex cursor-ew-resize items-center gap-1", CLOCKS, className)}>
-      <PlayerElapsed seconds={at} />
-      <PlayerSeek at={at} length={length} onScrub={scrub} onSeek={seek} className="min-w-0 grow" />
-      <PlayerLength length={length} left={left} />
-    </div>
-  );
-}
-
-export function PlayerProgressStacked({
-  songId,
-  durationInMillis,
-  className,
-}: PlayerProgressProps) {
-  const { at, left, length, scrub, seek } = usePlayerProgress(songId, durationInMillis);
-
-  return (
-    <div className={cn("flex flex-col", CLOCKS, className)}>
-      <PlayerSeek
-        at={at}
-        length={length}
-        onScrub={scrub}
-        onSeek={seek}
-        className="w-full cursor-ew-resize"
-      />
-      <div className="flex items-center justify-between px-1">
-        <PlayerElapsed seconds={at} />
-        <PlayerLength length={length} left={left} />
-      </div>
-    </div>
   );
 }

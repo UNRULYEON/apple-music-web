@@ -16,5 +16,5 @@ export { useSearch } from "./use-search";
 export { useCloseSidebarOnMobile, useSidebar } from "./use-sidebar";
 export { useSignedInQuery } from "./use-signed-in-query";
 export { useTheme } from "./use-theme";
-export { useView } from "./use-view";
+export { useView, type ViewNavigation } from "./use-view";
 export { useVolume } from "./use-volume";
