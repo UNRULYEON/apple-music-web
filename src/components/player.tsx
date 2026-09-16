@@ -321,7 +321,7 @@ export function Player() {
               <ContextMenuPopup align="start">
                 <ContextMenuItem onClick={close}>
                   <HugeiconsIcon icon={Cancel01Icon} strokeWidth={2} aria-hidden="true" />
-                  Close Player
+                  Close player
                 </ContextMenuItem>
               </ContextMenuPopup>
             </ContextMenu>
