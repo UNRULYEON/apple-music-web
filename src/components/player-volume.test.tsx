@@ -2,9 +2,8 @@
 
 import { cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { fakeMusicKit, type FakeMusicKit } from "@/lib/music-kit/fake-music-kit";
-import { getMusicKit } from "@/lib/music-kit/instance";
 import { readStoredVolume, writeStoredVolume } from "@/lib/storage/volume";
+import { fakeMusicKit, type FakeMusicKit, stubMusicKit } from "@/test/fake-music-kit";
 import { PlayerVolume } from "./player-volume";
 
 vi.mock("@/lib/music-kit/instance", () => ({ getMusicKit: vi.fn() }));
@@ -14,7 +13,7 @@ let music: FakeMusicKit;
 beforeEach(() => {
   localStorage.clear();
   music = fakeMusicKit();
-  vi.mocked(getMusicKit).mockResolvedValue(music as unknown as MusicKit.MusicKitInstance);
+  stubMusicKit(music);
 });
 
 afterEach(() => {
@@ -34,7 +33,7 @@ function slider() {
 async function openPopover() {
   fireEvent.click(trigger());
 
-  await waitFor(() => expect(slider()).not.toBeNull());
+  await waitFor(() => expect(slider()).toBeTruthy());
 }
 
 describe("PlayerVolume", () => {

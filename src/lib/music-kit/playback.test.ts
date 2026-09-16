@@ -1,14 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { hasDrm, MissingDrmError } from "@/lib/music-kit/drm";
 import {
-  fakeMusicKit,
-  type FakeMusicKit,
-  REPEAT_MODES,
-  SHUFFLE_MODES,
-  stubMusicKitGlobals,
-} from "@/lib/music-kit/fake-music-kit";
-import { getMusicKit } from "@/lib/music-kit/instance";
-import {
   changeToIndex,
   clearPlayback,
   describeError,
@@ -24,6 +16,14 @@ import {
   subscribeToPlaybackErrors,
 } from "@/lib/music-kit/playback";
 import type { Song } from "@/lib/music-kit/track";
+import {
+  fakeMusicKit,
+  type FakeMusicKit,
+  REPEAT_MODES,
+  SHUFFLE_MODES,
+  stubMusicKit,
+  stubMusicKitGlobals,
+} from "@/test/fake-music-kit";
 
 vi.mock("@/lib/music-kit/instance", () => ({ getMusicKit: vi.fn() }));
 vi.mock("@/lib/music-kit/drm", async (importOriginal) => ({
@@ -39,7 +39,7 @@ let music: FakeMusicKit;
 beforeEach(() => {
   stubMusicKitGlobals();
   music = fakeMusicKit();
-  vi.mocked(getMusicKit).mockResolvedValue(music as unknown as MusicKit.MusicKitInstance);
+  stubMusicKit(music);
 });
 
 afterEach(() => {
@@ -175,7 +175,7 @@ describe("playStation", () => {
   });
 });
 
-describe("the queue", () => {
+describe("queueNext and queueLast", () => {
   it("puts songs after the one that plays now", async () => {
     await queueNext(SONGS);
 
@@ -189,7 +189,7 @@ describe("the queue", () => {
   });
 });
 
-describe("the controls", () => {
+describe("playback controls", () => {
   it("hands every action to MusicKit", async () => {
     await resumePlayback();
     await pausePlayback();
@@ -317,7 +317,7 @@ describe("silenceKnownRejections", () => {
   });
 });
 
-describe("a browser without DRM", () => {
+describe("playSongs without DRM", () => {
   beforeEach(() => {
     vi.mocked(hasDrm).mockResolvedValue(false);
   });

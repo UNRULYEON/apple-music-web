@@ -10,10 +10,10 @@ import {
   restoreToken,
 } from "@/lib/music-kit/dev-session";
 import { getMusicKit } from "@/lib/music-kit/instance";
+import { stubMusicKit } from "@/test/fake-music-kit";
 
 vi.mock("@/lib/music-kit/instance", () => ({ getMusicKit: vi.fn() }));
 
-const loadMusicKit = vi.mocked(getMusicKit);
 const SAVED_KEY = "music-kit-devtools.saved-token";
 
 function mockMusic(token = "") {
@@ -30,7 +30,7 @@ function mockMusic(token = "") {
     },
   };
 
-  loadMusicKit.mockResolvedValue(music as unknown as MusicKit.MusicKitInstance);
+  stubMusicKit(music);
 
   return music;
 }
@@ -60,7 +60,7 @@ describe("keepSession", () => {
   });
 
   it("keeps nothing when MusicKit cannot start", async () => {
-    loadMusicKit.mockRejectedValue(new Error("MUSICKIT_DEVELOPER_TOKEN is not set."));
+    vi.mocked(getMusicKit).mockRejectedValue(new Error("MUSICKIT_DEVELOPER_TOKEN is not set."));
 
     await expect(keepSession()).resolves.toBe(false);
   });

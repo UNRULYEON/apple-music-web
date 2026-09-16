@@ -1,6 +1,6 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { getMusicKit } from "@/lib/music-kit/instance";
 import { fetchStorefront } from "@/lib/music-kit/storefront";
+import { stubMusicKit } from "@/test/fake-music-kit";
 
 vi.mock("@/lib/music-kit/instance", () => ({ getMusicKit: vi.fn() }));
 
@@ -11,7 +11,7 @@ function useMusicKit(token: string): {
   musicUserToken: string;
 } {
   const music = { api: { music: vi.fn().mockResolvedValue(STOREFRONT) }, musicUserToken: token };
-  vi.mocked(getMusicKit).mockResolvedValue(music as unknown as MusicKit.MusicKitInstance);
+  stubMusicKit(music);
 
   return music;
 }

@@ -6,19 +6,20 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { PlayerProvider } from "@/contexts";
 import { usePlayer } from "@/hooks";
 import { setAuthStatus } from "@/lib/music-kit/auth";
+import { resetPlaybackTime } from "@/lib/music-kit/playback-time";
+import { resetPlayerState } from "@/lib/music-kit/player-state";
+import type { Song } from "@/lib/music-kit/track";
+import { HOME } from "@/lib/views/view";
 import {
   fakeMusicKit,
   type FakeMusicKit,
   PLAYBACK_STATES,
   REPEAT_MODES,
   SHUFFLE_MODES,
+  stubMusicKit,
   stubMusicKitGlobals,
-} from "@/lib/music-kit/fake-music-kit";
-import { getMusicKit } from "@/lib/music-kit/instance";
-import { resetPlaybackTime } from "@/lib/music-kit/playback-time";
-import { resetPlayerState } from "@/lib/music-kit/player-state";
-import type { Song } from "@/lib/music-kit/track";
-import { HOME } from "@/lib/views/view";
+} from "@/test/fake-music-kit";
+import { stubViewport } from "@/test/stub-viewport";
 import { Player } from "./player";
 
 vi.mock("@/lib/music-kit/instance", () => ({ getMusicKit: vi.fn() }));
@@ -73,24 +74,15 @@ function item(id: string, name: string, artwork = COVER, artistName = "The Band"
   return { id, attributes: { name, artistName, artwork } };
 }
 
-function setViewport(mobile: boolean) {
-  vi.stubGlobal("matchMedia", (query: string) => ({
-    matches: query.includes("max-width") ? mobile : !mobile,
-    media: query,
-    addEventListener() {},
-    removeEventListener() {},
-  }));
-}
-
 let music: FakeMusicKit;
 
 beforeEach(() => {
   resetPlayerState();
   resetPlaybackTime();
-  setViewport(false);
+  stubViewport({ mobile: false, prefersReducedMotion: true });
   stubMusicKitGlobals();
   music = fakeMusicKit();
-  vi.mocked(getMusicKit).mockResolvedValue(music as unknown as MusicKit.MusicKitInstance);
+  stubMusicKit(music);
 });
 
 afterEach(() => {
@@ -141,7 +133,7 @@ function loadQueue(items: MusicKit.MediaItem[], index = 0) {
 }
 
 function start() {
-  fireEvent.click(screen.getByLabelText("Play"));
+  fireEvent.click(screen.getByRole("button", { name: "Play" }));
 }
 
 async function waitForSeekBar() {
@@ -174,7 +166,7 @@ describe("Player", () => {
   it("shows nothing while MusicKit holds no song", async () => {
     await renderPlayer();
 
-    expect(screen.queryByLabelText("Shuffle")).toBeNull();
+    expect(screen.queryByRole("button", { name: "Shuffle" })).toBeNull();
   });
 
   it("shows the song that MusicKit plays", async () => {
@@ -183,7 +175,7 @@ describe("Player", () => {
     loadQueue([item("1", "First"), item("2", "Second")]);
 
     expect(screen.getByText("First")).toBeTruthy();
-    expect(screen.getByLabelText("Repeat off")).toBeTruthy();
+    expect(screen.getByRole("button", { name: "Repeat off" })).toBeTruthy();
   });
 
   it("swaps the name when MusicKit moves to the next song", async () => {
@@ -230,7 +222,7 @@ describe("Player", () => {
     start();
     setState(PLAYBACK_STATES.loading);
 
-    fireEvent.click(screen.getByLabelText("Stop loading"));
+    fireEvent.click(screen.getByRole("button", { name: "Stop loading" }));
 
     await waitFor(() => expect(music.pause).toHaveBeenCalledOnce());
   });
@@ -251,7 +243,7 @@ describe("Player", () => {
 
     loadQueue([item("1", "First")]);
 
-    fireEvent.click(screen.getByLabelText("Shuffle"));
+    fireEvent.click(screen.getByRole("button", { name: "Shuffle" }));
 
     await waitFor(() => expect(music.shuffleMode).toBe(SHUFFLE_MODES.songs));
   });
@@ -261,7 +253,7 @@ describe("Player", () => {
 
     loadQueue([item("1", "First")]);
 
-    fireEvent.click(screen.getByLabelText("Repeat off"));
+    fireEvent.click(screen.getByRole("button", { name: "Repeat off" }));
 
     await waitFor(() => expect(music.repeatMode).toBe(REPEAT_MODES.all));
   });
@@ -291,19 +283,19 @@ describe("Player", () => {
     loadQueue([item("1", "First"), item("2", "Second")]);
     start();
     setState(PLAYBACK_STATES.playing);
-    expect(screen.getByLabelText("Pause")).toBeTruthy();
+    expect(screen.getByRole("button", { name: "Pause" })).toBeTruthy();
 
-    fireEvent.click(screen.getByLabelText("Next song"));
+    fireEvent.click(screen.getByRole("button", { name: "Next song" }));
 
     setState(PLAYBACK_STATES.stopped);
-    expect(screen.queryByLabelText("Play")).toBeNull();
-    expect(screen.getByLabelText("Stop loading")).toBeTruthy();
+    expect(screen.queryByRole("button", { name: "Play" })).toBeNull();
+    expect(screen.getByRole("button", { name: "Stop loading" })).toBeTruthy();
 
     setState(PLAYBACK_STATES.loading);
-    expect(screen.getByLabelText("Stop loading")).toBeTruthy();
+    expect(screen.getByRole("button", { name: "Stop loading" })).toBeTruthy();
 
     setState(PLAYBACK_STATES.playing);
-    expect(screen.getByLabelText("Pause")).toBeTruthy();
+    expect(screen.getByRole("button", { name: "Pause" })).toBeTruthy();
   });
 
   it("shows the play icon again when a person gives up on the new song", async () => {
@@ -313,12 +305,12 @@ describe("Player", () => {
     start();
     setState(PLAYBACK_STATES.playing);
 
-    fireEvent.click(screen.getByLabelText("Next song"));
+    fireEvent.click(screen.getByRole("button", { name: "Next song" }));
     setState(PLAYBACK_STATES.stopped);
 
-    fireEvent.click(screen.getByLabelText("Stop loading"));
+    fireEvent.click(screen.getByRole("button", { name: "Stop loading" }));
 
-    expect(screen.getByLabelText("Play")).toBeTruthy();
+    expect(screen.getByRole("button", { name: "Play" })).toBeTruthy();
   });
 
   it("stays paused when a person pauses a song that is still loading", async () => {
@@ -327,16 +319,16 @@ describe("Player", () => {
     loadQueue([item("1", "First")]);
     start();
     setState(PLAYBACK_STATES.loading);
-    expect(screen.getByLabelText("Stop loading")).toBeTruthy();
+    expect(screen.getByRole("button", { name: "Stop loading" })).toBeTruthy();
 
-    fireEvent.click(screen.getByLabelText("Stop loading"));
+    fireEvent.click(screen.getByRole("button", { name: "Stop loading" }));
 
-    expect(screen.getByLabelText("Play")).toBeTruthy();
-    expect(screen.queryByLabelText("Stop loading")).toBeNull();
+    expect(screen.getByRole("button", { name: "Play" })).toBeTruthy();
+    expect(screen.queryByRole("button", { name: "Stop loading" })).toBeNull();
 
     setState(PLAYBACK_STATES.playing);
 
-    expect(screen.getByLabelText("Play")).toBeTruthy();
+    expect(screen.getByRole("button", { name: "Play" })).toBeTruthy();
     await waitFor(() => expect(music.pause).toHaveBeenCalledTimes(2));
   });
 
@@ -346,15 +338,15 @@ describe("Player", () => {
     loadQueue([item("1", "First")]);
     start();
     setState(PLAYBACK_STATES.loading);
-    fireEvent.click(screen.getByLabelText("Stop loading"));
+    fireEvent.click(screen.getByRole("button", { name: "Stop loading" }));
 
-    fireEvent.click(screen.getByLabelText("Play"));
+    fireEvent.click(screen.getByRole("button", { name: "Play" }));
 
-    expect(screen.getByLabelText("Stop loading")).toBeTruthy();
+    expect(screen.getByRole("button", { name: "Stop loading" })).toBeTruthy();
 
     setState(PLAYBACK_STATES.playing);
 
-    expect(screen.getByLabelText("Pause")).toBeTruthy();
+    expect(screen.getByRole("button", { name: "Pause" })).toBeTruthy();
   });
 
   it("shows how far the song has come and how long it is", async () => {
@@ -468,29 +460,29 @@ describe("Player", () => {
 
     loadQueue([item("1", "First")]);
 
-    expect(screen.getByLabelText("Shuffle")).toBeTruthy();
-    expect(screen.getByLabelText("Previous song")).toBeTruthy();
-    expect(screen.getByLabelText("Repeat off")).toBeTruthy();
-    expect(screen.getByLabelText("Queue")).toBeTruthy();
+    expect(screen.getByRole("button", { name: "Shuffle" })).toBeTruthy();
+    expect(screen.getByRole("button", { name: "Previous song" })).toBeTruthy();
+    expect(screen.getByRole("button", { name: "Repeat off" })).toBeTruthy();
+    expect(screen.getByRole("button", { name: "Queue" })).toBeTruthy();
   });
 
   it("keeps only play and skip on a narrow viewport", async () => {
-    setViewport(true);
+    stubViewport({ mobile: true, prefersReducedMotion: false });
     await renderPlayer();
 
     loadQueue([item("1", "First")]);
 
-    expect(screen.queryByLabelText("Shuffle")).toBeNull();
-    expect(screen.queryByLabelText("Previous song")).toBeNull();
-    expect(screen.queryByLabelText("Repeat off")).toBeNull();
-    expect(screen.queryByLabelText("Queue")).toBeNull();
+    expect(screen.queryByRole("button", { name: "Shuffle" })).toBeNull();
+    expect(screen.queryByRole("button", { name: "Previous song" })).toBeNull();
+    expect(screen.queryByRole("button", { name: "Repeat off" })).toBeNull();
+    expect(screen.queryByRole("button", { name: "Queue" })).toBeNull();
 
-    expect(screen.getByLabelText("Play")).toBeTruthy();
-    expect(screen.getByLabelText("Next song")).toBeTruthy();
+    expect(screen.getByRole("button", { name: "Play" })).toBeTruthy();
+    expect(screen.getByRole("button", { name: "Next song" })).toBeTruthy();
   });
 
   it("still plays and skips from the narrow viewport", async () => {
-    setViewport(true);
+    stubViewport({ mobile: true, prefersReducedMotion: false });
     await renderPlayer();
 
     loadQueue([item("1", "First"), item("2", "Second")]);
@@ -498,12 +490,12 @@ describe("Player", () => {
     start();
     await waitFor(() => expect(music.play).toHaveBeenCalledOnce());
 
-    fireEvent.click(screen.getByLabelText("Next song"));
+    fireEvent.click(screen.getByRole("button", { name: "Next song" }));
     expect(screen.getByText("Second")).toBeTruthy();
   });
 
   it("shows the song but no progress bar on a narrow viewport", async () => {
-    setViewport(true);
+    stubViewport({ mobile: true, prefersReducedMotion: false });
     await renderPlayer();
 
     loadQueue([item("1", "First")]);
@@ -522,7 +514,7 @@ describe("Player", () => {
     act(() => setAuthStatus("signed-out"));
 
     await waitFor(() => expect(screen.queryByText("First")).toBeNull());
-    expect(screen.queryByLabelText("Play")).toBeNull();
+    expect(screen.queryByRole("button", { name: "Play" })).toBeNull();
   });
 
   it("closes the player from the menu of the bar", async () => {
@@ -534,7 +526,7 @@ describe("Player", () => {
     fireEvent.click(await screen.findByRole("menuitem", { name: "Close Player" }));
 
     await waitFor(() => expect(music.clearQueue).toHaveBeenCalled());
-    expect(screen.queryByLabelText("Collapse the player")).toBeNull();
+    expect(screen.queryByRole("button", { name: "Collapse the player" })).toBeNull();
 
     loadQueue([]);
 
@@ -545,7 +537,7 @@ describe("Player", () => {
     await renderPlayer();
 
     loadQueue([item("1", "First")]);
-    fireEvent.contextMenu(screen.getByLabelText("Play"));
+    fireEvent.contextMenu(screen.getByRole("button", { name: "Play" }));
 
     await act(async () => undefined);
     expect(screen.queryByRole("menuitem", { name: "Close Player" })).toBeNull();
@@ -558,7 +550,7 @@ describe("Player", () => {
 
     fireEvent.click(shownArtwork());
 
-    expect(await screen.findByLabelText("Collapse the player")).toBeTruthy();
+    expect(await screen.findByRole("button", { name: "Collapse the player" })).toBeTruthy();
   });
 
   it("opens the album from the expanded title and gets out of the way", async () => {
@@ -568,11 +560,13 @@ describe("Player", () => {
     loadQueue([item("1", "First")]);
 
     fireEvent.click(shownArtwork());
-    const panel = await screen.findByLabelText("Now playing");
+    const panel = await screen.findByRole("region", { name: "Now playing" });
     fireEvent.click(within(panel).getByRole("button", { name: "First. Show the album." }));
 
     expect(openView).toHaveBeenCalledWith({ name: "detail", type: "albums", id: "a1" });
-    await waitFor(() => expect(screen.queryByLabelText("Collapse the player")).toBeNull());
+    await waitFor(() =>
+      expect(screen.queryByRole("button", { name: "Collapse the player" })).toBeNull(),
+    );
   });
 
   it("plays the song from the expanded artwork", async () => {
@@ -581,7 +575,7 @@ describe("Player", () => {
     loadQueue([item("1", "First")]);
 
     fireEvent.click(shownArtwork());
-    fireEvent.click(await screen.findByLabelText("Play the song"));
+    fireEvent.click(await screen.findByRole("button", { name: "Play the song" }));
 
     await waitFor(() => expect(music.play).toHaveBeenCalledOnce());
   });
@@ -618,7 +612,7 @@ describe("Player", () => {
     setState(PLAYBACK_STATES.playing);
 
     fireEvent.keyDown(document.body, { key: " ", code: "Space" });
-    expect(screen.getByLabelText("Play")).toBeTruthy();
+    expect(screen.getByRole("button", { name: "Play" })).toBeTruthy();
     await waitFor(() => expect(music.pause).toHaveBeenCalled());
   });
 
@@ -631,7 +625,7 @@ describe("Player", () => {
     fireEvent.keyDown(document.body, { key: " ", code: "Space", repeat: true });
 
     await waitFor(() => expect(music.play).toHaveBeenCalledOnce());
-    expect(screen.getByLabelText("Stop loading")).toBeTruthy();
+    expect(screen.getByRole("button", { name: "Stop loading" })).toBeTruthy();
   });
 
   it("skips between the songs with Shift and the arrows", async () => {
@@ -664,11 +658,13 @@ describe("Player", () => {
     loadQueue([item("1", "First")]);
 
     fireEvent.keyDown(document.body, { key: "f", code: "KeyF" });
-    expect(await screen.findByLabelText("Collapse the player")).toBeTruthy();
+    expect(await screen.findByRole("button", { name: "Collapse the player" })).toBeTruthy();
 
     fireEvent.keyUp(document.body, { key: "f", code: "KeyF" });
     fireEvent.keyDown(document.body, { key: "f", code: "KeyF" });
-    await waitFor(() => expect(screen.queryByLabelText("Collapse the player")).toBeNull());
+    await waitFor(() =>
+      expect(screen.queryByRole("button", { name: "Collapse the player" })).toBeNull(),
+    );
   });
 
   it("leaves the keys to the page while the player is away", async () => {
@@ -685,12 +681,12 @@ describe("Player", () => {
 
     loadQueue([item("1", "First")]);
 
-    const shuffle = screen.getByLabelText("Shuffle");
+    const shuffle = screen.getByRole("button", { name: "Shuffle" });
     shuffle.focus();
 
     fireEvent.keyDown(shuffle, { key: " ", code: "Space" });
 
-    expect(screen.getByLabelText("Play")).toBeTruthy();
+    expect(screen.getByRole("button", { name: "Play" })).toBeTruthy();
   });
 
   it("leaves the keys alone while a person types", async () => {
@@ -714,7 +710,7 @@ describe("Player", () => {
 
     loadQueue([item("1", "First")]);
 
-    expect(screen.queryByLabelText("Show the album")).toBeNull();
+    expect(screen.queryByRole("button", { name: "Show the album" })).toBeNull();
     expect(screen.queryByRole("button", { name: "First" })).toBeNull();
   });
 });

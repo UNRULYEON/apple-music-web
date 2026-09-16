@@ -4,16 +4,8 @@ import { act, cleanup, fireEvent, render, screen } from "@testing-library/react"
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { SidebarProvider } from "@/contexts";
 import { useSidebar } from "@/hooks";
+import { stubViewport } from "@/test/stub-viewport";
 import { ShortcutsDialog } from "./shortcuts-dialog";
-
-function stubViewport({ mobile }: { mobile: boolean }) {
-  vi.stubGlobal("matchMedia", (query: string) => ({
-    matches: mobile ? query.includes("max-width") : query.includes("min-width"),
-    media: query,
-    addEventListener() {},
-    removeEventListener() {},
-  }));
-}
 
 beforeEach(() => {
   stubViewport({ mobile: false });

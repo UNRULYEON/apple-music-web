@@ -11,7 +11,7 @@ afterEach(() => {
   localStorage.clear();
 });
 
-describe("demo mode", () => {
+describe("setDemoMode", () => {
   it("is off at the start", () => {
     expect(readDemoMode()).toBe(false);
   });

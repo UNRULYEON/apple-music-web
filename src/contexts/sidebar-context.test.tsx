@@ -4,6 +4,7 @@ import { act, cleanup, render } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { useSidebar } from "@/hooks";
 import { PRE_HYDRATION_SCRIPT } from "@/lib/storage/sidebar";
+import { stubViewport } from "@/test/stub-viewport";
 import { SidebarProvider } from "./sidebar-context";
 
 afterEach(() => {
@@ -12,15 +13,6 @@ afterEach(() => {
   document.documentElement.removeAttribute("data-sidebar");
   vi.unstubAllGlobals();
 });
-
-function setViewport(desktop: boolean) {
-  vi.stubGlobal("matchMedia", (query: string) => ({
-    matches: query.includes("min-width") ? desktop : !desktop,
-    media: query,
-    addEventListener() {},
-    removeEventListener() {},
-  }));
-}
 
 function runPreHydrationScript() {
   new Function(PRE_HYDRATION_SCRIPT)();
@@ -46,7 +38,7 @@ function renderProvider() {
 describe("PRE_HYDRATION_SCRIPT", () => {
   it("marks a stored closed sidebar before the first paint", () => {
     localStorage.setItem("sidebar-open", "false");
-    setViewport(true);
+    stubViewport({ mobile: false });
 
     runPreHydrationScript();
 
@@ -55,7 +47,7 @@ describe("PRE_HYDRATION_SCRIPT", () => {
 
   it("marks a mobile sidebar closed whatever the stored state says", () => {
     localStorage.setItem("sidebar-open", "true");
-    setViewport(false);
+    stubViewport({ mobile: true });
 
     runPreHydrationScript();
 
@@ -64,7 +56,7 @@ describe("PRE_HYDRATION_SCRIPT", () => {
 
   it("leaves an open sidebar alone", () => {
     localStorage.setItem("sidebar-open", "true");
-    setViewport(true);
+    stubViewport({ mobile: false });
 
     runPreHydrationScript();
 
@@ -74,21 +66,21 @@ describe("PRE_HYDRATION_SCRIPT", () => {
 
 describe("SidebarProvider", () => {
   it("opens on the first render when nothing is stored", () => {
-    setViewport(true);
+    stubViewport({ mobile: false });
 
     expect(renderProvider().current?.isOpen).toBe(true);
   });
 
   it("is closed on the very first render, so it never animates shut", () => {
     localStorage.setItem("sidebar-open", "false");
-    setViewport(true);
+    stubViewport({ mobile: false });
 
     expect(renderProvider().current?.isOpen).toBe(false);
   });
 
   it("drops the pre-hydration mark once it owns the state", () => {
     localStorage.setItem("sidebar-open", "false");
-    setViewport(true);
+    stubViewport({ mobile: false });
     runPreHydrationScript();
 
     renderProvider();
@@ -98,7 +90,7 @@ describe("SidebarProvider", () => {
 
   it("stores the state for the next reload", () => {
     localStorage.setItem("sidebar-open", "false");
-    setViewport(true);
+    stubViewport({ mobile: false });
     const seen = renderProvider();
 
     act(() => seen.current?.setOpen(true));
@@ -109,7 +101,7 @@ describe("SidebarProvider", () => {
 
   it("stays closed on mobile and keeps the desktop preference", () => {
     localStorage.setItem("sidebar-open", "true");
-    setViewport(false);
+    stubViewport({ mobile: true });
     const seen = renderProvider();
 
     expect(seen.current?.isMobile).toBe(true);
@@ -119,7 +111,7 @@ describe("SidebarProvider", () => {
 
   it("is closed on the very first hydration render on mobile", () => {
     localStorage.setItem("sidebar-open", "true");
-    setViewport(false);
+    stubViewport({ mobile: true });
 
     const renders: boolean[] = [];
 
@@ -139,7 +131,7 @@ describe("SidebarProvider", () => {
   });
 
   it("peeks instead of opening when the toggle is used on mobile", () => {
-    setViewport(false);
+    stubViewport({ mobile: true });
     const seen = renderProvider();
 
     act(() => seen.current?.setOpen(true));

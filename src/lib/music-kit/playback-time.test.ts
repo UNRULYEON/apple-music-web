@@ -1,9 +1,4 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import {
-  fakeMusicKit,
-  type FakeMusicKit,
-  stubMusicKitGlobals,
-} from "@/lib/music-kit/fake-music-kit";
 import { getMusicKit } from "@/lib/music-kit/instance";
 import {
   dropPlaybackTime,
@@ -13,6 +8,12 @@ import {
   resetPlaybackTime,
   subscribeToPlaybackTime,
 } from "@/lib/music-kit/playback-time";
+import {
+  fakeMusicKit,
+  type FakeMusicKit,
+  stubMusicKit,
+  stubMusicKitGlobals,
+} from "@/test/fake-music-kit";
 
 vi.mock("@/lib/music-kit/instance", () => ({ getMusicKit: vi.fn() }));
 
@@ -22,7 +23,7 @@ beforeEach(async () => {
   resetPlaybackTime();
   stubMusicKitGlobals();
   music = fakeMusicKit();
-  vi.mocked(getMusicKit).mockResolvedValue(music as unknown as MusicKit.MusicKitInstance);
+  stubMusicKit(music);
 
   subscribeToPlaybackTime(() => {});
   await vi.waitFor(() => expect(music.addEventListener).toHaveBeenCalled());
@@ -119,7 +120,7 @@ describe("subscribeToPlaybackTime", () => {
   });
 });
 
-describe("the held place", () => {
+describe("holdPlaybackTime", () => {
   it("shows the held place in place of the time of the song", () => {
     music.currentPlaybackTime = 3;
     music.emit("playbackTimeDidChange", { currentPlaybackTime: 3 });

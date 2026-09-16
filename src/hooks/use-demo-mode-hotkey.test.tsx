@@ -7,15 +7,15 @@ import { PlayerProvider } from "@/contexts";
 import { DEMO_LIBRARY } from "@/lib/demo/library";
 import { readDemoMode, setDemoMode } from "@/lib/demo/mode";
 import { setAuthStatus } from "@/lib/music-kit/auth";
+import type { QueueSource } from "@/lib/music-kit/playback";
+import { resetPlayerState } from "@/lib/music-kit/player-state";
 import {
   fakeMusicKit,
   type FakeMusicKit,
   songItem,
+  stubMusicKit,
   stubMusicKitGlobals,
-} from "@/lib/music-kit/fake-music-kit";
-import { getMusicKit } from "@/lib/music-kit/instance";
-import type { QueueSource } from "@/lib/music-kit/playback";
-import { resetPlayerState } from "@/lib/music-kit/player-state";
+} from "@/test/fake-music-kit";
 import { useDemoModeHotkey } from "./use-demo-mode-hotkey";
 import { usePlayer } from "./use-player";
 
@@ -36,7 +36,7 @@ beforeEach(() => {
   resetPlayerState();
   stubMusicKitGlobals();
   music = fakeMusicKit();
-  vi.mocked(getMusicKit).mockResolvedValue(music as unknown as MusicKit.MusicKitInstance);
+  stubMusicKit(music);
   act(() => setAuthStatus("signed-in"));
 });
 

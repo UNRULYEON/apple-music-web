@@ -1,7 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { catalogPath, fetchEveryPage } from "@/lib/music-kit/api";
-import { getMusicKit } from "@/lib/music-kit/instance";
 import { fetchStorefront } from "@/lib/music-kit/storefront";
+import { stubMusicKit } from "@/test/fake-music-kit";
 
 vi.mock("@/lib/music-kit/instance", () => ({ getMusicKit: vi.fn() }));
 vi.mock("@/lib/music-kit/storefront", () => ({ fetchStorefront: vi.fn() }));
@@ -13,9 +13,9 @@ function page(ids: string[], next?: string): { data: { data: { id: string }[]; n
 }
 
 beforeEach(() => {
-  vi.mocked(getMusicKit).mockResolvedValue({
+  stubMusicKit({
     api: { music },
-  } as unknown as MusicKit.MusicKitInstance);
+  });
   vi.mocked(fetchStorefront).mockResolvedValue({ id: "nl", name: "Netherlands" });
 });
 

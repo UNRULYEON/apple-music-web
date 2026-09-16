@@ -1,13 +1,4 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import {
-  fakeMusicKit,
-  type FakeMusicKit,
-  PLAYBACK_STATES,
-  REPEAT_MODES,
-  SHUFFLE_MODES,
-  songItem,
-  stubMusicKitGlobals,
-} from "@/lib/music-kit/fake-music-kit";
 import { getMusicKit } from "@/lib/music-kit/instance";
 import {
   nextRepeatMode,
@@ -16,6 +7,16 @@ import {
   subscribeToPlayer,
   toMusicKitRepeat,
 } from "@/lib/music-kit/player-state";
+import {
+  fakeMusicKit,
+  type FakeMusicKit,
+  PLAYBACK_STATES,
+  REPEAT_MODES,
+  SHUFFLE_MODES,
+  songItem,
+  stubMusicKit,
+  stubMusicKitGlobals,
+} from "@/test/fake-music-kit";
 
 vi.mock("@/lib/music-kit/instance", () => ({ getMusicKit: vi.fn() }));
 
@@ -25,7 +26,7 @@ beforeEach(async () => {
   resetPlayerState();
   stubMusicKitGlobals();
   music = fakeMusicKit();
-  vi.mocked(getMusicKit).mockResolvedValue(music as unknown as MusicKit.MusicKitInstance);
+  stubMusicKit(music);
 
   music.queue.items = [songItem("1", "First"), songItem("2", "Second"), songItem("3", "Third")];
   subscribeToPlayer(() => {});
@@ -123,7 +124,7 @@ describe("subscribeToPlayer", () => {
   });
 });
 
-describe("what MusicKit allows", () => {
+describe("readPlayerState capabilities", () => {
   it("takes the skip capabilities from MusicKit", () => {
     music.capabilities.canSkipToNextItem = false;
     music.capabilities.canSkipToPreviousItem = true;

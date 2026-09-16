@@ -4,11 +4,10 @@ import { cleanup, fireEvent, render, screen, waitFor } from "@testing-library/re
 import type { ComponentProps } from "react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { PlayerProvider } from "@/contexts";
-import { fakeMusicKit, stubMusicKitGlobals } from "@/lib/music-kit/fake-music-kit";
-import { getMusicKit } from "@/lib/music-kit/instance";
 import { playSongs } from "@/lib/music-kit/playback";
 import { resetPlayerState } from "@/lib/music-kit/player-state";
 import type { Song } from "@/lib/music-kit/track";
+import { fakeMusicKit, stubMusicKit, stubMusicKitGlobals } from "@/test/fake-music-kit";
 import { DetailsHeader } from "./details-header";
 
 vi.mock("@/lib/music-kit/instance", () => ({ getMusicKit: vi.fn() }));
@@ -27,7 +26,7 @@ const ALBUM = { type: "albums", id: "a1" } as const;
 beforeEach(() => {
   resetPlayerState();
   stubMusicKitGlobals();
-  vi.mocked(getMusicKit).mockResolvedValue(fakeMusicKit() as unknown as MusicKit.MusicKitInstance);
+  stubMusicKit(fakeMusicKit());
 });
 
 afterEach(() => {

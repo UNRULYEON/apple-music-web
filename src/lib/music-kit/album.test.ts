@@ -11,15 +11,13 @@ import {
   markInLibrary,
   sortAlbums,
 } from "@/lib/music-kit/album";
-import { getMusicKit } from "@/lib/music-kit/instance";
 import { fetchStorefront } from "@/lib/music-kit/storefront";
 import type { Song } from "@/lib/music-kit/track";
+import { stubMusicKit } from "@/test/fake-music-kit";
 
 vi.mock("@/lib/music-kit/instance", () => ({ getMusicKit: vi.fn() }));
 vi.mock("@/lib/music-kit/storefront", () => ({ fetchStorefront: vi.fn() }));
 
-const loadMusicKit = vi.mocked(getMusicKit);
-const loadStorefront = vi.mocked(fetchStorefront);
 const music = vi.fn();
 
 function albumResponse(overrides: Record<string, unknown> = {}) {
@@ -50,8 +48,8 @@ function song(id: string, overrides: Record<string, unknown> = {}) {
 }
 
 beforeEach(() => {
-  loadMusicKit.mockResolvedValue({ api: { music } } as unknown as MusicKit.MusicKitInstance);
-  loadStorefront.mockResolvedValue({ id: "nl", name: "Netherlands" });
+  stubMusicKit({ api: { music } });
+  vi.mocked(fetchStorefront).mockResolvedValue({ id: "nl", name: "Netherlands" });
 });
 
 afterEach(() => {
@@ -79,7 +77,7 @@ describe("fetchAlbum", () => {
       include: "tracks,artists",
       "include[songs]": "artists",
     });
-    expect(loadStorefront).not.toHaveBeenCalled();
+    expect(vi.mocked(fetchStorefront)).not.toHaveBeenCalled();
   });
 
   it("reads the album, its songs, and its artists", async () => {

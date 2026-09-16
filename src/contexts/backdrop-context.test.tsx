@@ -12,7 +12,9 @@ vi.mock("@paper-design/shaders-react", () => ({
   ),
 }));
 
-afterEach(cleanup);
+afterEach(() => {
+  cleanup();
+});
 
 const COLORS = ["#1d1d1f", "#f5f5f7"];
 

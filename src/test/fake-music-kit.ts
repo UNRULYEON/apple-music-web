@@ -1,4 +1,5 @@
 import { vi } from "vitest";
+import { getMusicKit } from "@/lib/music-kit/instance";
 
 export const PLAYBACK_STATES = {
   none: 0,
@@ -76,4 +77,8 @@ export function stubMusicKitGlobals(): void {
 
 export function songItem(id: string, name: string): MusicKit.MediaItem {
   return { id, attributes: { name, artistName: "The Band" } };
+}
+
+export function stubMusicKit(music: object): void {
+  vi.mocked(getMusicKit).mockResolvedValue(music as unknown as MusicKit.MusicKitInstance);
 }

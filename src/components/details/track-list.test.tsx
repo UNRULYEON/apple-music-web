@@ -4,15 +4,15 @@ import { act, cleanup, fireEvent, render, screen, waitFor, within } from "@testi
 import type { ComponentProps } from "react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { PlayerProvider } from "@/contexts";
-import {
-  fakeMusicKit,
-  type FakeMusicKit,
-  stubMusicKitGlobals,
-} from "@/lib/music-kit/fake-music-kit";
-import { getMusicKit } from "@/lib/music-kit/instance";
 import { playSongs } from "@/lib/music-kit/playback";
 import { resetPlayerState } from "@/lib/music-kit/player-state";
 import type { Song } from "@/lib/music-kit/track";
+import {
+  fakeMusicKit,
+  type FakeMusicKit,
+  stubMusicKit,
+  stubMusicKitGlobals,
+} from "@/test/fake-music-kit";
 import { showPlayingSong, TrackList } from "./track-list";
 
 vi.mock("@/lib/music-kit/instance", () => ({ getMusicKit: vi.fn() }));
@@ -35,7 +35,7 @@ beforeEach(() => {
   resetPlayerState();
   stubMusicKitGlobals();
   music = fakeMusicKit();
-  vi.mocked(getMusicKit).mockResolvedValue(music as unknown as MusicKit.MusicKitInstance);
+  stubMusicKit(music);
 });
 
 afterEach(() => {
@@ -169,7 +169,7 @@ describe("TrackList", () => {
 
     nowPlaying(1);
 
-    expect(screen.getByLabelText("Playing now")).toBeTruthy();
+    expect(screen.getByRole("img", { name: "Playing now" })).toBeTruthy();
     expect(screen.getByText("2")).toBeTruthy();
     await waitFor(() => expect(screen.queryByText("5")).toBeNull());
   });
@@ -184,7 +184,7 @@ describe("TrackList", () => {
 
     const artwork = screen.getByText("Second").closest("button")?.firstElementChild;
 
-    expect(artwork?.contains(screen.getByLabelText("Playing now"))).toBe(true);
+    expect(artwork?.contains(screen.getByRole("img", { name: "Playing now" }))).toBe(true);
   });
 
   it("puts the number back when a different song starts", async () => {
@@ -214,7 +214,7 @@ describe("TrackList", () => {
     await waitFor(() => {
       const third = screen.getByText("Third").closest("button")?.firstElementChild;
 
-      expect(third?.contains(screen.getByLabelText("Playing now"))).toBe(true);
+      expect(third?.contains(screen.getByRole("img", { name: "Playing now" }))).toBe(true);
     });
   });
 
@@ -233,7 +233,7 @@ describe("TrackList", () => {
 
     const artwork = screen.getByText("Second").closest("button")?.firstElementChild;
 
-    expect(artwork?.contains(screen.getByLabelText("Playing now"))).toBe(true);
+    expect(artwork?.contains(screen.getByRole("img", { name: "Playing now" }))).toBe(true);
   });
 
   it("leaves the same song alone in a list it does not play from", async () => {
@@ -253,8 +253,12 @@ describe("TrackList", () => {
 
     nowPlaying(1);
 
-    expect(within(screen.getByTestId("there")).getByLabelText("Playing now")).toBeTruthy();
-    expect(within(screen.getByTestId("here")).queryByLabelText("Playing now")).toBeNull();
+    expect(
+      within(screen.getByTestId("there")).getByRole("img", { name: "Playing now" }),
+    ).toBeTruthy();
+    expect(
+      within(screen.getByTestId("here")).queryByRole("img", { name: "Playing now" }),
+    ).toBeNull();
   });
 });
 

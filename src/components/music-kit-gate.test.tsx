@@ -6,6 +6,7 @@ import { fireConfetti } from "@/lib/confetti";
 import { setAuthStatus } from "@/lib/music-kit/auth";
 import { dropToken, restoreToken } from "@/lib/music-kit/dev-session";
 import { getMusicKit } from "@/lib/music-kit/instance";
+import { stubMusicKit } from "@/test/fake-music-kit";
 import { MusicKitGate } from "./music-kit-gate";
 
 vi.mock("@/lib/music-kit/instance", () => ({ getMusicKit: vi.fn() }));
@@ -14,7 +15,6 @@ vi.mock("@/hooks/use-reset-when-signed-out", () => ({ useResetWhenSignedOut: vi.
 vi.mock("@/hooks/use-persisted-cache", () => ({ usePersistedCache: vi.fn() }));
 vi.mock("@/hooks/use-demo-mode-hotkey", () => ({ useDemoModeHotkey: vi.fn() }));
 
-const loadMusicKit = vi.mocked(getMusicKit);
 const confetti = vi.mocked(fireConfetti);
 
 function mockMusic(token = "") {
@@ -35,7 +35,7 @@ function mockMusic(token = "") {
     }),
   };
 
-  loadMusicKit.mockResolvedValue(music as unknown as MusicKit.MusicKitInstance);
+  stubMusicKit(music);
 
   return music;
 }
@@ -68,11 +68,11 @@ afterEach(() => {
 
 describe("MusicKitGate", () => {
   it("shows only a spinner while MusicKit starts", () => {
-    loadMusicKit.mockReturnValue(new Promise(() => {}));
+    vi.mocked(getMusicKit).mockReturnValue(new Promise(() => {}));
 
     const gate = renderGate();
 
-    expect(gate.spinner()).not.toBeNull();
+    expect(gate.spinner()).toBeTruthy();
     expect(gate.signInCard()).toBeNull();
     expect(gate.appIsBlocked()).toBe(true);
   });
@@ -82,7 +82,7 @@ describe("MusicKitGate", () => {
 
     const gate = renderGate();
 
-    expect(await screen.findByText("Sign in with Apple Music")).not.toBeNull();
+    expect(await screen.findByText("Sign in with Apple Music")).toBeTruthy();
     await waitFor(() => expect(gate.spinner()).toBeNull());
     expect(gate.appIsBlocked()).toBe(true);
   });
@@ -99,7 +99,7 @@ describe("MusicKitGate", () => {
 
   it("never shows the sign in dialog before the answer arrives", async () => {
     let answer!: (music: MusicKit.MusicKitInstance) => void;
-    loadMusicKit.mockReturnValue(
+    vi.mocked(getMusicKit).mockReturnValue(
       new Promise<MusicKit.MusicKitInstance>((resolve) => {
         answer = resolve;
       }),
@@ -110,7 +110,7 @@ describe("MusicKitGate", () => {
 
     answer({ isAuthorized: false } as MusicKit.MusicKitInstance);
 
-    expect(await screen.findByText("Sign in with Apple Music")).not.toBeNull();
+    expect(await screen.findByText("Sign in with Apple Music")).toBeTruthy();
   });
 
   it("takes the gate away after a successful sign in", async () => {
@@ -164,7 +164,7 @@ describe("MusicKitGate", () => {
       "textContent",
       "The user closed the window.",
     );
-    expect(gate.signInCard()).not.toBeNull();
+    expect(gate.signInCard()).toBeTruthy();
     expect(gate.appIsBlocked()).toBe(true);
   });
 
@@ -187,7 +187,7 @@ describe("MusicKitGate", () => {
       await dropToken();
     });
 
-    expect(await screen.findByText("Sign in with Apple Music")).not.toBeNull();
+    expect(await screen.findByText("Sign in with Apple Music")).toBeTruthy();
     expect(gate.appIsBlocked()).toBe(true);
   });
 

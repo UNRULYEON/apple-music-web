@@ -3,8 +3,6 @@ import { getMusicKit } from "@/lib/music-kit/instance";
 
 vi.mock("@/lib/music-kit/instance", () => ({ getMusicKit: vi.fn() }));
 
-const loadMusicKit = vi.mocked(getMusicKit);
-
 async function loadModule() {
   vi.resetModules();
   return await import("./auth.ts");
@@ -26,7 +24,7 @@ function mockMusic(isAuthorized = false): MusicKit.MusicKitInstance {
 }
 
 beforeEach(() => {
-  loadMusicKit.mockResolvedValue(mockMusic());
+  vi.mocked(getMusicKit).mockResolvedValue(mockMusic());
 });
 
 afterEach(() => {
@@ -42,7 +40,7 @@ describe("checkAuthorization", () => {
 
   it("reports a signed in user", async () => {
     const { checkAuthorization, readAuthStatus } = await loadModule();
-    loadMusicKit.mockResolvedValue(mockMusic(true));
+    vi.mocked(getMusicKit).mockResolvedValue(mockMusic(true));
 
     await checkAuthorization();
 
@@ -59,7 +57,7 @@ describe("checkAuthorization", () => {
 
   it("reports signed out when MusicKit cannot start", async () => {
     const { checkAuthorization, readAuthStatus } = await loadModule();
-    loadMusicKit.mockRejectedValue(new Error("MUSICKIT_DEVELOPER_TOKEN is not set."));
+    vi.mocked(getMusicKit).mockRejectedValue(new Error("MUSICKIT_DEVELOPER_TOKEN is not set."));
 
     await checkAuthorization();
 
@@ -71,7 +69,7 @@ describe("signIn", () => {
   it("opens the Apple flow and moves the store", async () => {
     const { signIn, readAuthStatus } = await loadModule();
     const music = mockMusic();
-    loadMusicKit.mockResolvedValue(music);
+    vi.mocked(getMusicKit).mockResolvedValue(music);
 
     await signIn();
 
@@ -83,7 +81,7 @@ describe("signIn", () => {
     const { signIn } = await loadModule();
     const music = mockMusic();
     vi.mocked(music.authorize).mockRejectedValue(new Error("The user closed the window."));
-    loadMusicKit.mockResolvedValue(music);
+    vi.mocked(getMusicKit).mockResolvedValue(music);
 
     await expect(signIn()).rejects.toThrow("The user closed the window.");
   });
@@ -93,7 +91,7 @@ describe("signOut", () => {
   it("ends the Apple session and moves the store", async () => {
     const { checkAuthorization, signOut, readAuthStatus } = await loadModule();
     const music = mockMusic(true);
-    loadMusicKit.mockResolvedValue(music);
+    vi.mocked(getMusicKit).mockResolvedValue(music);
     await checkAuthorization();
 
     await signOut();
@@ -106,7 +104,7 @@ describe("signOut", () => {
     const { signOut } = await loadModule();
     const music = mockMusic(true);
     vi.mocked(music.unauthorize).mockRejectedValue(new Error("The network is down."));
-    loadMusicKit.mockResolvedValue(music);
+    vi.mocked(getMusicKit).mockResolvedValue(music);
 
     await expect(signOut()).rejects.toThrow("The network is down.");
   });
