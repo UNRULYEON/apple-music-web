@@ -68,7 +68,7 @@ describe("forgetStoredQueue", () => {
   });
 });
 
-describe("the place in the song", () => {
+describe("writeStoredPosition", () => {
   it("gives back the place a person left off at", () => {
     writeStoredQueue(QUEUE);
     writeStoredPosition(42);

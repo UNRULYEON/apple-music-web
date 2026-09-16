@@ -5,7 +5,9 @@ import { createRef } from "react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { chunk, columnCount, gapFor, MediaGrid, sameMetrics } from "./media-grid";
 
-afterEach(cleanup);
+afterEach(() => {
+  cleanup();
+});
 
 function cssColumns(width: number): number {
   const gap = gapFor(width);
@@ -72,7 +74,7 @@ describe("sameMetrics", () => {
   });
 });
 
-describe("the node the grid hands on", () => {
+describe("MediaGrid ref", () => {
   it("goes to a ref object", () => {
     const ref = createRef<HTMLDivElement>();
 

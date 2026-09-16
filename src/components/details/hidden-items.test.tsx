@@ -4,7 +4,9 @@ import { cleanup, render, screen } from "@testing-library/react";
 import { afterEach, describe, expect, it } from "vitest";
 import { HiddenItems } from "./hidden-items";
 
-afterEach(cleanup);
+afterEach(() => {
+  cleanup();
+});
 
 describe("HiddenItems", () => {
   it("says how many songs of the list a person can see", () => {

@@ -6,16 +6,6 @@ import { usePlayer } from "@/hooks";
 import { setAuthStatus } from "@/lib/music-kit/auth";
 import { hasDrm } from "@/lib/music-kit/drm";
 import {
-  fakeMusicKit,
-  type FakeMusicKit,
-  PLAYBACK_STATES,
-  REPEAT_MODES,
-  SHUFFLE_MODES,
-  songItem,
-  stubMusicKitGlobals,
-} from "@/lib/music-kit/fake-music-kit";
-import { getMusicKit } from "@/lib/music-kit/instance";
-import {
   holdPlaybackTime,
   readPlaybackTime,
   resetPlaybackTime,
@@ -35,6 +25,16 @@ import {
   writeStoredPosition,
   writeStoredQueue,
 } from "@/lib/storage/now-playing";
+import {
+  fakeMusicKit,
+  type FakeMusicKit,
+  PLAYBACK_STATES,
+  REPEAT_MODES,
+  SHUFFLE_MODES,
+  songItem,
+  stubMusicKit,
+  stubMusicKitGlobals,
+} from "@/test/fake-music-kit";
 import { PlayerProvider } from "./player-context";
 
 vi.mock("@/lib/music-kit/instance", () => ({ getMusicKit: vi.fn() }));
@@ -69,7 +69,7 @@ beforeEach(() => {
   resetPlaybackTime();
   stubMusicKitGlobals();
   music = fakeMusicKit();
-  vi.mocked(getMusicKit).mockResolvedValue(music as unknown as MusicKit.MusicKitInstance);
+  stubMusicKit(music);
   vi.mocked(hasDrm).mockResolvedValue(true);
 });
 

@@ -6,16 +6,16 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { PlayerProvider } from "@/contexts";
 import { songArtistsQuery } from "@/lib/music-kit/artists";
 import { setAuthStatus } from "@/lib/music-kit/auth";
-import {
-  fakeMusicKit,
-  type FakeMusicKit,
-  stubMusicKitGlobals,
-} from "@/lib/music-kit/fake-music-kit";
-import { getMusicKit } from "@/lib/music-kit/instance";
 import type { QueueSource } from "@/lib/music-kit/playback";
 import { songSourceQuery } from "@/lib/music-kit/song-source";
 import type { Song } from "@/lib/music-kit/track";
 import { HOME } from "@/lib/views/view";
+import {
+  fakeMusicKit,
+  type FakeMusicKit,
+  stubMusicKit,
+  stubMusicKitGlobals,
+} from "@/test/fake-music-kit";
 import { TrackList } from "./track-list";
 
 vi.mock("@/lib/music-kit/instance", () => ({ getMusicKit: vi.fn() }));
@@ -40,7 +40,7 @@ let client: QueryClient;
 beforeEach(() => {
   stubMusicKitGlobals();
   music = fakeMusicKit();
-  vi.mocked(getMusicKit).mockResolvedValue(music as unknown as MusicKit.MusicKitInstance);
+  stubMusicKit(music);
   client = new QueryClient({ defaultOptions: { queries: { retry: false } } });
   client.setQueryData(songSourceQuery("s1").queryKey, SOURCE);
   act(() => setAuthStatus("signed-in"));

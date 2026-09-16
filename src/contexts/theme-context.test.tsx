@@ -4,6 +4,7 @@ import { act, cleanup, render } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { useTheme } from "@/hooks";
 import { PRE_HYDRATION_SCRIPT, type Theme } from "@/lib/storage/theme";
+import { stubMatchMedia } from "@/test/stub-viewport";
 import { ThemeProvider } from "./theme-context";
 
 afterEach(() => {
@@ -15,12 +16,7 @@ afterEach(() => {
 });
 
 function setPrefersDark(dark: boolean) {
-  vi.stubGlobal("matchMedia", (query: string) => ({
-    matches: query.includes("prefers-color-scheme: dark") ? dark : false,
-    media: query,
-    addEventListener() {},
-    removeEventListener() {},
-  }));
+  stubMatchMedia((query) => dark && query.includes("prefers-color-scheme: dark"));
 }
 
 function runPreHydrationScript() {

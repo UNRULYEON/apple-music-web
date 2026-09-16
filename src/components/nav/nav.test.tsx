@@ -5,6 +5,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { SidebarProvider, ThemeProvider } from "@/contexts";
 import { useSidebar } from "@/hooks";
 import { HOME } from "@/lib/views/view";
+import { stubViewport } from "@/test/stub-viewport";
 import { Nav } from "./nav";
 
 const openView = vi.fn();
@@ -12,15 +13,6 @@ const openView = vi.fn();
 vi.mock("@/hooks/use-view", () => ({
   useView: () => ({ view: HOME, open: openView, close: vi.fn(), canClose: false }),
 }));
-
-function stubViewport({ mobile }: { mobile: boolean }) {
-  vi.stubGlobal("matchMedia", (query: string) => ({
-    matches: mobile ? query.includes("max-width") : query.includes("min-width"),
-    media: query,
-    addEventListener() {},
-    removeEventListener() {},
-  }));
-}
 
 beforeEach(() => {
   stubViewport({ mobile: false });

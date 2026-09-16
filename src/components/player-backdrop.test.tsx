@@ -5,15 +5,16 @@ import { act, cleanup, fireEvent, render, screen, waitFor } from "@testing-libra
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { PlayerProvider } from "@/contexts";
 import { setAuthStatus } from "@/lib/music-kit/auth";
-import {
-  fakeMusicKit,
-  type FakeMusicKit,
-  stubMusicKitGlobals,
-} from "@/lib/music-kit/fake-music-kit";
-import { getMusicKit } from "@/lib/music-kit/instance";
 import { resetPlaybackTime } from "@/lib/music-kit/playback-time";
 import { resetPlayerState } from "@/lib/music-kit/player-state";
 import { HOME } from "@/lib/views/view";
+import {
+  fakeMusicKit,
+  type FakeMusicKit,
+  stubMusicKit,
+  stubMusicKitGlobals,
+} from "@/test/fake-music-kit";
+import { stubViewport } from "@/test/stub-viewport";
 import { Player } from "./player";
 
 vi.mock("@/lib/music-kit/instance", () => ({ getMusicKit: vi.fn() }));
@@ -52,15 +53,10 @@ let music: FakeMusicKit;
 beforeEach(() => {
   resetPlayerState();
   resetPlaybackTime();
-  vi.stubGlobal("matchMedia", (query: string) => ({
-    matches: query.includes("min-width"),
-    media: query,
-    addEventListener() {},
-    removeEventListener() {},
-  }));
+  stubViewport({ mobile: false });
   stubMusicKitGlobals();
   music = fakeMusicKit();
-  vi.mocked(getMusicKit).mockResolvedValue(music as unknown as MusicKit.MusicKitInstance);
+  stubMusicKit(music);
 });
 
 afterEach(() => {
@@ -119,7 +115,7 @@ async function renderExpanded() {
   }
 
   fireEvent.click(artwork);
-  await screen.findByLabelText("Collapse the player");
+  await screen.findByRole("button", { name: "Collapse the player" });
 }
 
 function playSong(index: number) {
@@ -127,7 +123,7 @@ function playSong(index: number) {
   act(() => music.emit("queuePositionDidChange", { position: index }));
 }
 
-describe("the backdrop of the expanded player", () => {
+describe("Player backdrop", () => {
   it("takes the colours of the song that plays", async () => {
     await renderExpanded();
 

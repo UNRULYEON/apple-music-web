@@ -11,6 +11,7 @@ import { setAuthStatus } from "@/lib/music-kit/auth";
 import { type CatalogResults, catalogSearchQuery } from "@/lib/music-kit/catalog-search";
 import { type LibraryPlaylist, libraryPlaylistsQuery } from "@/lib/music-kit/playlists";
 import { HOME } from "@/lib/views/view";
+import { stubViewport } from "@/test/stub-viewport";
 import { CommandMenu, CommandMenuTrigger } from "./command-menu";
 
 vi.mock("@/lib/music-kit/instance", () => ({ getMusicKit: vi.fn() }));
@@ -57,15 +58,6 @@ const CATALOG: CatalogResults = {
   albums: [{ id: "1656074388", name: "the record", credit: "boygenius" }],
   playlists: [],
 };
-
-function stubViewport({ mobile }: { mobile: boolean }) {
-  vi.stubGlobal("matchMedia", (query: string) => ({
-    matches: mobile ? query.includes("max-width") : query.includes("min-width"),
-    media: query,
-    addEventListener() {},
-    removeEventListener() {},
-  }));
-}
 
 beforeEach(() => {
   stubViewport({ mobile: false });

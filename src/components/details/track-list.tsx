@@ -140,6 +140,7 @@ export function TrackList({
                               size={16}
                               strokeWidth={2}
                               className="text-neutral-50"
+                              role="img"
                               aria-label="Playing now"
                             />
                           </motion.span>
@@ -163,6 +164,7 @@ export function TrackList({
                             icon={PlayIcon}
                             size={14}
                             strokeWidth={2}
+                            role="img"
                             aria-label="Playing now"
                           />
                         </motion.span>

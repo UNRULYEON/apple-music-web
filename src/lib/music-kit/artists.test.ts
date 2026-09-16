@@ -7,8 +7,8 @@ import {
   searchAlbums,
   searchPlaylists,
 } from "@/lib/music-kit/artists";
-import { getMusicKit } from "@/lib/music-kit/instance";
 import { fetchStorefront } from "@/lib/music-kit/storefront";
+import { stubMusicKit } from "@/test/fake-music-kit";
 
 vi.mock("@/lib/music-kit/instance", () => ({ getMusicKit: vi.fn() }));
 vi.mock("@/lib/music-kit/storefront", () => ({ fetchStorefront: vi.fn() }));
@@ -40,9 +40,9 @@ function song(id: string) {
 }
 
 beforeEach(() => {
-  vi.mocked(getMusicKit).mockResolvedValue({
+  stubMusicKit({
     api: { music },
-  } as unknown as MusicKit.MusicKitInstance);
+  });
   vi.mocked(fetchStorefront).mockResolvedValue({ id: "nl", name: "Netherlands" });
 });
 

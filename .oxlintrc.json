@@ -44,7 +44,7 @@
       }
     },
     {
-      "files": ["**/*.test.ts", "**/*.test.tsx", "src/lib/music-kit/fake-music-kit.ts"],
+      "files": ["**/*.test.ts", "**/*.test.tsx", "src/test/**"],
       "rules": {
         "house/query-keys": "off",
         "house/storage-access": "off",

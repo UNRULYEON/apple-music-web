@@ -1,15 +1,14 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { getMusicKit } from "@/lib/music-kit/instance";
 import { applyVolume, fetchVolume, FULL_VOLUME } from "@/lib/music-kit/volume";
+import { stubMusicKit } from "@/test/fake-music-kit";
 
 vi.mock("@/lib/music-kit/instance", () => ({ getMusicKit: vi.fn() }));
-
-const loadMusicKit = vi.mocked(getMusicKit);
 
 function mockMusic(volume = FULL_VOLUME) {
   const music = { volume };
 
-  loadMusicKit.mockResolvedValue(music as unknown as MusicKit.MusicKitInstance);
+  stubMusicKit(music);
 
   return music;
 }
@@ -26,7 +25,7 @@ describe("fetchVolume", () => {
   });
 
   it("gives back the loudest when MusicKit cannot start", async () => {
-    loadMusicKit.mockRejectedValue(new Error("MusicKit is not there."));
+    vi.mocked(getMusicKit).mockRejectedValue(new Error("MusicKit is not there."));
 
     await expect(fetchVolume()).resolves.toBe(FULL_VOLUME);
   });

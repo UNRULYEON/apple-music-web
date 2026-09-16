@@ -5,18 +5,10 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { SidebarProvider } from "@/contexts";
 import { useSidebar } from "@/hooks";
 import { TRANSITION_REVEAL } from "@/lib/motion";
+import { stubViewport } from "@/test/stub-viewport";
 import { SidebarToggle } from "./sidebar-toggle";
 
 const PEEK = '[data-slot="sidebar-peek"]';
-
-function stubViewport({ mobile }: { mobile: boolean }) {
-  vi.stubGlobal("matchMedia", (query: string) => ({
-    matches: mobile ? query.includes("max-width") : query.includes("min-width"),
-    media: query,
-    addEventListener() {},
-    removeEventListener() {},
-  }));
-}
 
 beforeEach(() => {
   vi.useFakeTimers();
@@ -67,7 +59,7 @@ describe("SidebarToggle", () => {
     act(() => seen.current?.setOpen(false));
     runCloseAnimation();
 
-    expect(document.querySelector(PEEK)).not.toBeNull();
+    expect(document.querySelector(PEEK)).toBeTruthy();
   });
 
   it("keeps the peek zone away on a small screen", () => {

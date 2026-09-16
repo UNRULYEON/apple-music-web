@@ -1,5 +1,4 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { getMusicKit } from "@/lib/music-kit/instance";
 import {
   fetchDemoPlaylists,
   fetchLibraryPlaylists,
@@ -7,6 +6,7 @@ import {
   isPlaylistType,
 } from "@/lib/music-kit/playlists";
 import { fetchStorefront } from "@/lib/music-kit/storefront";
+import { stubMusicKit } from "@/test/fake-music-kit";
 
 vi.mock("@/lib/music-kit/instance", () => ({ getMusicKit: vi.fn() }));
 vi.mock("@/lib/music-kit/storefront", () => ({ fetchStorefront: vi.fn() }));
@@ -24,8 +24,6 @@ vi.mock("@/lib/demo/library", () => {
   };
 });
 
-const loadMusicKit = vi.mocked(getMusicKit);
-const loadStorefront = vi.mocked(fetchStorefront);
 const music = vi.fn();
 
 function playlistItem(id: string) {
@@ -48,8 +46,8 @@ function mockPages(...pages: { data: unknown[]; next?: string }[]) {
 }
 
 beforeEach(() => {
-  loadMusicKit.mockResolvedValue({ api: { music } } as unknown as MusicKit.MusicKitInstance);
-  loadStorefront.mockResolvedValue({ id: "nl", name: "Netherlands" });
+  stubMusicKit({ api: { music } });
+  vi.mocked(fetchStorefront).mockResolvedValue({ id: "nl", name: "Netherlands" });
 });
 
 afterEach(() => {
@@ -180,7 +178,7 @@ describe("fetchPlaylist", () => {
       include: "tracks",
       "include[songs]": "artists",
     });
-    expect(loadStorefront).not.toHaveBeenCalled();
+    expect(vi.mocked(fetchStorefront)).not.toHaveBeenCalled();
   });
 
   it("reads the playlist and its tracks", async () => {

@@ -1,10 +1,9 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { getMusicKit } from "@/lib/music-kit/instance";
 import { fetchRecentlyPlayed } from "@/lib/music-kit/recently-played";
+import { stubMusicKit } from "@/test/fake-music-kit";
 
 vi.mock("@/lib/music-kit/instance", () => ({ getMusicKit: vi.fn() }));
 
-const loadMusicKit = vi.mocked(getMusicKit);
 const music = vi.fn();
 
 function albumItem(id: string) {
@@ -26,7 +25,7 @@ function fullPage(offset: number) {
 }
 
 beforeEach(() => {
-  loadMusicKit.mockResolvedValue({ api: { music } } as unknown as MusicKit.MusicKitInstance);
+  stubMusicKit({ api: { music } });
 });
 
 afterEach(() => {

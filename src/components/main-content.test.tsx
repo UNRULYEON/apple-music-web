@@ -3,14 +3,14 @@
 import { act, cleanup, render, screen, waitFor } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { PlayerProvider } from "@/contexts";
+import { resetPlayerState } from "@/lib/music-kit/player-state";
 import {
   fakeMusicKit,
   type FakeMusicKit,
   songItem,
+  stubMusicKit,
   stubMusicKitGlobals,
-} from "@/lib/music-kit/fake-music-kit";
-import { getMusicKit } from "@/lib/music-kit/instance";
-import { resetPlayerState } from "@/lib/music-kit/player-state";
+} from "@/test/fake-music-kit";
 import { MainContent } from "./main-content";
 import { PLAYER_SPACE } from "./player";
 
@@ -22,7 +22,7 @@ beforeEach(() => {
   resetPlayerState();
   stubMusicKitGlobals();
   music = fakeMusicKit();
-  vi.mocked(getMusicKit).mockResolvedValue(music as unknown as MusicKit.MusicKitInstance);
+  stubMusicKit(music);
 });
 
 afterEach(() => {
