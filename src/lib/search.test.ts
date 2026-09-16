@@ -1,5 +1,5 @@
-import { matchesSearch } from "@/lib/search";
 import { describe, expect, it } from "vitest";
+import { matchesSearch } from "@/lib/search";
 
 describe("matchesSearch", () => {
   it("takes everything while a person has typed nothing", () => {

@@ -1,3 +1,5 @@
+import { DiscAlbumIcon } from "@hugeicons/core-free-icons";
+import { HugeiconsIcon } from "@hugeicons/react";
 import {
   Empty,
   EmptyDescription,
@@ -5,8 +7,6 @@ import {
   EmptyMedia,
   EmptyTitle,
 } from "@/components/ui/empty";
-import { DiscAlbumIcon } from "@hugeicons/core-free-icons";
-import { HugeiconsIcon } from "@hugeicons/react";
 
 export function NoAlbums() {
   return (

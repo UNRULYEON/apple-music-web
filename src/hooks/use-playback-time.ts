@@ -1,3 +1,4 @@
+import { useCallback, useSyncExternalStore } from "react";
 import { seekTo } from "@/lib/music-kit/playback";
 import {
   holdPlaybackTime,
@@ -7,7 +8,6 @@ import {
   subscribeToPlaybackTime,
 } from "@/lib/music-kit/playback-time";
 import { reportPlaybackProblem } from "@/lib/player/report";
-import { useCallback, useSyncExternalStore } from "react";
 
 export function usePlaybackTime() {
   const { position, duration } = useSyncExternalStore(

@@ -1,16 +1,16 @@
 import { DEMO_LIBRARY } from "@/lib/demo/library";
 import { demoQueryKey, readDemoMode } from "@/lib/demo/mode";
-import { fetchCatalogResources, type CatalogRef } from "@/lib/music-kit/catalog-resources";
+import { type CatalogRef, fetchCatalogResources } from "@/lib/music-kit/catalog-resources";
 import { getMusicKit } from "@/lib/music-kit/instance";
 import {
+  type Artist,
+  type Artwork,
+  type Curator,
   hasNextPage,
   readArtist,
   readArtwork,
   readCurator,
   readItems,
-  type Artist,
-  type Artwork,
-  type Curator,
 } from "@/lib/music-kit/resource";
 
 const PATH = "/v1/me/recent/played";

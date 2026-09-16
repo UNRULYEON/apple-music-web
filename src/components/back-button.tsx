@@ -1,8 +1,8 @@
-import { Button } from "@/components/ui/button";
-import { useView } from "@/hooks";
 import { ArrowLeft01Icon } from "@hugeicons/core-free-icons";
 import { HugeiconsIcon } from "@hugeicons/react";
+import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
+import { useView } from "@/hooks";
 
 export function BackButton() {
   const { canClose, close } = useView();

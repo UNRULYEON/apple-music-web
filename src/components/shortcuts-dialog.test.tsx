@@ -1,9 +1,9 @@
-// @vitest-environment happy-dom
-import { ShortcutsDialog } from "@/components/shortcuts-dialog";
-import { SidebarProvider } from "@/contexts";
-import { useSidebar } from "@/hooks";
 import { act, cleanup, fireEvent, render, screen } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { SidebarProvider } from "@/contexts";
+import { useSidebar } from "@/hooks";
+// @vitest-environment happy-dom
+import { ShortcutsDialog } from "./shortcuts-dialog";
 
 function stubViewport({ mobile }: { mobile: boolean }) {
   vi.stubGlobal("matchMedia", (query: string) => ({

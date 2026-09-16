@@ -1,9 +1,9 @@
-// @vitest-environment happy-dom
-import { NotificationNotice } from "@/components/notification-notice";
-import { setAuthStatus } from "@/lib/music-kit/auth";
-import { askToNotify, canNotify, isNotifyAnswered } from "@/lib/player/notify";
 import { act, cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { setAuthStatus } from "@/lib/music-kit/auth";
+import { askToNotify, canNotify, isNotifyAnswered } from "@/lib/player/notify";
+// @vitest-environment happy-dom
+import { NotificationNotice } from "./notification-notice";
 
 vi.mock("@/lib/player/notify", () => ({
   askToNotify: vi.fn().mockResolvedValue(true),

@@ -1,25 +1,25 @@
+import { createFileRoute } from "@tanstack/react-router";
+import { AnimatePresence } from "motion/react";
+import { Suspense, useMemo } from "react";
 import {
   DetailsView,
-  ErrorStates,
   LibraryAlbums,
   LibraryArtists,
   LibraryPlaylists,
   LoadingState,
+  MediaGrid,
 } from "@/components";
 import { EmptyStates } from "@/components/empty-states";
-import { MediaGrid } from "@/components/media-grid";
+import { ErrorStates } from "@/components/error-states";
 import { useIsHydrated, usePlayer, useSearch, useSignedInQuery, useView } from "@/hooks";
+import { VIEW_INSET } from "@/lib/layout";
 import {
-  recentlyPlayedQuery,
   type RecentlyPlayedItem,
+  recentlyPlayedQuery,
   type RecentlyPlayedType,
 } from "@/lib/music-kit/recently-played";
-import { VIEW_INSET } from "@/lib/layout";
-import { cn } from "@/lib/utils";
 import { matchesSearch } from "@/lib/search";
-import { createFileRoute } from "@tanstack/react-router";
-import { AnimatePresence } from "motion/react";
-import { Suspense, useMemo } from "react";
+import { cn } from "@/lib/utils";
 
 function isAlbum(type: RecentlyPlayedType): boolean {
   return type === "albums" || type === "library-albums";
@@ -91,7 +91,7 @@ function RecentlyPlayed() {
   );
 
   return (
-    <div className={cn("flex flex-col grow pb-4", VIEW_INSET)}>
+    <div className={cn("flex grow flex-col pb-4", VIEW_INSET)}>
       <AnimatePresence mode="popLayout">
         {isPending && <LoadingState key="recently-played-loading-state" />}
         {isError && !isPending && <ErrorStates.RecentlyPlayed key="recently-played-error-state" />}

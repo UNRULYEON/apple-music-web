@@ -1,14 +1,14 @@
-import { EmptyStates } from "@/components/empty-states";
-import { ErrorStates } from "@/components/error-states";
-import { LoadingState } from "@/components/loading-state";
-import { MediaGrid } from "@/components/media-grid";
-import { useSearch, useSignedInQuery, useView } from "@/hooks";
-import { libraryPlaylistsQuery } from "@/lib/music-kit/playlists";
-import { VIEW_INSET } from "@/lib/layout";
-import { cn } from "@/lib/utils";
-import { matchesSearch } from "@/lib/search";
 import { AnimatePresence } from "motion/react";
 import { useMemo } from "react";
+import { EmptyStates } from "@/components/empty-states";
+import { ErrorStates } from "@/components/error-states";
+import { useSearch, useSignedInQuery, useView } from "@/hooks";
+import { VIEW_INSET } from "@/lib/layout";
+import { libraryPlaylistsQuery } from "@/lib/music-kit/playlists";
+import { matchesSearch } from "@/lib/search";
+import { cn } from "@/lib/utils";
+import { LoadingState } from "./loading-state";
+import { MediaGrid } from "./media-grid";
 
 export function LibraryPlaylists() {
   const { open } = useView();
@@ -30,7 +30,7 @@ export function LibraryPlaylists() {
   );
 
   return (
-    <div className={cn("flex flex-col grow pb-4", VIEW_INSET)}>
+    <div className={cn("flex grow flex-col pb-4", VIEW_INSET)}>
       <AnimatePresence mode="popLayout">
         {isPending && <LoadingState key="library-playlists-loading-state" />}
         {isError && !isPending && <ErrorStates.Playlists key="library-playlists-error-state" />}

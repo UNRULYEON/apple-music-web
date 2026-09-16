@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { collectResults } from "./collect-results.ts";
+import { collectResults } from "./collect-results";
 
 describe("collectResults", () => {
   it("reads a passing job", () => {

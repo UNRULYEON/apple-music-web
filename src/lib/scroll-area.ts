@@ -1,5 +1,5 @@
-import { EASE, TRANSITION_REVEAL } from "@/lib/motion";
 import { animate } from "motion";
+import { EASE, TRANSITION_REVEAL } from "@/lib/motion";
 
 export const SCROLL_AREA_ID = "main";
 

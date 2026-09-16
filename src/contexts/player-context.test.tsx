@@ -1,16 +1,17 @@
-// @vitest-environment happy-dom
-import { PlayerProvider } from "@/contexts";
+import { act, cleanup, render, waitFor } from "@testing-library/react";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { usePlayer } from "@/hooks";
+import { setAuthStatus } from "@/lib/music-kit/auth";
+import { hasDrm } from "@/lib/music-kit/drm";
 import {
   fakeMusicKit,
+  type FakeMusicKit,
   PLAYBACK_STATES,
   REPEAT_MODES,
   SHUFFLE_MODES,
   songItem,
   stubMusicKitGlobals,
-  type FakeMusicKit,
 } from "@/lib/music-kit/fake-music-kit";
-import { hasDrm } from "@/lib/music-kit/drm";
 import { getMusicKit } from "@/lib/music-kit/instance";
 import {
   holdPlaybackTime,
@@ -18,13 +19,13 @@ import {
   resetPlaybackTime,
 } from "@/lib/music-kit/playback-time";
 import { resetPlayerState } from "@/lib/music-kit/player-state";
+import type { Song } from "@/lib/music-kit/track";
 import {
   readStoredQueue,
+  type StoredQueue,
   writeStoredPosition,
   writeStoredQueue,
-  type StoredQueue,
 } from "@/lib/now-playing-storage";
-import { setAuthStatus } from "@/lib/music-kit/auth";
 import {
   handleMediaKeys,
   showNowPlaying,
@@ -32,9 +33,8 @@ import {
   showPosition,
 } from "@/lib/player/media-session";
 import { notifySong } from "@/lib/player/notify";
-import type { Song } from "@/lib/music-kit/track";
-import { act, cleanup, render, waitFor } from "@testing-library/react";
-import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+// @vitest-environment happy-dom
+import { PlayerProvider } from "./player-context";
 
 vi.mock("@/lib/music-kit/instance", () => ({ getMusicKit: vi.fn() }));
 vi.mock("@/lib/music-kit/drm", async (importOriginal) => ({

@@ -1,20 +1,20 @@
-import { DetailsHeader } from "@/components/details/details-header";
-import { DetailsShell } from "@/components/details/details-shell";
-import { HiddenItems } from "@/components/details/hidden-items";
-import { TrackList } from "@/components/details/track-list";
+import { type ReactNode, useMemo } from "react";
+import { MediaGrid, type MediaTileItem } from "@/components";
 import { EmptyStates } from "@/components/empty-states";
-import { MediaGrid, type MediaTileItem } from "@/components/media-grid";
 import { useSearch, useSignedInQuery, useView } from "@/hooks";
+import { releaseYear } from "@/lib/format";
 import {
+  type ArtistAlbum,
+  type ArtistPlaylist,
   artistQuery,
   searchAlbums,
   searchPlaylists,
-  type ArtistAlbum,
-  type ArtistPlaylist,
 } from "@/lib/music-kit/artists";
 import { searchSongs } from "@/lib/music-kit/track";
-import { releaseYear } from "@/lib/format";
-import { useMemo, type ReactNode } from "react";
+import { DetailsHeader } from "./details-header";
+import { DetailsShell } from "./details-shell";
+import { HiddenItems } from "./hidden-items";
+import { TrackList } from "./track-list";
 
 export function ArtistDetails({ id }: { id: string }) {
   const { open } = useView();
@@ -142,7 +142,7 @@ export function ArtistDetails({ id }: { id: string }) {
 function Section({ title, children }: { title: string; children: ReactNode }) {
   return (
     <section className="flex flex-col gap-4">
-      <h2 className="font-bold text-lg">{title}</h2>
+      <h2 className="text-lg font-bold">{title}</h2>
       {children}
     </section>
   );

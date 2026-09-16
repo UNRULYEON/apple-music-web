@@ -2,8 +2,8 @@
 import { cleanup, render, screen, waitForElementToBeRemoved } from "@testing-library/react";
 import { useMemo } from "react";
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { BackdropProvider } from "@/contexts";
 import { useBackdrop } from "@/hooks";
+import { BackdropProvider } from "./backdrop-context";
 
 vi.mock("@paper-design/shaders-react", () => ({
   MeshGradient: ({ colors }: { colors: string[] }) => (

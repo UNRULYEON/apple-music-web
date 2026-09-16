@@ -1,3 +1,4 @@
+import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -9,7 +10,6 @@ import {
 } from "@/components/ui/dialog";
 import { useAuthStatus } from "@/lib/music-kit/auth";
 import { askToNotify, canNotify, isNotifyAnswered } from "@/lib/player/notify";
-import { useEffect, useState } from "react";
 
 export const NOTICE_KEY = "notification-notice";
 const TITLE = "Song notifications";

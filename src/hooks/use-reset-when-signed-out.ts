@@ -1,11 +1,11 @@
-import { useView } from "@/hooks/use-view";
-import { removeStoredCache } from "@/integrations/tanstack-query/persister";
-import { useAuthStatus } from "@/lib/music-kit/auth";
-import { HOME } from "@/lib/views/view";
-import { forgetStoredQueue } from "@/lib/now-playing-storage";
-import { forgetStoredVolume } from "@/lib/volume-storage";
 import { useQueryClient } from "@tanstack/react-query";
 import { useEffect } from "react";
+import { removeStoredCache } from "@/integrations/tanstack-query/persister";
+import { useAuthStatus } from "@/lib/music-kit/auth";
+import { forgetStoredQueue } from "@/lib/now-playing-storage";
+import { HOME } from "@/lib/views/view";
+import { forgetStoredVolume } from "@/lib/volume-storage";
+import { useView } from "./use-view";
 
 export function useResetWhenSignedOut(): void {
   const status = useAuthStatus();

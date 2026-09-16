@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { isWorkflowFile } from "./is-workflow-file.ts";
+import { isWorkflowFile } from "./is-workflow-file";
 
 describe("isWorkflowFile", () => {
   it("accepts both yaml extensions", () => {

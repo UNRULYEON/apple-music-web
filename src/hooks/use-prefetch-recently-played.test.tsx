@@ -1,11 +1,11 @@
-// @vitest-environment happy-dom
-import { usePrefetchRecentlyPlayed } from "@/hooks";
-import { setAuthStatus } from "@/lib/music-kit/auth";
-import { getMusicKit } from "@/lib/music-kit/instance";
-import { recentlyPlayedQuery } from "@/lib/music-kit/recently-played";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { act, cleanup, render, waitFor } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { setAuthStatus } from "@/lib/music-kit/auth";
+import { getMusicKit } from "@/lib/music-kit/instance";
+import { recentlyPlayedQuery } from "@/lib/music-kit/recently-played";
+// @vitest-environment happy-dom
+import { usePrefetchRecentlyPlayed } from "./use-prefetch-recently-played";
 
 vi.mock("@/lib/music-kit/instance", () => ({ getMusicKit: vi.fn() }));
 

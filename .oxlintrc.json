@@ -7,7 +7,22 @@
   },
   "rules": {
     "func-style": ["error", "declaration"],
-    "unicorn/filename-case": "error"
+    "unicorn/filename-case": "error",
+    "sort-imports": [
+      "error",
+      {
+        "ignoreDeclarationSort": true,
+        "ignoreCase": true
+      }
+    ]
   },
-  "ignorePatterns": [".claude/**", "src/routeTree.gen.ts"]
+  "ignorePatterns": [".claude/**", "src/routeTree.gen.ts"],
+  "overrides": [
+    {
+      "files": ["src/components/ui/**"],
+      "rules": {
+        "sort-imports": "off"
+      }
+    }
+  ]
 }

@@ -1,5 +1,5 @@
-import { hasDrm } from "@/lib/music-kit/drm";
 import { afterEach, describe, expect, it, vi } from "vitest";
+import { hasDrm } from "@/lib/music-kit/drm";
 
 afterEach(() => {
   vi.unstubAllGlobals();

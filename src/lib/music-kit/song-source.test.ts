@@ -1,7 +1,7 @@
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { getMusicKit } from "@/lib/music-kit/instance";
 import { fetchSongSource, songSourceQuery } from "@/lib/music-kit/song-source";
 import { fetchStorefront } from "@/lib/music-kit/storefront";
-import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 vi.mock("@/lib/music-kit/instance", () => ({ getMusicKit: vi.fn() }));
 vi.mock("@/lib/music-kit/storefront", () => ({ fetchStorefront: vi.fn() }));

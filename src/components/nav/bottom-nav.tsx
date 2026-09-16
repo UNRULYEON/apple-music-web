@@ -1,15 +1,15 @@
-import { signOut } from "@/lib/music-kit/auth";
-import { useState } from "react";
-import { Button } from "@/components/ui/button";
-import { HugeiconsIcon } from "@hugeicons/react";
 import { LaptopIcon, LogoutSquare01Icon, Moon02Icon, Sun03Icon } from "@hugeicons/core-free-icons";
+import { HugeiconsIcon } from "@hugeicons/react";
+import { useState } from "react";
+import { ShortcutsDialog } from "@/components";
+import { Button } from "@/components/ui/button";
+import { RadioGroupPrimitive, RadioPrimitive } from "@/components/ui/radio-group";
+import { useTheme } from "@/hooks";
+import { signOut } from "@/lib/music-kit/auth";
 import {
   segmentedControlItemVariants,
   segmentedControlRootClassName,
 } from "@/lib/segmented-control";
-import { RadioGroupPrimitive, RadioPrimitive } from "@/components/ui/radio-group";
-import { ShortcutsDialog } from "@/components/shortcuts-dialog";
-import { useTheme } from "@/hooks";
 import type { Theme } from "@/lib/theme-storage";
 import { cn } from "@/lib/utils";
 

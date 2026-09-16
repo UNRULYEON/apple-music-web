@@ -1,10 +1,10 @@
-// @vitest-environment happy-dom
-import { useSignedInQuery } from "@/hooks";
-import { readDemoMode, setDemoMode } from "@/lib/demo/mode";
-import { setAuthStatus } from "@/lib/music-kit/auth";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { act, cleanup, render, waitFor } from "@testing-library/react";
-import { afterEach, beforeEach, describe, expect, it, vi, type Mock } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, type Mock, vi } from "vitest";
+import { readDemoMode, setDemoMode } from "@/lib/demo/mode";
+import { setAuthStatus } from "@/lib/music-kit/auth";
+// @vitest-environment happy-dom
+import { useSignedInQuery } from "./use-signed-in-query";
 
 let client: QueryClient;
 let queryFn: Mock<() => Promise<string>>;

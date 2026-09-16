@@ -4,12 +4,12 @@ import type { LibraryAlbum } from "@/lib/music-kit/album";
 import { fetchCatalogResources } from "@/lib/music-kit/catalog-resources";
 import { getMusicKit } from "@/lib/music-kit/instance";
 import {
+  type Artwork,
   hasNextPage,
   readArtistRef,
   readArtwork,
   readItems,
   readRelated,
-  type Artwork,
 } from "@/lib/music-kit/resource";
 import { fetchStorefront } from "@/lib/music-kit/storefront";
 import { matchesSearch } from "@/lib/search";

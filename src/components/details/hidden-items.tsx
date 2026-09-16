@@ -12,7 +12,7 @@ export function HiddenItems({
   }
 
   return (
-    <div className="text-center text-xs text-neutral-500 dark:text-neutral-400 theme-fade-text">
+    <div className="text-center text-xs text-neutral-500 theme-fade-text dark:text-neutral-400">
       {shown} of {total} {noun}. Clear the search to see them all.
     </div>
   );

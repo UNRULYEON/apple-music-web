@@ -1,6 +1,6 @@
+import { useEffect } from "react";
 import { hasDrm } from "@/lib/music-kit/drm";
 import { reportMissingDrm } from "@/lib/player/report";
-import { useEffect } from "react";
 
 export const NOTICE_DELAY = 3000;
 

@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { collectErrors } from "./collect-errors.ts";
+import { collectErrors } from "./collect-errors";
 
 describe("collectErrors", () => {
   it("keeps only the message after the annotation", () => {

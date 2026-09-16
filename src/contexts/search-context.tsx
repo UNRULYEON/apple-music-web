@@ -1,7 +1,7 @@
+import { createContext, type ReactNode, useCallback, useEffect, useMemo, useState } from "react";
 import { useView } from "@/hooks";
 import { useAuthStatus } from "@/lib/music-kit/auth";
 import { viewKey } from "@/lib/views/view";
-import { createContext, useCallback, useEffect, useMemo, useState, type ReactNode } from "react";
 
 export interface SearchContextType {
   term: string;

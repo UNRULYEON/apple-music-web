@@ -1,10 +1,10 @@
 import { getMusicKit } from "@/lib/music-kit/instance";
 import {
+  type Artwork,
   readArtwork,
   readItems,
   readStandard,
   readText,
-  type Artwork,
 } from "@/lib/music-kit/resource";
 import { fetchStorefront } from "@/lib/music-kit/storefront";
 

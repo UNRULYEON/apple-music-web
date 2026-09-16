@@ -1,29 +1,31 @@
-import { useAuthStatus } from "@/lib/music-kit/auth";
 import {
-  handleMediaKeys,
-  showNowPlaying,
-  showPlaybackState,
-  showPosition,
-} from "@/lib/player/media-session";
-import { notifySong } from "@/lib/player/notify";
-import { reportPlaybackProblem } from "@/lib/player/report";
+  createContext,
+  type ReactNode,
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+  useSyncExternalStore,
+} from "react";
+import { useAuthStatus } from "@/lib/music-kit/auth";
 import {
   changeToIndex,
   clearPlayback,
   pausePlayback,
+  type PlayOptions,
   playSongs,
-  playStation as startStation,
   queueLast,
   queueNext,
+  type QueueSource,
   queueWithoutPlaying,
   resumePlayback,
   seekTo,
   setRepeatMode,
   setShuffleMode,
   silenceKnownRejections,
+  playStation as startStation,
   subscribeToPlaybackErrors,
-  type PlayOptions,
-  type QueueSource,
 } from "@/lib/music-kit/playback";
 import {
   dropPlaybackTime,
@@ -34,28 +36,26 @@ import {
 } from "@/lib/music-kit/playback-time";
 import {
   nextRepeatMode,
+  type PlayerState,
   readInitialPlayerState,
   readPlayerState,
   subscribeToPlayer,
-  type PlayerState,
 } from "@/lib/music-kit/player-state";
+import type { Song } from "@/lib/music-kit/track";
 import {
   forgetStoredQueue,
   readStoredQueue,
   writeStoredPosition,
   writeStoredQueue,
 } from "@/lib/now-playing-storage";
-import type { Song } from "@/lib/music-kit/track";
 import {
-  createContext,
-  useCallback,
-  useEffect,
-  useMemo,
-  useRef,
-  useState,
-  useSyncExternalStore,
-  type ReactNode,
-} from "react";
+  handleMediaKeys,
+  showNowPlaying,
+  showPlaybackState,
+  showPosition,
+} from "@/lib/player/media-session";
+import { notifySong } from "@/lib/player/notify";
+import { reportPlaybackProblem } from "@/lib/player/report";
 
 export type PlayerContextType = PlayerState & {
   source?: QueueSource;

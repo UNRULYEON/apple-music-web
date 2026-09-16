@@ -1,11 +1,11 @@
 // @vitest-environment happy-dom
 import { act, cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { MusicKitGate } from "@/components/music-kit-gate";
 import { fireConfetti } from "@/lib/confetti";
 import { setAuthStatus } from "@/lib/music-kit/auth";
 import { dropToken, restoreToken } from "@/lib/music-kit/dev-session";
 import { getMusicKit } from "@/lib/music-kit/instance";
+import { MusicKitGate } from "./music-kit-gate";
 
 vi.mock("@/lib/music-kit/instance", () => ({ getMusicKit: vi.fn() }));
 vi.mock("@/lib/confetti", () => ({ fireConfetti: vi.fn() }));

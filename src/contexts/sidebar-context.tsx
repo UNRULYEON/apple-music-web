@@ -1,16 +1,16 @@
-import { useMediaQuery } from "@/hooks";
-import { SIDEBAR_HOTKEY } from "@/lib/hotkeys";
-import { clearPreHydrationState, readStoredOpen, writeStoredOpen } from "@/lib/sidebar-storage";
 import { useHotkey } from "@tanstack/react-hotkeys";
 import {
   createContext,
+  type Dispatch,
+  type ReactNode,
   useCallback,
   useEffect,
   useLayoutEffect,
   useState,
-  type Dispatch,
-  type ReactNode,
 } from "react";
+import { useMediaQuery } from "@/hooks";
+import { SIDEBAR_HOTKEY } from "@/lib/hotkeys";
+import { clearPreHydrationState, readStoredOpen, writeStoredOpen } from "@/lib/sidebar-storage";
 
 export type SidebarContextType = {
   isOpen: boolean;

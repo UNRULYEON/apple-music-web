@@ -1,14 +1,14 @@
-import { matchesSearch } from "@/lib/search";
 import {
-  readArtist,
-  readArtistRef,
-  readRelated,
-  readArtwork,
-  readNumber,
-  readText,
   type Artist,
   type Artwork,
+  readArtist,
+  readArtistRef,
+  readArtwork,
+  readNumber,
+  readRelated,
+  readText,
 } from "@/lib/music-kit/resource";
+import { matchesSearch } from "@/lib/search";
 
 export interface Song {
   id: string;

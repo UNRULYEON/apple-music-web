@@ -1,7 +1,8 @@
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import {
   fakeMusicKit,
-  stubMusicKitGlobals,
   type FakeMusicKit,
+  stubMusicKitGlobals,
 } from "@/lib/music-kit/fake-music-kit";
 import { getMusicKit } from "@/lib/music-kit/instance";
 import {
@@ -12,7 +13,6 @@ import {
   resetPlaybackTime,
   subscribeToPlaybackTime,
 } from "@/lib/music-kit/playback-time";
-import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 vi.mock("@/lib/music-kit/instance", () => ({ getMusicKit: vi.fn() }));
 

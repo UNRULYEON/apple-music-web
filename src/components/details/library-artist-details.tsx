@@ -1,12 +1,12 @@
-import { ArtistDetails } from "@/components/details/artist-details";
-import { DetailsShell } from "@/components/details/details-shell";
+import { useMemo } from "react";
+import { MediaGrid } from "@/components";
 import { EmptyStates } from "@/components/empty-states";
-import { MediaGrid } from "@/components/media-grid";
 import { useSearch, useSignedInQuery, useView } from "@/hooks";
-import { libraryAlbumsQuery, type LibraryAlbum } from "@/lib/music-kit/album";
+import { type LibraryAlbum, libraryAlbumsQuery } from "@/lib/music-kit/album";
 import { albumsOfArtist, catalogArtistIdQuery } from "@/lib/music-kit/library-artists";
 import { matchesSearch } from "@/lib/search";
-import { useMemo } from "react";
+import { ArtistDetails } from "./artist-details";
+import { DetailsShell } from "./details-shell";
 
 export function LibraryArtistDetails({ id }: { id: string }) {
   const { data: albums, isPending: isLoadingAlbums } = useSignedInQuery(libraryAlbumsQuery());
@@ -58,7 +58,7 @@ function OwnAlbums({
 
   return (
     <DetailsShell id={`library-artists-${name}`} artwork={albums[0]?.artwork} isPending={isPending}>
-      <h1 className="font-bold text-xl sm:text-2xl">{name}</h1>
+      <h1 className="text-xl font-bold sm:text-2xl">{name}</h1>
       {tiles.length > 0 ? <MediaGrid items={tiles} /> : <EmptyStates.NoMatches />}
     </DetailsShell>
   );

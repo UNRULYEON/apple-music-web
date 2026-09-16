@@ -1,11 +1,12 @@
-// @vitest-environment happy-dom
-import { useResetWhenSignedOut, useSignedInQuery } from "@/hooks";
-import { setAuthStatus } from "@/lib/music-kit/auth";
-import { HOME } from "@/lib/views/view";
-import { readStoredVolume, writeStoredVolume } from "@/lib/volume-storage";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { act, cleanup, render, screen, waitFor } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { setAuthStatus } from "@/lib/music-kit/auth";
+import { HOME } from "@/lib/views/view";
+import { readStoredVolume, writeStoredVolume } from "@/lib/volume-storage";
+// @vitest-environment happy-dom
+import { useResetWhenSignedOut } from "./use-reset-when-signed-out";
+import { useSignedInQuery } from "./use-signed-in-query";
 
 const open = vi.fn();
 

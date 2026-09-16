@@ -1,20 +1,19 @@
-import { ArtworkImage } from "@/components/artwork";
-import { ArtistLinks } from "@/components/artist-links";
-import { ExplicitMark } from "@/components/details/explicit-mark";
-import { LibraryMark } from "@/components/details/library-mark";
-import { TrackMenuPopup } from "@/components/details/track-menu";
-import { ContextMenu, ContextMenuTrigger } from "@/components/ui/context-menu";
-import { usePlayer } from "@/hooks";
-import { songDuration } from "@/lib/format";
-import { ROW_BLEED } from "@/lib/layout";
-import { cn } from "@/lib/utils";
-import { TRANSITION } from "@/lib/motion";
-import { isSameSource, type QueueSource } from "@/lib/music-kit/playback";
-import { discStarts, isExplicit, isSameSong, type Song } from "@/lib/music-kit/track";
 import { PlayIcon } from "@hugeicons/core-free-icons";
 import { HugeiconsIcon } from "@hugeicons/react";
 import { AnimatePresence, motion, useReducedMotion } from "motion/react";
 import { Fragment, useEffect, useMemo, useRef } from "react";
+import { ArtistLinks, ArtworkImage } from "@/components";
+import { ContextMenu, ContextMenuTrigger } from "@/components/ui/context-menu";
+import { usePlayer } from "@/hooks";
+import { songDuration } from "@/lib/format";
+import { ROW_BLEED } from "@/lib/layout";
+import { TRANSITION } from "@/lib/motion";
+import { isSameSource, type QueueSource } from "@/lib/music-kit/playback";
+import { discStarts, isExplicit, isSameSong, type Song } from "@/lib/music-kit/track";
+import { cn } from "@/lib/utils";
+import { ExplicitMark } from "./explicit-mark";
+import { LibraryMark } from "./library-mark";
+import { TrackMenuPopup } from "./track-menu";
 
 const ARTWORK_SIZE = 48;
 
@@ -114,7 +113,7 @@ export function TrackList({
                 render={<button type="button" />}
                 data-playing={playsNow ? "" : undefined}
                 onClick={() => play(songs, { startAt: i, from: source })}
-                className="flex items-center text-left gap-4 px-2 sm:px-4 h-14 sm:h-16 transition-colors duration-(--duration-quick) ease-(--ease-smooth-out) motion-reduce:transition-none hover:bg-neutral-600/15 hover:dark:bg-neutral-400/15 cursor-pointer rounded-xl backdrop-blur-3xl"
+                className="flex h-14 cursor-pointer items-center gap-4 rounded-xl px-2 text-left backdrop-blur-3xl transition-colors duration-(--duration-quick) ease-(--ease-smooth-out) hover:bg-neutral-600/15 motion-reduce:transition-none sm:h-16 sm:px-4 hover:dark:bg-neutral-400/15"
               >
                 {showArtwork ? (
                   <div className="relative size-10 shrink-0">
@@ -154,12 +153,12 @@ export function TrackList({
                     </AnimatePresence>
                   </div>
                 ) : (
-                  <span className="grid min-w-6 place-items-center tabular-nums text-sm text-neutral-600 dark:text-neutral-400 theme-fade-text">
+                  <span className="grid min-w-6 place-items-center text-sm text-neutral-600 tabular-nums theme-fade-text dark:text-neutral-400">
                     <AnimatePresence initial={false}>
                       {playsNow ? (
                         <motion.span
                           key="mark"
-                          className="col-start-1 row-start-1 flex text-neutral-900 dark:text-neutral-100 theme-fade-text"
+                          className="col-start-1 row-start-1 flex text-neutral-900 theme-fade-text dark:text-neutral-100"
                           initial={hidden}
                           animate={shown}
                           exit={hidden}
@@ -190,23 +189,23 @@ export function TrackList({
                     </AnimatePresence>
                   </span>
                 )}
-                <div className="flex flex-col grow min-w-0">
+                <div className="flex min-w-0 grow flex-col">
                   <span className="flex min-w-0 items-center gap-1.5">
                     <span className="truncate">{song.name}</span>
                     {isExplicit(song) && <ExplicitMark />}
                   </span>
-                  <span className="truncate text-sm text-neutral-600 dark:text-neutral-400 theme-fade-text">
+                  <span className="truncate text-sm text-neutral-600 theme-fade-text dark:text-neutral-400">
                     {song.artist?.name !== primaryArtist && (
                       <ArtistLinks artists={song.artists} fallback={song.artist?.name} />
                     )}
                   </span>
                 </div>
                 {marksLibrary && (
-                  <span className="grid w-4 shrink-0 place-items-center text-neutral-600 dark:text-neutral-400 theme-fade-text">
+                  <span className="grid w-4 shrink-0 place-items-center text-neutral-600 theme-fade-text dark:text-neutral-400">
                     {song.inLibrary && <LibraryMark label="This song is in your library" />}
                   </span>
                 )}
-                <div className="text-sm tabular-nums text-neutral-600 dark:text-neutral-400 theme-fade-text">
+                <div className="text-sm text-neutral-600 tabular-nums theme-fade-text dark:text-neutral-400">
                   {song.durationInMillis ? songDuration(song.durationInMillis) : null}
                 </div>
               </ContextMenuTrigger>
@@ -221,7 +220,7 @@ export function TrackList({
 
 function DiscHeading({ number }: { number: number }) {
   return (
-    <h3 className="px-2 sm:px-4 pt-6 pb-2 text-sm font-medium text-neutral-600 dark:text-neutral-400 theme-fade-text">
+    <h3 className="px-2 pt-6 pb-2 text-sm font-medium text-neutral-600 theme-fade-text sm:px-4 dark:text-neutral-400">
       Disc {number}
     </h3>
   );

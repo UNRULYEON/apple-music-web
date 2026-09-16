@@ -1,8 +1,8 @@
-// @vitest-environment happy-dom
-import { ArtworkImage } from "@/components/artwork";
-import type { Artwork } from "@/lib/music-kit/resource";
 import { cleanup, fireEvent, render, screen } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
+import type { Artwork } from "@/lib/music-kit/resource";
+// @vitest-environment happy-dom
+import { ArtworkImage } from "./artwork";
 
 const SKELETON = '[data-slot="skeleton"]';
 

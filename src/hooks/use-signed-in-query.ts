@@ -1,11 +1,11 @@
-import { useDemoMode } from "@/lib/demo/mode";
-import { useAuthStatus } from "@/lib/music-kit/auth";
 import {
-  useQuery,
   type QueryKey,
+  useQuery,
   type UseQueryOptions,
   type UseQueryResult,
 } from "@tanstack/react-query";
+import { useDemoMode } from "@/lib/demo/mode";
+import { useAuthStatus } from "@/lib/music-kit/auth";
 
 export function useSignedInQuery<
   TQueryFnData,

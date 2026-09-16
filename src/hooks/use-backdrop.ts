@@ -1,5 +1,5 @@
-import { BackdropContext } from "@/contexts";
 import { useContext, useEffect } from "react";
+import { BackdropContext } from "@/contexts";
 
 export function useBackdrop(colors: string[] | undefined) {
   const setColors = useContext(BackdropContext);

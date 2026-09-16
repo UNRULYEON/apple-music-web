@@ -1,9 +1,9 @@
 // @vitest-environment happy-dom
 import { act, cleanup, render } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { SidebarProvider } from "@/contexts";
 import { useSidebar } from "@/hooks";
 import { preHydrationScript } from "@/lib/sidebar-storage";
+import { SidebarProvider } from "./sidebar-context";
 
 afterEach(() => {
   cleanup();

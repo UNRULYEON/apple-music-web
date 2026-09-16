@@ -1,12 +1,12 @@
-import {
-  createCachePersister,
-  CACHE_MAX_AGE,
-  CACHE_VERSION,
-} from "@/integrations/tanstack-query/persister";
-import { useAuthStatus } from "@/lib/music-kit/auth";
 import { persistQueryClient } from "@tanstack/query-persist-client-core";
 import { useQueryClient } from "@tanstack/react-query";
 import { useEffect } from "react";
+import {
+  CACHE_MAX_AGE,
+  CACHE_VERSION,
+  createCachePersister,
+} from "@/integrations/tanstack-query/persister";
+import { useAuthStatus } from "@/lib/music-kit/auth";
 
 export function usePersistedCache(): void {
   const status = useAuthStatus();

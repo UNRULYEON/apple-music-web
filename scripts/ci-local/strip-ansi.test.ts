@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { stripAnsi } from "./strip-ansi.ts";
+import { stripAnsi } from "./strip-ansi";
 
 const ESC = String.fromCharCode(27);
 

@@ -1,11 +1,11 @@
-import { Skeleton } from "@/components/ui/skeleton";
-import { TRANSITION_REVEAL } from "@/lib/motion";
-import { artworkUrl, MOSAIC_SIZE, type Artwork } from "@/lib/music-kit/resource";
-import { cn } from "@/lib/utils";
 import { MusicNote02Icon } from "@hugeicons/core-free-icons";
 import { HugeiconsIcon } from "@hugeicons/react";
 import { AnimatePresence, motion, useReducedMotion } from "motion/react";
 import { useCallback, useRef, useState } from "react";
+import { Skeleton } from "@/components/ui/skeleton";
+import { TRANSITION_REVEAL } from "@/lib/motion";
+import { type Artwork, artworkUrl, MOSAIC_SIZE } from "@/lib/music-kit/resource";
+import { cn } from "@/lib/utils";
 
 const BOX = "relative aspect-square w-full overflow-hidden select-none";
 const BLURRED = { opacity: 0, filter: "blur(2px)" };

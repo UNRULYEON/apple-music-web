@@ -1,5 +1,7 @@
-import { ArtworkImage } from "@/components/artwork";
-import { HotkeyKeys } from "@/components/hotkey-keys";
+import { Search01Icon } from "@hugeicons/core-free-icons";
+import { HugeiconsIcon } from "@hugeicons/react";
+import { useHotkey } from "@tanstack/react-hotkeys";
+import { type KeyboardEvent, useMemo, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
 import {
   Command,
@@ -25,26 +27,24 @@ import {
   useSignedInQuery,
   useView,
 } from "@/hooks";
-import { COMMAND_MENU_HOTKEY, resolveHotkey } from "@/lib/hotkeys";
 import { count } from "@/lib/format";
-import { libraryAlbumsQuery, type LibraryAlbum } from "@/lib/music-kit/album";
-import { catalogSearchQuery, type CatalogItem } from "@/lib/music-kit/catalog-search";
+import { COMMAND_MENU_HOTKEY, resolveHotkey } from "@/lib/hotkeys";
+import { type LibraryAlbum, libraryAlbumsQuery } from "@/lib/music-kit/album";
+import { useAuthStatus } from "@/lib/music-kit/auth";
+import { type CatalogItem, catalogSearchQuery } from "@/lib/music-kit/catalog-search";
 import {
   artistPicturesQuery,
+  type LibraryArtist,
   readLibraryArtists,
   searchArtists,
   withPictures,
-  type LibraryArtist,
 } from "@/lib/music-kit/library-artists";
-import { libraryPlaylistsQuery, type LibraryPlaylist } from "@/lib/music-kit/playlists";
+import { type LibraryPlaylist, libraryPlaylistsQuery } from "@/lib/music-kit/playlists";
 import type { Artwork } from "@/lib/music-kit/resource";
-import type { DetailType, View } from "@/lib/views/view";
-import { useAuthStatus } from "@/lib/music-kit/auth";
 import { matchesSearch } from "@/lib/search";
-import { Search01Icon } from "@hugeicons/core-free-icons";
-import { HugeiconsIcon } from "@hugeicons/react";
-import { useHotkey } from "@tanstack/react-hotkeys";
-import { useMemo, useRef, useState, type KeyboardEvent } from "react";
+import type { DetailType, View } from "@/lib/views/view";
+import { ArtworkImage } from "./artwork";
+import { HotkeyKeys } from "./hotkey-keys";
 
 const LIMIT = 25;
 const ARTWORK_SIZE = 64;

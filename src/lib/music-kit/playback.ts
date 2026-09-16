@@ -1,10 +1,10 @@
 import type { AlbumType } from "@/lib/music-kit/album";
 import { hasDrm, MissingDrmError } from "@/lib/music-kit/drm";
 import { getMusicKit } from "@/lib/music-kit/instance";
-import { toMusicKitRepeat, type RepeatMode } from "@/lib/music-kit/player-state";
+import { type RepeatMode, toMusicKitRepeat } from "@/lib/music-kit/player-state";
+import type { PlaylistType } from "@/lib/music-kit/playlists";
 import { readItems } from "@/lib/music-kit/resource";
 import { fetchStorefront } from "@/lib/music-kit/storefront";
-import type { PlaylistType } from "@/lib/music-kit/playlists";
 import type { Song } from "@/lib/music-kit/track";
 
 export interface QueueSource {

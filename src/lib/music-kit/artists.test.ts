@@ -1,14 +1,14 @@
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import {
+  type ArtistAlbum,
+  type ArtistPlaylist,
   fetchArtist,
   fetchSongArtists,
   searchAlbums,
   searchPlaylists,
-  type ArtistAlbum,
-  type ArtistPlaylist,
 } from "@/lib/music-kit/artists";
 import { getMusicKit } from "@/lib/music-kit/instance";
 import { fetchStorefront } from "@/lib/music-kit/storefront";
-import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 vi.mock("@/lib/music-kit/instance", () => ({ getMusicKit: vi.fn() }));
 vi.mock("@/lib/music-kit/storefront", () => ({ fetchStorefront: vi.fn() }));

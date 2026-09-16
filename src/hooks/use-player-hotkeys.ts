@@ -1,6 +1,6 @@
-import { usePlayer } from "@/hooks/use-player";
-import { PLAYER_HOTKEYS } from "@/lib/hotkeys";
 import { useHotkeys } from "@tanstack/react-hotkeys";
+import { PLAYER_HOTKEYS } from "@/lib/hotkeys";
+import { usePlayer } from "./use-player";
 
 const PRESSED_BY_SPACE =
   "button, summary, [role='button'], [role='checkbox'], [role='switch'], [role='radio'], [role='tab'], [role='option'], [role^='menuitem']";

@@ -1,5 +1,5 @@
-export { BackdropContext, BackdropProvider, type SetBackdropColors } from "./backdrop-context";
-export { PlayerContext, PlayerProvider, type PlayerContextType } from "./player-context";
-export { SearchContext, SearchProvider, type SearchContextType } from "./search-context";
-export { SidebarContext, SidebarProvider, type SidebarContextType } from "./sidebar-context";
-export { ThemeContext, ThemeProvider, type ThemeContextType } from "./theme-context";
+export { BackdropContext, BackdropProvider } from "./backdrop-context";
+export { PlayerContext, PlayerProvider } from "./player-context";
+export { SearchContext, type SearchContextType, SearchProvider } from "./search-context";
+export { SidebarContext, SidebarProvider } from "./sidebar-context";
+export { ThemeContext, ThemeProvider } from "./theme-context";

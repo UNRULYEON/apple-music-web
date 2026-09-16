@@ -1,7 +1,7 @@
+import { afterEach, describe, expect, it, vi } from "vitest";
 import { toastManager } from "@/components/ui/toast";
 import { MissingDrmError } from "@/lib/music-kit/drm";
 import { reportMissingDrm, reportPlaybackProblem } from "@/lib/player/report";
-import { afterEach, describe, expect, it, vi } from "vitest";
 
 vi.mock("@/components/ui/toast", () => ({ toastManager: { add: vi.fn() } }));
 

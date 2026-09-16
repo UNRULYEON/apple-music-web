@@ -1,3 +1,5 @@
+import { DiscAlbumIcon, Mic01Icon } from "@hugeicons/core-free-icons";
+import { HugeiconsIcon } from "@hugeicons/react";
 import {
   ContextMenuItem,
   ContextMenuPopup,
@@ -12,8 +14,6 @@ import type { QueueSource } from "@/lib/music-kit/playback";
 import type { Artist } from "@/lib/music-kit/resource";
 import { songSourceQuery } from "@/lib/music-kit/song-source";
 import type { Song } from "@/lib/music-kit/track";
-import { DiscAlbumIcon, Mic01Icon } from "@hugeicons/core-free-icons";
-import { HugeiconsIcon } from "@hugeicons/react";
 
 export function TrackMenuPopup({ song, source }: { song: Song; source?: QueueSource }) {
   return (
