@@ -85,7 +85,13 @@ async function listen(): Promise<void> {
 
   listening = true;
 
-  const music = await getMusicKit();
+  const music = await getMusicKit().catch(() => undefined);
+
+  if (!music) {
+    listening = false;
+    return;
+  }
+
   instance = music;
 
   for (const event of TIME_EVENTS) {

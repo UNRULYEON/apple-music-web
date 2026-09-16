@@ -34,6 +34,18 @@ afterEach(() => {
 });
 
 describe("subscribeToPlaybackTime", () => {
+  it("listens again after MusicKit failed to load", async () => {
+    resetPlaybackTime();
+    vi.mocked(getMusicKit).mockRejectedValueOnce(new Error("no MusicKit"));
+    music.addEventListener.mockClear();
+
+    subscribeToPlaybackTime(() => {});
+    await new Promise((resolve) => setTimeout(resolve));
+
+    subscribeToPlaybackTime(() => {});
+    await vi.waitFor(() => expect(music.addEventListener).toHaveBeenCalled());
+  });
+
   it("starts at nothing", () => {
     expect(readPlaybackTime()).toEqual({ position: 0, duration: 0 });
   });

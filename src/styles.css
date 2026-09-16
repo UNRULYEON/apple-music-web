@@ -61,6 +61,7 @@ body {
 }
 
 @theme inline {
+  --breakpoint-md: 50rem;
   --animate-skeleton: skeleton 2s -1s infinite linear;
   --font-heading: "Inter Variable", "Inter", sans-serif;
   --animate-caret-blink: 1s ease-out infinite caret-blink;
@@ -194,7 +195,7 @@ body {
   }
   --font-mono: "Geist Mono Variable", "Geist Mono", monospace;
   --color-code-highlight: var(--code-highlight);
-  --code-foreground: var(--code-foreground);
+  --color-code-foreground: var(--code-foreground);
   --color-code: var(--code);
   --color-artwork-outline: var(--artwork-outline);
 }

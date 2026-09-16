@@ -301,7 +301,9 @@ async function askTheCatalog(id: string): Promise<string> {
   try {
     const storefront = await fetchStorefront();
     const music = await getMusicKit();
-    const { data } = await music.api.music(`/v1/catalog/${storefront.id}/songs/${id}`);
+    const { data } = await music.api.music(
+      `/v1/catalog/${storefront.id}/songs/${encodeURIComponent(id)}`,
+    );
     const [first] = readItems(data);
     const attributes = (first as { attributes?: Record<string, unknown> } | undefined)?.attributes;
 

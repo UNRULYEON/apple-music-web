@@ -38,6 +38,18 @@ afterEach(() => {
 });
 
 describe("subscribeToPlayer", () => {
+  it("listens again after MusicKit failed to load", async () => {
+    resetPlayerState();
+    vi.mocked(getMusicKit).mockRejectedValueOnce(new Error("no MusicKit"));
+    music.addEventListener.mockClear();
+
+    subscribeToPlayer(() => {});
+    await new Promise((resolve) => setTimeout(resolve));
+
+    subscribeToPlayer(() => {});
+    await vi.waitFor(() => expect(music.addEventListener).toHaveBeenCalled());
+  });
+
   it("reads the queue that MusicKit holds", () => {
     const state = readPlayerState();
 
