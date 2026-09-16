@@ -4,7 +4,7 @@ import { motion } from "motion/react";
 import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { useIsHydrated, useSidebar } from "@/hooks";
-import { TRANSITION_SLOW } from "@/lib/motion";
+import { TRANSITION_REVEAL } from "@/lib/motion";
 import { cn } from "@/lib/utils";
 
 export function SidebarToggle() {
@@ -21,7 +21,7 @@ export function SidebarToggle() {
       return;
     }
 
-    const timer = setTimeout(() => setCanPeek(true), TRANSITION_SLOW.duration * 1000);
+    const timer = setTimeout(() => setCanPeek(true), TRANSITION_REVEAL.duration * 1000);
 
     return () => clearTimeout(timer);
   }, [showsOpen, showsMobile]);
@@ -46,7 +46,7 @@ export function SidebarToggle() {
       <Button
         variant="ghost"
         className={cn(
-          "relative transition-[background-color] duration-(--duration-quick) ease-(--ease-smooth-out) data-hover:bg-neutral-300 motion-reduce:transition-none data-hover:dark:bg-neutral-800",
+          "relative transition-[background-color] duration-(--duration-quick) ease-(--ease-smooth-out) data-hover:bg-neutral-300 motion-reduce:transition-none dark:data-hover:bg-neutral-800",
           showsMobile ? "z-0" : "z-40",
         )}
         onClick={() => setOpen((wasOpen) => !wasOpen)}

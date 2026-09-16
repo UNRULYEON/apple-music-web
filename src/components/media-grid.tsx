@@ -11,21 +11,24 @@ import {
   useRef,
   useState,
 } from "react";
-import { TRANSITION, TRANSITION_REVEAL } from "@/lib/motion";
+import { BLURRED, SHARP, TRANSITION, TRANSITION_REVEAL } from "@/lib/motion";
 import type { Artwork } from "@/lib/music-kit/resource";
+import { SCROLL_VIEWPORT } from "@/lib/scroll-area";
 import { ArtworkImage } from "./artwork";
 
 const ARTWORK_SIZE = 256;
-const MIN_TILE = 208;
-const WIDE_GRID = 768;
-const GAP = 16;
-const GAP_WIDE = 24;
-const TEXT_BLOCK = 40;
-const OVERSCAN = 4;
-const VIEWPORT = '[data-slot="scroll-area-viewport"]';
 
-const BLURRED = { opacity: 0, filter: "blur(2px)" };
-const SHARP = { opacity: 1, filter: "blur(0px)" };
+const MIN_TILE = 208;
+
+const WIDE_GRID = 768;
+
+const GAP = 16;
+
+const GAP_WIDE = 24;
+
+const TEXT_BLOCK = 40;
+
+const OVERSCAN = 4;
 
 export interface MediaTileItem {
   id: string;
@@ -64,27 +67,8 @@ export function chunk<T>(items: T[], size: number): T[][] {
   return rows;
 }
 
-function measureGrid(node: HTMLElement, viewport: HTMLElement): Metrics {
-  const box = node.getBoundingClientRect();
-
-  return {
-    width: node.clientWidth,
-    scrollMargin: Math.round(box.top - viewport.getBoundingClientRect().top + viewport.scrollTop),
-  };
-}
-
 export function sameMetrics(a: Metrics, b: Metrics): boolean {
   return a.width === b.width && a.scrollMargin === b.scrollMargin;
-}
-
-function updateMetrics(
-  node: HTMLElement,
-  viewport: HTMLElement,
-  setMetrics: Dispatch<SetStateAction<Metrics>>,
-): void {
-  const next = measureGrid(node, viewport);
-
-  setMetrics((current) => (sameMetrics(current, next) ? current : next));
 }
 
 export function MediaGrid({ items, ref }: { items: MediaTileItem[]; ref?: Ref<HTMLDivElement> }) {
@@ -95,7 +79,7 @@ export function MediaGrid({ items, ref }: { items: MediaTileItem[]; ref?: Ref<HT
   const attach = useCallback(
     (node: HTMLDivElement | null) => {
       container.current = node;
-      setViewport(node?.closest<HTMLElement>(VIEWPORT) ?? null);
+      setViewport(node?.closest<HTMLElement>(SCROLL_VIEWPORT) ?? null);
 
       if (typeof ref === "function") {
         ref(node);
@@ -169,6 +153,25 @@ export function MediaGrid({ items, ref }: { items: MediaTileItem[]; ref?: Ref<HT
       ))}
     </motion.div>
   );
+}
+
+function measureGrid(node: HTMLElement, viewport: HTMLElement): Metrics {
+  const box = node.getBoundingClientRect();
+
+  return {
+    width: node.clientWidth,
+    scrollMargin: Math.round(box.top - viewport.getBoundingClientRect().top + viewport.scrollTop),
+  };
+}
+
+function updateMetrics(
+  node: HTMLElement,
+  viewport: HTMLElement,
+  setMetrics: Dispatch<SetStateAction<Metrics>>,
+): void {
+  const next = measureGrid(node, viewport);
+
+  setMetrics((current) => (sameMetrics(current, next) ? current : next));
 }
 
 function MediaTile({ name, credit, artwork, onClick }: MediaTileItem) {

@@ -3,10 +3,6 @@ import type { ComponentProps } from "react";
 import { Kbd, KbdGroup } from "@/components/ui/kbd";
 import { resolveHotkey } from "@/lib/hotkeys";
 
-function keyLabel(key: string): string {
-  return key === "Space" ? "Space" : formatForDisplay(key);
-}
-
 export function HotkeyKeys({ hotkey, ...props }: { hotkey: Hotkey } & ComponentProps<"kbd">) {
   const resolved = resolveHotkey(hotkey);
 
@@ -20,4 +16,8 @@ export function HotkeyKeys({ hotkey, ...props }: { hotkey: Hotkey } & ComponentP
       ))}
     </KbdGroup>
   );
+}
+
+function keyLabel(key: string): string {
+  return key === "Space" ? "Space" : formatForDisplay(key);
 }

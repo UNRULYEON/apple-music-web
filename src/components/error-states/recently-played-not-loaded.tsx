@@ -8,7 +8,7 @@ import {
   EmptyTitle,
 } from "@/components/ui/empty";
 
-export function RecentlyPlayed() {
+export function RecentlyPlayedNotLoaded() {
   return (
     <Empty>
       <EmptyHeader>
@@ -16,7 +16,7 @@ export function RecentlyPlayed() {
           <HugeiconsIcon icon={MusicNote02Icon} strokeWidth={1.5} aria-hidden="true" />
         </EmptyMedia>
         <EmptyTitle>Couldn't load recently played tracks</EmptyTitle>
-        <EmptyDescription></EmptyDescription>
+        <EmptyDescription>Check your connection and try again.</EmptyDescription>
       </EmptyHeader>
     </Empty>
   );

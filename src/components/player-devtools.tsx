@@ -10,6 +10,16 @@ import { cn } from "@/lib/utils";
 
 const UP_NEXT = 8;
 
+const PERMISSION_BADGES: Record<
+  string,
+  { variant: "success" | "error" | "warning"; text: string }
+> = {
+  granted: { variant: "success", text: "Granted" },
+  denied: { variant: "error", text: "Denied" },
+  default: { variant: "warning", text: "Nobody has answered yet" },
+  unsupported: { variant: "error", text: "This browser knows no notifications" },
+};
+
 export function PlayerDevtools({ theme }: { theme: "light" | "dark" }) {
   const { queue, index, nowPlaying, upNext, isPlaying, isLoading, isShuffled, repeat } =
     usePlayer();
@@ -88,16 +98,6 @@ export function PlayerDevtools({ theme }: { theme: "light" | "dark" }) {
     </div>
   );
 }
-
-const PERMISSION_BADGES: Record<
-  string,
-  { variant: "success" | "error" | "warning"; text: string }
-> = {
-  granted: { variant: "success", text: "Granted" },
-  denied: { variant: "error", text: "Denied" },
-  default: { variant: "warning", text: "Nobody has answered yet" },
-  unsupported: { variant: "error", text: "This browser knows no notifications" },
-};
 
 function Notifications({ song }: { song?: Song }) {
   const [permission, setPermission] = useState(notifyPermission);

@@ -1,14 +1,10 @@
-import { AnimatePresence } from "motion/react";
 import { useMemo } from "react";
 import { EmptyStates } from "@/components/empty-states";
 import { ErrorStates } from "@/components/error-states";
 import { useSearch, useSignedInQuery, useView } from "@/hooks";
-import { VIEW_INSET } from "@/lib/layout";
 import { libraryAlbumsQuery } from "@/lib/music-kit/album";
 import { matchesSearch } from "@/lib/search";
-import { cn } from "@/lib/utils";
-import { LoadingState } from "./loading-state";
-import { MediaGrid } from "./media-grid";
+import { LibraryGrid } from "./library-grid";
 
 export function LibraryAlbums() {
   const { open } = useView();
@@ -30,18 +26,14 @@ export function LibraryAlbums() {
   );
 
   return (
-    <div className={cn("flex grow flex-col pb-4", VIEW_INSET)}>
-      <AnimatePresence mode="popLayout">
-        {isPending && <LoadingState key="library-albums-loading-state" />}
-        {isError && !isPending && <ErrorStates.Albums key="library-albums-error-state" />}
-        {albums && albums.length === 0 && !isPending && (
-          <EmptyStates.NoAlbums key="library-albums-empty-state" />
-        )}
-        {albums && albums.length > 0 && tiles.length === 0 && !isPending && (
-          <EmptyStates.NoMatches key="library-albums-no-matches-state" />
-        )}
-        {tiles.length > 0 && !isPending && <MediaGrid key="library-albums-list" items={tiles} />}
-      </AnimatePresence>
-    </div>
+    <LibraryGrid
+      name="library-albums"
+      tiles={tiles}
+      total={albums?.length}
+      isPending={isPending}
+      isError={isError}
+      Empty={EmptyStates.NoAlbums}
+      NotLoaded={ErrorStates.AlbumsNotLoaded}
+    />
   );
 }

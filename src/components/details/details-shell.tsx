@@ -3,12 +3,9 @@ import { type ReactNode, useMemo } from "react";
 import { LoadingState } from "@/components";
 import { useBackdrop } from "@/hooks";
 import { VIEW_INSET } from "@/lib/layout";
-import { TRANSITION_REVEAL } from "@/lib/motion";
+import { BLURRED, SHARP, TRANSITION_REVEAL } from "@/lib/motion";
 import { type Artwork, artworkColors } from "@/lib/music-kit/resource";
 import { cn } from "@/lib/utils";
-
-const BLURRED = { opacity: 0, filter: "blur(2px)" };
-const SHARP = { opacity: 1, filter: "blur(0px)" };
 
 export function DetailsShell({
   id,
@@ -42,7 +39,7 @@ export function DetailsShell({
       {children && !isPending && (
         <motion.div
           key={`${id}-loaded`}
-          className={cn("flex min-w-0 grow flex-col gap-8 py-4 sm:gap-8 sm:py-8", VIEW_INSET)}
+          className={cn("flex min-w-0 grow flex-col gap-8 py-4 sm:py-8", VIEW_INSET)}
           initial={BLURRED}
           animate={SHARP}
           exit={BLURRED}

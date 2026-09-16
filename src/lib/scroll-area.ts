@@ -3,6 +3,8 @@ import { EASE, readReducedMotion, TRANSITION_REVEAL } from "@/lib/motion";
 
 export const SCROLL_AREA_ID = "main";
 
+export const SCROLL_VIEWPORT = '[data-slot="scroll-area-viewport"]';
+
 export const SCROLL_AREA = `[data-scroll-restoration-id="${SCROLL_AREA_ID}"]`;
 
 const GLIDE = TRANSITION_REVEAL.duration;

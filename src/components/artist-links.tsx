@@ -1,4 +1,4 @@
-import { useView } from "@/hooks";
+import { useView, type ViewNavigation } from "@/hooks";
 import type { Artist } from "@/lib/music-kit/resource";
 
 export function ArtistLinks({
@@ -31,7 +31,7 @@ function ArtistLink({
   onNavigate,
 }: {
   artist: Artist;
-  onOpen: ReturnType<typeof useView>["open"];
+  onOpen: ViewNavigation["open"];
   onNavigate?: () => void;
 }) {
   function go(event: { stopPropagation: () => void }) {

@@ -1,6 +1,11 @@
-import { Albums } from "./albums";
-import { Artists } from "./artists";
-import { Playlists } from "./playlists";
-import { RecentlyPlayed } from "./recently-played";
+import { AlbumsNotLoaded } from "./albums-not-loaded";
+import { ArtistsNotLoaded } from "./artists-not-loaded";
+import { PlaylistsNotLoaded } from "./playlists-not-loaded";
+import { RecentlyPlayedNotLoaded } from "./recently-played-not-loaded";
 
-export const ErrorStates = { Albums, Artists, Playlists, RecentlyPlayed };
+export const ErrorStates = {
+  AlbumsNotLoaded,
+  ArtistsNotLoaded,
+  PlaylistsNotLoaded,
+  RecentlyPlayedNotLoaded,
+};

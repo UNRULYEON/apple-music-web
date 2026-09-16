@@ -8,7 +8,7 @@ import {
   EmptyTitle,
 } from "@/components/ui/empty";
 
-export function Albums() {
+export function AlbumsNotLoaded() {
   return (
     <Empty>
       <EmptyHeader>
@@ -16,7 +16,7 @@ export function Albums() {
           <HugeiconsIcon icon={DiscAlbumIcon} strokeWidth={1.5} aria-hidden="true" />
         </EmptyMedia>
         <EmptyTitle>Couldn't load your albums</EmptyTitle>
-        <EmptyDescription></EmptyDescription>
+        <EmptyDescription>Check your connection and try again.</EmptyDescription>
       </EmptyHeader>
     </Empty>
   );

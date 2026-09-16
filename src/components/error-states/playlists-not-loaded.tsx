@@ -8,7 +8,7 @@ import {
   EmptyTitle,
 } from "@/components/ui/empty";
 
-export function Playlists() {
+export function PlaylistsNotLoaded() {
   return (
     <Empty>
       <EmptyHeader>
@@ -16,7 +16,7 @@ export function Playlists() {
           <HugeiconsIcon icon={PlayListIcon} strokeWidth={1.5} aria-hidden="true" />
         </EmptyMedia>
         <EmptyTitle>Couldn't load your playlists</EmptyTitle>
-        <EmptyDescription></EmptyDescription>
+        <EmptyDescription>Check your connection and try again.</EmptyDescription>
       </EmptyHeader>
     </Empty>
   );

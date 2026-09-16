@@ -25,13 +25,13 @@ export function DetailsHeader({
   const isEmpty = songs.length === 0;
 
   return (
-    <div className="flex flex-col items-center gap-8 sm:flex-row sm:gap-8">
+    <div className="flex flex-col items-center gap-8 sm:flex-row">
       <div className="w-full max-w-96 sm:w-64 sm:shrink-0">
         <DetailsArtwork artwork={artwork} name={name} />
       </div>
       <div className="flex flex-col items-center gap-4 sm:items-start">
         <div className="flex flex-col items-center sm:items-start">
-          <span className="text-xl font-bold sm:text-2xl">{name}</span>
+          <h1 className="text-xl font-bold sm:text-2xl">{name}</h1>
           {subtitle && <span className="text-base">{subtitle}</span>}
         </div>
         {meta && (

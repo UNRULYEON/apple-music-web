@@ -47,7 +47,9 @@ import { ArtworkImage } from "./artwork";
 import { HotkeyKeys } from "./hotkey-keys";
 
 const LIMIT = 25;
+
 const ARTWORK_SIZE = 64;
+
 const TITLE = "Search";
 
 const SOURCES = ["library", "catalog"] as const;
@@ -84,6 +86,58 @@ interface ResultGroup {
 interface Found {
   groups: ResultGroup[];
   empty: string;
+}
+
+export function CommandMenu() {
+  const status = useAuthStatus();
+  const closeSidebarOnMobile = useCloseSidebarOnMobile();
+
+  useHotkey(
+    COMMAND_MENU_HOTKEY,
+    () => {
+      if (commandMenu.isOpen) {
+        commandMenu.close();
+        return;
+      }
+
+      closeSidebarOnMobile();
+      commandMenu.open(null);
+    },
+    { enabled: status === "signed-in" },
+  );
+
+  return (
+    <CommandDialog handle={commandMenu}>
+      <CommandDialogPopup>
+        <CommandDialogPrimitive.Title className="sr-only">{TITLE}</CommandDialogPrimitive.Title>
+        <CommandSearch />
+      </CommandDialogPopup>
+    </CommandDialog>
+  );
+}
+
+export function CommandMenuTrigger() {
+  const closeSidebarOnMobile = useCloseSidebarOnMobile();
+  const isHydrated = useIsHydrated();
+
+  return (
+    <CommandDialogTrigger
+      handle={commandMenu}
+      render={<Button variant="ghost" className="justify-start" />}
+      aria-keyshortcuts={isHydrated ? resolveHotkey(COMMAND_MENU_HOTKEY) : undefined}
+      onClick={closeSidebarOnMobile}
+    >
+      <HugeiconsIcon icon={Search01Icon} strokeWidth={2} aria-hidden="true" />
+      Search
+      {isHydrated && (
+        <HotkeyKeys
+          hotkey={COMMAND_MENU_HOTKEY}
+          aria-hidden="true"
+          className="ms-auto pointer-coarse:hidden"
+        />
+      )}
+    </CommandDialogTrigger>
+  );
 }
 
 function albumResult(album: LibraryAlbum): Result {
@@ -321,57 +375,5 @@ function CommandSearch() {
         </CommandList>
       </CommandPanel>
     </Command>
-  );
-}
-
-export function CommandMenu() {
-  const status = useAuthStatus();
-  const closeSidebarOnMobile = useCloseSidebarOnMobile();
-
-  useHotkey(
-    COMMAND_MENU_HOTKEY,
-    () => {
-      if (commandMenu.isOpen) {
-        commandMenu.close();
-        return;
-      }
-
-      closeSidebarOnMobile();
-      commandMenu.open(null);
-    },
-    { enabled: status === "signed-in" },
-  );
-
-  return (
-    <CommandDialog handle={commandMenu}>
-      <CommandDialogPopup>
-        <CommandDialogPrimitive.Title className="sr-only">{TITLE}</CommandDialogPrimitive.Title>
-        <CommandSearch />
-      </CommandDialogPopup>
-    </CommandDialog>
-  );
-}
-
-export function CommandMenuTrigger() {
-  const closeSidebarOnMobile = useCloseSidebarOnMobile();
-  const isHydrated = useIsHydrated();
-
-  return (
-    <CommandDialogTrigger
-      handle={commandMenu}
-      render={<Button variant="ghost" className="justify-start" />}
-      aria-keyshortcuts={isHydrated ? resolveHotkey(COMMAND_MENU_HOTKEY) : undefined}
-      onClick={closeSidebarOnMobile}
-    >
-      <HugeiconsIcon icon={Search01Icon} strokeWidth={2} aria-hidden="true" />
-      Search
-      {isHydrated && (
-        <HotkeyKeys
-          hotkey={COMMAND_MENU_HOTKEY}
-          aria-hidden="true"
-          className="ms-auto pointer-coarse:hidden"
-        />
-      )}
-    </CommandDialogTrigger>
   );
 }

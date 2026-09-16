@@ -7,9 +7,10 @@ import { ContextMenu, ContextMenuTrigger } from "@/components/ui/context-menu";
 import { usePlayer } from "@/hooks";
 import { songDuration } from "@/lib/format";
 import { ROW_BLEED } from "@/lib/layout";
-import { TRANSITION } from "@/lib/motion";
+import { FADED, NO_TRANSITION, OPAQUE, TRANSITION } from "@/lib/motion";
 import { isSameSource, type QueueSource } from "@/lib/music-kit/playback";
 import { discStarts, isExplicit, isSameSong, type Song } from "@/lib/music-kit/track";
+import { SCROLL_VIEWPORT } from "@/lib/scroll-area";
 import { cn } from "@/lib/utils";
 import { ExplicitMark } from "./explicit-mark";
 import { LibraryMark } from "./library-mark";
@@ -17,20 +18,14 @@ import { TrackMenuPopup } from "./track-menu";
 
 const ARTWORK_SIZE = 48;
 
-const VIEWPORT = '[data-slot="scroll-area-viewport"]';
 const PLAYING_ROW = "[data-playing]";
-
-const NO_TRANSITION = { duration: 0 } as const;
 
 const MARK_HIDDEN = { opacity: 0, scale: 0.25, filter: "blur(2px)" };
 const MARK_SHOWN = { opacity: 1, scale: 1, filter: "blur(0px)" };
 
-const FADED = { opacity: 0 };
-const OPAQUE = { opacity: 1 };
-
 export function showPlayingSong(list: HTMLElement): void {
   const row = list.querySelector(PLAYING_ROW);
-  const viewport = list.closest(VIEWPORT);
+  const viewport = list.closest(SCROLL_VIEWPORT);
 
   if (!row || !viewport) {
     return;
@@ -113,7 +108,7 @@ export function TrackList({
                 render={<button type="button" />}
                 data-playing={playsNow ? "" : undefined}
                 onClick={() => play(songs, { startAt: i, from: source })}
-                className="flex h-14 cursor-pointer items-center gap-4 rounded-xl px-2 text-left backdrop-blur-3xl transition-colors duration-(--duration-quick) ease-(--ease-smooth-out) hover:bg-neutral-600/15 motion-reduce:transition-none sm:h-16 sm:px-4 hover:dark:bg-neutral-400/15"
+                className="flex h-14 cursor-pointer items-center gap-4 rounded-xl px-2 text-left backdrop-blur-3xl transition-colors duration-(--duration-quick) ease-(--ease-smooth-out) hover:bg-neutral-600/15 motion-reduce:transition-none sm:h-16 sm:px-4 dark:hover:bg-neutral-400/15"
               >
                 {showArtwork ? (
                   <div className="relative size-10 shrink-0">

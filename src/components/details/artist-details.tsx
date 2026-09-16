@@ -1,7 +1,7 @@
 import { type ReactNode, useMemo } from "react";
 import { MediaGrid, type MediaTileItem } from "@/components";
 import { EmptyStates } from "@/components/empty-states";
-import { useSearch, useSignedInQuery, useView } from "@/hooks";
+import { useSearch, useSignedInQuery, useView, type ViewNavigation } from "@/hooks";
 import { releaseYear } from "@/lib/format";
 import {
   type ArtistAlbum,
@@ -150,7 +150,7 @@ function Section({ title, children }: { title: string; children: ReactNode }) {
 
 function useTiles(
   albums: ArtistAlbum[] | undefined,
-  open: ReturnType<typeof useView>["open"],
+  open: ViewNavigation["open"],
   { showArtist = false }: { showArtist?: boolean } = {},
 ): MediaTileItem[] {
   return useMemo(
@@ -172,7 +172,7 @@ function useTiles(
 
 function usePlaylistTiles(
   playlists: ArtistPlaylist[] | undefined,
-  open: ReturnType<typeof useView>["open"],
+  open: ViewNavigation["open"],
 ): MediaTileItem[] {
   return useMemo(
     () =>
