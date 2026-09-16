@@ -1,3 +1,4 @@
+import { isRecord } from "@/lib/is-record";
 const DETAIL_TYPES = [
   "albums",
   "library-albums",
@@ -76,7 +77,7 @@ export function isTopLevel(view: View): boolean {
 }
 
 export function readView(value: unknown): View | undefined {
-  if (typeof value !== "object" || value === null || !("name" in value)) {
+  if (!isRecord(value) || !("name" in value)) {
     return undefined;
   }
 

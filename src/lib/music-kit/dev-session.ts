@@ -1,3 +1,4 @@
+import { isRecord } from "@/lib/is-record";
 import { setAuthStatus } from "@/lib/music-kit/auth";
 import { getMusicKit } from "@/lib/music-kit/instance";
 import { readStorage, removeStorage, writeStorage } from "@/lib/storage/local";
@@ -72,11 +73,5 @@ function readSaved(): SavedToken | undefined {
 }
 
 function isSavedToken(value: unknown): value is SavedToken {
-  if (typeof value !== "object" || value === null) {
-    return false;
-  }
-
-  const candidate = value as Partial<SavedToken>;
-
-  return typeof candidate.token === "string" && typeof candidate.savedAt === "string";
+  return isRecord(value) && typeof value.token === "string" && typeof value.savedAt === "string";
 }

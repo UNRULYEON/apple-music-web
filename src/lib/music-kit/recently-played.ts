@@ -1,17 +1,17 @@
 import { queryOptions } from "@tanstack/react-query";
 import { DEMO_LIBRARY } from "@/lib/demo/library";
 import { demoQueryKey, readDemoMode } from "@/lib/demo/mode";
+import { isRecord } from "@/lib/is-record";
+import { fetchEveryPage } from "@/lib/music-kit/api";
 import { type CatalogRef, fetchCatalogResources } from "@/lib/music-kit/catalog-resources";
-import { getMusicKit } from "@/lib/music-kit/instance";
 import {
   type Artist,
   type Artwork,
   type Curator,
-  hasNextPage,
   readArtist,
   readArtwork,
   readCurator,
-  readItems,
+  readResource,
 } from "@/lib/music-kit/resource";
 
 const PATH = "/v1/me/recent/played";
@@ -33,32 +33,12 @@ export interface RecentlyPlayedItem {
 }
 
 export async function fetchRecentlyPlayed(limit = PAGE_SIZE): Promise<RecentlyPlayedItem[]> {
-  const music = await getMusicKit();
-  const played: RecentlyPlayedItem[] = [];
+  const items = await fetchEveryPage(PATH, { types: TYPES.join(",") }, PAGE_SIZE, { until: limit });
 
-  for (let offset = 0; offset < limit; offset += PAGE_SIZE) {
-    // oxlint-disable-next-line no-await-in-loop
-    const { data } = await music.api.music(PATH, {
-      types: TYPES.join(","),
-      limit: PAGE_SIZE,
-      offset,
-    });
-    const items = readItems(data);
-
-    for (const item of items) {
-      const parsed = readItem(item);
-
-      if (parsed) {
-        played.push(parsed);
-      }
-    }
-
-    if (!hasNextPage(data) || items.length < PAGE_SIZE) {
-      break;
-    }
-  }
-
-  return played.slice(0, limit);
+  return items
+    .map(readItem)
+    .filter((item) => item !== undefined)
+    .slice(0, limit);
 }
 
 export async function fetchRecentlyPlayedFromCatalog(
@@ -70,28 +50,19 @@ export async function fetchRecentlyPlayedFromCatalog(
 }
 
 function readItem(value: unknown): RecentlyPlayedItem | undefined {
-  if (typeof value !== "object" || value === null) {
-    return undefined;
-  }
+  const resource = readResource(value);
 
-  const candidate = value as { id?: unknown; type?: unknown; attributes?: Record<string, unknown> };
-  const attributes = candidate.attributes;
-
-  if (
-    typeof candidate.id !== "string" ||
-    !isKnownType(candidate.type) ||
-    typeof attributes?.name !== "string"
-  ) {
+  if (!resource || !isRecord(value) || !isKnownType(value.type)) {
     return undefined;
   }
 
   return {
-    id: candidate.id,
-    type: candidate.type,
-    name: attributes.name,
-    artist: readArtist(attributes.artistName),
-    curator: readCurator(attributes.curatorName),
-    artwork: readArtwork(attributes.artwork),
+    id: resource.id,
+    type: value.type,
+    name: resource.name,
+    artist: readArtist(resource.attributes.artistName),
+    curator: readCurator(resource.attributes.curatorName),
+    artwork: readArtwork(resource.attributes.artwork),
   };
 }
 

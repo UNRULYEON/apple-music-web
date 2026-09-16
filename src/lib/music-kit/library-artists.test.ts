@@ -134,11 +134,11 @@ describe("pickArtistId", () => {
   });
 
   it("gives no id when the album names no artist", () => {
-    expect(pickArtistId([], "Radiohead")).toBe("");
+    expect(pickArtistId([], "Radiohead")).toBeUndefined();
   });
 
   it("gives no id for an artist that Apple Music does not hold", () => {
-    expect(pickArtistId([{ name: "A friend" }], "A friend")).toBe("");
+    expect(pickArtistId([{ name: "A friend" }], "A friend")).toBeUndefined();
   });
 });
 

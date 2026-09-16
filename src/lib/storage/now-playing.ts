@@ -1,3 +1,4 @@
+import { isRecord } from "@/lib/is-record";
 import type { QueueSource } from "@/lib/music-kit/playback";
 import { readStorage, removeStorage, writeStorage } from "@/lib/storage/local";
 
@@ -48,7 +49,7 @@ function write(queue: StoredQueue): void {
 }
 
 function asQueue(value: unknown): StoredQueue | undefined {
-  if (typeof value !== "object" || value === null) {
+  if (!isRecord(value)) {
     return undefined;
   }
 
@@ -74,11 +75,11 @@ function asPosition(value: unknown): number | undefined {
 }
 
 function asSource(value: unknown): QueueSource | undefined {
-  if (typeof value !== "object" || value === null) {
+  if (!isRecord(value)) {
     return undefined;
   }
 
-  const { type, id } = value as Partial<QueueSource>;
+  const { type, id } = value;
 
   return typeof type === "string" && typeof id === "string"
     ? ({ type, id } as QueueSource)

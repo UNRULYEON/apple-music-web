@@ -1,3 +1,4 @@
+import { isRecord } from "@/lib/is-record";
 import {
   type Artist,
   type Artwork,
@@ -6,6 +7,7 @@ import {
   readArtwork,
   readNumber,
   readRelated,
+  readResource,
   readText,
 } from "@/lib/music-kit/resource";
 import { matchesSearch } from "@/lib/search";
@@ -60,26 +62,19 @@ function songIds(song: Song): string[] {
 }
 
 export function readSong(value: unknown): Song | undefined {
-  if (typeof value !== "object" || value === null) {
+  const resource = readResource(value);
+
+  if (!resource) {
     return undefined;
   }
 
-  const candidate = value as {
-    id?: unknown;
-    attributes?: Record<string, unknown>;
-    relationships?: unknown;
-  };
-  const attributes = candidate.attributes;
-
-  if (typeof candidate.id !== "string" || typeof attributes?.name !== "string") {
-    return undefined;
-  }
+  const { attributes } = resource;
 
   return {
-    id: candidate.id,
-    name: attributes.name,
+    id: resource.id,
+    name: resource.name,
     artist: readArtist(attributes.artistName),
-    artists: readRelated(candidate.relationships, "artists", readArtistRef),
+    artists: readRelated(resource.relationships, "artists", readArtistRef),
     artwork: readArtwork(attributes.artwork),
     discNumber: readNumber(attributes.discNumber),
     trackNumber: readNumber(attributes.trackNumber),
@@ -92,25 +87,11 @@ export function readSong(value: unknown): Song | undefined {
 }
 
 function readPlayId(value: unknown): string | undefined {
-  if (typeof value !== "object" || value === null) {
-    return undefined;
-  }
-
-  const params = value as { id?: unknown; catalogId?: unknown };
-
-  return readText(params.catalogId) ?? readText(params.id);
+  return isRecord(value) ? (readText(value.catalogId) ?? readText(value.id)) : undefined;
 }
 
 function readPreviewUrl(value: unknown): string | undefined {
-  if (!Array.isArray(value)) {
-    return undefined;
-  }
+  const first: unknown = Array.isArray(value) ? value[0] : undefined;
 
-  const [first] = value;
-
-  if (typeof first !== "object" || first === null) {
-    return undefined;
-  }
-
-  return readText((first as { url?: unknown }).url);
+  return isRecord(first) ? readText(first.url) : undefined;
 }

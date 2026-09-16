@@ -1,22 +1,24 @@
 import { queryOptions } from "@tanstack/react-query";
 import { DEMO_LIBRARY } from "@/lib/demo/library";
 import { demoQueryKey, readDemoMode } from "@/lib/demo/mode";
+import { isRecord } from "@/lib/is-record";
 import type { LibraryAlbum } from "@/lib/music-kit/album";
+import { catalogPath, fetchEveryPage } from "@/lib/music-kit/api";
 import { fetchCatalogResources } from "@/lib/music-kit/catalog-resources";
 import { getMusicKit } from "@/lib/music-kit/instance";
 import {
   type Artwork,
-  hasNextPage,
   readArtistRef,
   readArtwork,
   readItems,
   readRelated,
+  readRelationships,
 } from "@/lib/music-kit/resource";
-import { fetchStorefront } from "@/lib/music-kit/storefront";
 import { matchesSearch } from "@/lib/search";
 
 const STALE = 60 * 60 * 1000;
 const LIBRARY_ARTISTS_PATH = "/v1/me/library/artists";
+const LIBRARY_ALBUMS_PATH = "/v1/me/library/albums";
 const PAGE_SIZE = 100;
 
 export type ArtistPictures = Record<string, Artwork>;
@@ -67,28 +69,12 @@ export function withPictures(
 }
 
 export async function fetchArtistPictures(): Promise<ArtistPictures> {
-  const items = await fetchLibraryArtistsFrom(0);
+  const items = await fetchEveryPage(LIBRARY_ARTISTS_PATH, { include: "catalog" }, PAGE_SIZE);
 
   return readPictures(items, (attributes, relationships) => ({
     name: attributes.name,
     artwork: firstArtwork(relationships, "catalog"),
   }));
-}
-
-async function fetchLibraryArtistsFrom(offset: number): Promise<unknown[]> {
-  const music = await getMusicKit();
-  const { data } = await music.api.music(LIBRARY_ARTISTS_PATH, {
-    include: "catalog",
-    limit: PAGE_SIZE,
-    offset,
-  });
-  const items = readItems(data);
-
-  if (!hasNextPage(data) || items.length < PAGE_SIZE) {
-    return items;
-  }
-
-  return [...items, ...(await fetchLibraryArtistsFrom(offset + PAGE_SIZE))];
 }
 
 export async function fetchCatalogArtistPictures(
@@ -115,15 +101,12 @@ function readPictures(
   const pictures: ArtistPictures = {};
 
   for (const item of items) {
-    if (typeof item !== "object" || item === null) {
+    if (!isRecord(item)) {
       continue;
     }
 
-    const { attributes, relationships } = item as {
-      attributes?: Record<string, unknown>;
-      relationships?: unknown;
-    };
-    const { name, artwork } = read(attributes ?? {}, relationships);
+    const attributes = isRecord(item.attributes) ? item.attributes : {};
+    const { name, artwork } = read(attributes, item.relationships);
 
     if (typeof name === "string" && artwork && !Object.hasOwn(pictures, name)) {
       pictures[name] = artwork;
@@ -135,7 +118,9 @@ function readPictures(
 
 function firstArtwork(relationships: unknown, name: string): Artwork | undefined {
   const [first] = readRelated(relationships, name, (value) =>
-    readArtwork((value as { attributes?: { artwork?: unknown } } | null)?.attributes?.artwork),
+    isRecord(value) && isRecord(value.attributes)
+      ? readArtwork(value.attributes.artwork)
+      : undefined,
   );
 
   return first;
@@ -159,38 +144,35 @@ export function albumsOfArtist(albums: LibraryAlbum[], name: string): LibraryAlb
   return albums.filter((album) => album.artist?.name === name);
 }
 
-export function pickArtistId(artists: { id?: string; name: string }[], name: string): string {
+export function pickArtistId(
+  artists: { id?: string; name: string }[],
+  name: string,
+): string | undefined {
   const found = artists.find((artist) => artist.name === name) ?? artists[0];
 
-  return found?.id ?? "";
+  return found?.id;
 }
 
 export async function fetchCatalogArtistId(
   album: Pick<LibraryAlbum, "type" | "id">,
   name: string,
-): Promise<string> {
+): Promise<string | null> {
   const music = await getMusicKit();
 
   try {
-    const path = await catalogAlbumPath(album);
+    const path =
+      album.type === "library-albums"
+        ? `${LIBRARY_ALBUMS_PATH}/${encodeURIComponent(album.id)}/catalog`
+        : await catalogPath("albums", album.id);
     const { data } = await music.api.music(path, { include: "artists" });
     const [first] = readItems(data);
-    const relationships = (first as { relationships?: unknown } | undefined)?.relationships;
 
-    return pickArtistId(readRelated(relationships, "artists", readArtistRef), name);
+    return (
+      pickArtistId(readRelated(readRelationships(first), "artists", readArtistRef), name) ?? null
+    );
   } catch {
-    return "";
+    return null;
   }
-}
-
-async function catalogAlbumPath({ type, id }: Pick<LibraryAlbum, "type" | "id">): Promise<string> {
-  if (type === "library-albums") {
-    return `/v1/me/library/albums/${encodeURIComponent(id)}/catalog`;
-  }
-
-  const storefront = await fetchStorefront();
-
-  return `/v1/catalog/${storefront.id}/albums/${encodeURIComponent(id)}`;
 }
 
 export function catalogArtistIdQuery(album: LibraryAlbum | undefined, name: string) {

@@ -1,3 +1,5 @@
+import { isRecord } from "@/lib/is-record";
+
 const CROP = "bb";
 const FORMAT = "jpg";
 
@@ -20,6 +22,14 @@ export interface Artwork {
   textColor3?: string;
   textColor4?: string;
   mosaic?: Artwork[];
+}
+
+export interface Resource {
+  id: string;
+  name: string;
+  attributes: Record<string, unknown>;
+  relationships?: unknown;
+  views?: unknown;
 }
 
 export const MOSAIC_SIZE = 4;
@@ -53,22 +63,36 @@ export function artworkColors(artwork?: Artwork): string[] {
   ].filter((color) => color !== undefined);
 }
 
-export function readItems(data: unknown): unknown[] {
-  if (typeof data !== "object" || data === null || !("data" in data)) {
-    return [];
+export function readResource(value: unknown): Resource | undefined {
+  if (!isRecord(value) || typeof value.id !== "string" || !isRecord(value.attributes)) {
+    return undefined;
   }
 
-  const items = (data as { data: unknown }).data;
+  const { name } = value.attributes;
 
-  return Array.isArray(items) ? items : [];
+  if (typeof name !== "string") {
+    return undefined;
+  }
+
+  return {
+    id: value.id,
+    name,
+    attributes: value.attributes,
+    relationships: value.relationships,
+    views: value.views,
+  };
+}
+
+export function readRelationships(value: unknown): unknown {
+  return isRecord(value) ? value.relationships : undefined;
+}
+
+export function readItems(data: unknown): unknown[] {
+  return isRecord(data) && Array.isArray(data.data) ? data.data : [];
 }
 
 export function hasNextPage(data: unknown): boolean {
-  if (typeof data !== "object" || data === null) {
-    return false;
-  }
-
-  return typeof (data as { next?: unknown }).next === "string";
+  return isRecord(data) && typeof data.next === "string";
 }
 
 export function readArtist(value: unknown): Artist | undefined {
@@ -76,18 +100,9 @@ export function readArtist(value: unknown): Artist | undefined {
 }
 
 export function readArtistRef(value: unknown): Artist | undefined {
-  if (typeof value !== "object" || value === null) {
-    return undefined;
-  }
+  const resource = readResource(value);
 
-  const candidate = value as { id?: unknown; attributes?: Record<string, unknown> };
-  const name = candidate.attributes?.name;
-
-  if (typeof candidate.id !== "string" || typeof name !== "string") {
-    return undefined;
-  }
-
-  return { id: candidate.id, name };
+  return resource && { id: resource.id, name: resource.name };
 }
 
 export function readCurator(value: unknown): Curator | undefined {
@@ -99,38 +114,24 @@ function readName(value: unknown): { name: string } | undefined {
 }
 
 export function readArtwork(value: unknown): Artwork | undefined {
-  if (typeof value !== "object" || value === null) {
-    return undefined;
-  }
-
-  const candidate = value as {
-    url?: unknown;
-    width?: unknown;
-    height?: unknown;
-    bgColor?: unknown;
-    textColor1?: unknown;
-    textColor2?: unknown;
-    textColor3?: unknown;
-    textColor4?: unknown;
-  };
-
   if (
-    typeof candidate.url !== "string" ||
-    typeof candidate.width !== "number" ||
-    typeof candidate.height !== "number"
+    !isRecord(value) ||
+    typeof value.url !== "string" ||
+    typeof value.width !== "number" ||
+    typeof value.height !== "number"
   ) {
     return undefined;
   }
 
   return {
-    url: candidate.url,
-    width: candidate.width,
-    height: candidate.height,
-    bgColor: readColor(candidate.bgColor),
-    textColor1: readColor(candidate.textColor1),
-    textColor2: readColor(candidate.textColor2),
-    textColor3: readColor(candidate.textColor3),
-    textColor4: readColor(candidate.textColor4),
+    url: value.url,
+    width: value.width,
+    height: value.height,
+    bgColor: readColor(value.bgColor),
+    textColor1: readColor(value.textColor1),
+    textColor2: readColor(value.textColor2),
+    textColor3: readColor(value.textColor3),
+    textColor4: readColor(value.textColor4),
   };
 }
 
@@ -157,13 +158,11 @@ export function readNumber(value: unknown): number | undefined {
 }
 
 export function readStandard(value: unknown): string | undefined {
-  if (typeof value !== "object" || value === null) {
-    return undefined;
-  }
+  return isRecord(value) ? (readText(value.standard) ?? readText(value.short)) : undefined;
+}
 
-  const { standard, short } = value as { standard?: unknown; short?: unknown };
-
-  return readText(standard) ?? readText(short);
+export function readGenres(value: unknown): string[] {
+  return Array.isArray(value) ? value.filter((genre) => typeof genre === "string") : [];
 }
 
 export function readRelated<T>(
@@ -171,19 +170,11 @@ export function readRelated<T>(
   name: string,
   read: (value: unknown) => T | undefined,
 ): T[] {
-  if (typeof relationships !== "object" || relationships === null) {
+  if (!isRecord(relationships)) {
     return [];
   }
 
-  const related: T[] = [];
-
-  for (const item of readItems((relationships as Record<string, unknown>)[name])) {
-    const parsed = read(item);
-
-    if (parsed) {
-      related.push(parsed);
-    }
-  }
-
-  return related;
+  return readItems(relationships[name])
+    .map(read)
+    .filter((item) => item !== undefined);
 }

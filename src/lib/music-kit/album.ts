@@ -1,21 +1,23 @@
 import { queryOptions } from "@tanstack/react-query";
 import { DEMO_LIBRARY } from "@/lib/demo/library";
 import { demoQueryKey, readDemoMode } from "@/lib/demo/mode";
+import { isRecord } from "@/lib/is-record";
+import { catalogPath, fetchEveryPage } from "@/lib/music-kit/api";
 import { fetchCatalogResources } from "@/lib/music-kit/catalog-resources";
 import { getMusicKit } from "@/lib/music-kit/instance";
 import {
   type Artist,
   type Artwork,
-  hasNextPage,
   readArtist,
   readArtwork,
+  readGenres,
   readItems,
   readNumber,
   readRelated,
+  readResource,
   readStandard,
   readText,
 } from "@/lib/music-kit/resource";
-import { fetchStorefront } from "@/lib/music-kit/storefront";
 import { isSameSong, readSong, type Song } from "@/lib/music-kit/track";
 
 const TYPES = ["albums", "library-albums"] as const;
@@ -155,36 +157,17 @@ async function fetchCatalogAlbum(id: string): Promise<Album | undefined> {
 }
 
 async function albumPath(type: AlbumType, id: string): Promise<string> {
-  if (type === "library-albums") {
-    return `${LIBRARY_PATH}/${encodeURIComponent(id)}`;
-  }
-
-  const storefront = await fetchStorefront();
-
-  return `/v1/catalog/${storefront.id}/albums/${encodeURIComponent(id)}`;
+  return type === "library-albums"
+    ? `${LIBRARY_PATH}/${encodeURIComponent(id)}`
+    : catalogPath("albums", id);
 }
 
 export async function fetchLibraryAlbums(): Promise<LibraryAlbum[]> {
-  const music = await getMusicKit();
-  const albums: LibraryAlbum[] = [];
+  const items = await fetchEveryPage(LIBRARY_PATH, {}, PAGE_SIZE);
 
-  for (let offset = 0; ; offset += PAGE_SIZE) {
-    // oxlint-disable-next-line no-await-in-loop
-    const { data } = await music.api.music(LIBRARY_PATH, { limit: PAGE_SIZE, offset });
-    const items = readItems(data);
-
-    for (const item of items) {
-      const album = readLibraryAlbum("library-albums", item);
-
-      if (album) {
-        albums.push(album);
-      }
-    }
-
-    if (!hasNextPage(data) || items.length < PAGE_SIZE) {
-      return albums;
-    }
-  }
+  return items
+    .map((item) => readLibraryAlbum("library-albums", item))
+    .filter((album) => album !== undefined);
 }
 
 export async function fetchCatalogAlbums(ids: readonly string[]): Promise<LibraryAlbum[]> {
@@ -196,21 +179,18 @@ export async function fetchCatalogAlbums(ids: readonly string[]): Promise<Librar
 }
 
 function readLibraryAlbum(type: AlbumType, value: unknown): LibraryAlbum | undefined {
-  if (typeof value !== "object" || value === null) {
+  const resource = readResource(value);
+
+  if (!resource) {
     return undefined;
   }
 
-  const candidate = value as { id?: unknown; attributes?: Record<string, unknown> };
-  const attributes = candidate.attributes;
-
-  if (typeof candidate.id !== "string" || typeof attributes?.name !== "string") {
-    return undefined;
-  }
+  const { attributes } = resource;
 
   return {
-    id: candidate.id,
+    id: resource.id,
     type,
-    name: attributes.name,
+    name: resource.name,
     artist: readArtist(attributes.artistName),
     artwork: readArtwork(attributes.artwork),
     catalogId: readCatalogId(attributes.playParams),
@@ -218,33 +198,22 @@ function readLibraryAlbum(type: AlbumType, value: unknown): LibraryAlbum | undef
 }
 
 function readCatalogId(value: unknown): string | undefined {
-  if (typeof value !== "object" || value === null) {
-    return undefined;
-  }
-
-  return readText((value as { catalogId?: unknown }).catalogId);
+  return isRecord(value) ? readText(value.catalogId) : undefined;
 }
 
 function readAlbum(type: AlbumType, value: unknown): Album | undefined {
-  if (typeof value !== "object" || value === null) {
+  const resource = readResource(value);
+
+  if (!resource) {
     return undefined;
   }
 
-  const candidate = value as {
-    id?: unknown;
-    attributes?: Record<string, unknown>;
-    relationships?: unknown;
-  };
-  const attributes = candidate.attributes;
-
-  if (typeof candidate.id !== "string" || typeof attributes?.name !== "string") {
-    return undefined;
-  }
+  const { attributes, relationships } = resource;
 
   return {
-    id: candidate.id,
+    id: resource.id,
     type,
-    name: attributes.name,
+    name: resource.name,
     artist: readArtist(attributes.artistName),
     artwork: readArtwork(attributes.artwork),
     releaseDate: readText(attributes.releaseDate),
@@ -255,32 +224,21 @@ function readAlbum(type: AlbumType, value: unknown): Album | undefined {
     notes: readStandard(attributes.editorialNotes),
     isComplete: attributes.isComplete === true,
     isSingle: attributes.isSingle === true,
-    artists: readRelated(candidate.relationships, "artists", readAlbumArtist),
-    songs: readRelated(candidate.relationships, "tracks", readSong),
+    artists: readRelated(relationships, "artists", readAlbumArtist),
+    songs: readRelated(relationships, "tracks", readSong),
   };
 }
 
 function readAlbumArtist(value: unknown): AlbumArtist | undefined {
-  if (typeof value !== "object" || value === null) {
-    return undefined;
-  }
+  const resource = readResource(value);
 
-  const candidate = value as { id?: unknown; attributes?: Record<string, unknown> };
-  const attributes = candidate.attributes;
-
-  if (typeof candidate.id !== "string" || typeof attributes?.name !== "string") {
-    return undefined;
-  }
-
-  return {
-    id: candidate.id,
-    name: attributes.name,
-    artwork: readArtwork(attributes.artwork),
-  };
-}
-
-function readGenres(value: unknown): string[] {
-  return Array.isArray(value) ? value.filter((genre) => typeof genre === "string") : [];
+  return (
+    resource && {
+      id: resource.id,
+      name: resource.name,
+      artwork: readArtwork(resource.attributes.artwork),
+    }
+  );
 }
 
 export function libraryAlbumsQuery() {

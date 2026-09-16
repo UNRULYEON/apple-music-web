@@ -1,4 +1,6 @@
 import { queryOptions } from "@tanstack/react-query";
+import { isRecord } from "@/lib/is-record";
+import { catalogPath, fetchEveryPage } from "@/lib/music-kit/api";
 import { getMusicKit } from "@/lib/music-kit/instance";
 import {
   type Artist,
@@ -9,11 +11,13 @@ import {
   readArtistRef,
   readArtwork,
   readCurator,
+  readGenres,
   readItems,
   readRelated,
+  readRelationships,
+  readResource,
   readText,
 } from "@/lib/music-kit/resource";
-import { fetchStorefront } from "@/lib/music-kit/storefront";
 import { readSong, type Song } from "@/lib/music-kit/track";
 import { matchesSearch } from "@/lib/search";
 
@@ -69,9 +73,8 @@ export function searchPlaylists(playlists: ArtistPlaylist[], term: string): Arti
 }
 
 export async function fetchArtist(id: string): Promise<ArtistDetail> {
-  const storefront = await fetchStorefront();
+  const path = await catalogPath("artists", id);
   const music = await getMusicKit();
-  const path = `/v1/catalog/${storefront.id}/artists/${encodeURIComponent(id)}`;
   const { data } = await music.api.music(path, { views: VIEWS, ...VIEW_LIMITS });
   const [first] = readItems(data);
   const artist = readArtistDetail(await withEveryPage(path, first));
@@ -84,35 +87,24 @@ export async function fetchArtist(id: string): Promise<ArtistDetail> {
 }
 
 async function withEveryPage(path: string, artist: unknown): Promise<unknown> {
-  const views = (artist as { views?: unknown } | undefined)?.views;
-
-  if (typeof views !== "object" || views === null) {
+  if (!isRecord(artist) || !isRecord(artist.views)) {
     return artist;
   }
 
+  const views = artist.views;
   const listed = await Promise.all(
     LISTED_VIEWS.map(async (name) => {
-      const view = (views as Record<string, unknown>)[name];
+      const view = views[name];
       const items = readItems(view);
-      const rest = hasNextPage(view) ? await fetchViewFrom(path, name, items.length) : [];
+      const rest = hasNextPage(view)
+        ? await fetchEveryPage(`${path}/view/${name}`, {}, VIEW_LIMIT, { from: items.length })
+        : [];
 
       return [name, { data: [...items, ...rest] }] as const;
     }),
   );
 
-  return { ...(artist as object), views: { ...views, ...Object.fromEntries(listed) } };
-}
-
-async function fetchViewFrom(path: string, name: string, offset: number): Promise<unknown[]> {
-  const music = await getMusicKit();
-  const { data } = await music.api.music(`${path}/view/${name}`, { limit: VIEW_LIMIT, offset });
-  const items = readItems(data);
-
-  if (!hasNextPage(data) || items.length < VIEW_LIMIT) {
-    return items;
-  }
-
-  return [...items, ...(await fetchViewFrom(path, name, offset + VIEW_LIMIT))];
+  return { ...artist, views: { ...views, ...Object.fromEntries(listed) } };
 }
 
 export function artistQuery(id: string) {
@@ -124,14 +116,12 @@ export function artistQuery(id: string) {
 }
 
 export async function fetchSongArtists(id: string): Promise<Artist[]> {
-  const storefront = await fetchStorefront();
+  const path = await catalogPath("songs", id);
   const music = await getMusicKit();
-  const path = `/v1/catalog/${storefront.id}/songs/${encodeURIComponent(id)}`;
   const { data } = await music.api.music(path, { include: "artists" });
   const [first] = readItems(data);
-  const relationships = (first as { relationships?: unknown } | undefined)?.relationships;
 
-  return readRelated(relationships, "artists", readArtistRef);
+  return readRelated(readRelationships(first), "artists", readArtistRef);
 }
 
 export function songArtistsQuery(id?: string) {
@@ -144,76 +134,51 @@ export function songArtistsQuery(id?: string) {
 }
 
 function readArtistDetail(value: unknown): ArtistDetail | undefined {
-  if (typeof value !== "object" || value === null) {
+  const resource = readResource(value);
+
+  if (!resource) {
     return undefined;
   }
 
-  const candidate = value as {
-    id?: unknown;
-    attributes?: Record<string, unknown>;
-    views?: unknown;
-  };
-  const attributes = candidate.attributes;
-
-  if (typeof candidate.id !== "string" || typeof attributes?.name !== "string") {
-    return undefined;
-  }
+  const { attributes, views } = resource;
 
   return {
-    id: candidate.id,
-    name: attributes.name,
+    id: resource.id,
+    name: resource.name,
     artwork: readArtwork(attributes.artwork),
     genres: readGenres(attributes.genreNames),
-    topSongs: readRelated(candidate.views, "top-songs", readSong),
-    albums: readRelated(candidate.views, "full-albums", readArtistAlbum),
-    singles: readRelated(candidate.views, "singles", readArtistAlbum),
-    playlists: readRelated(candidate.views, "featured-playlists", readArtistPlaylist),
-    compilations: readRelated(candidate.views, "compilation-albums", readArtistAlbum),
-    appearsOn: readRelated(candidate.views, "appears-on-albums", readArtistAlbum),
+    topSongs: readRelated(views, "top-songs", readSong),
+    albums: readRelated(views, "full-albums", readArtistAlbum),
+    singles: readRelated(views, "singles", readArtistAlbum),
+    playlists: readRelated(views, "featured-playlists", readArtistPlaylist),
+    compilations: readRelated(views, "compilation-albums", readArtistAlbum),
+    appearsOn: readRelated(views, "appears-on-albums", readArtistAlbum),
   };
 }
 
 function readArtistAlbum(value: unknown): ArtistAlbum | undefined {
-  if (typeof value !== "object" || value === null) {
-    return undefined;
-  }
+  const resource = readResource(value);
 
-  const candidate = value as { id?: unknown; attributes?: Record<string, unknown> };
-  const attributes = candidate.attributes;
-
-  if (typeof candidate.id !== "string" || typeof attributes?.name !== "string") {
-    return undefined;
-  }
-
-  return {
-    id: candidate.id,
-    name: attributes.name,
-    artist: readArtist(attributes.artistName),
-    artwork: readArtwork(attributes.artwork),
-    releaseDate: readText(attributes.releaseDate),
-  };
+  return (
+    resource && {
+      id: resource.id,
+      name: resource.name,
+      artist: readArtist(resource.attributes.artistName),
+      artwork: readArtwork(resource.attributes.artwork),
+      releaseDate: readText(resource.attributes.releaseDate),
+    }
+  );
 }
 
 function readArtistPlaylist(value: unknown): ArtistPlaylist | undefined {
-  if (typeof value !== "object" || value === null) {
-    return undefined;
-  }
+  const resource = readResource(value);
 
-  const candidate = value as { id?: unknown; attributes?: Record<string, unknown> };
-  const attributes = candidate.attributes;
-
-  if (typeof candidate.id !== "string" || typeof attributes?.name !== "string") {
-    return undefined;
-  }
-
-  return {
-    id: candidate.id,
-    name: attributes.name,
-    curator: readCurator(attributes.curatorName),
-    artwork: readArtwork(attributes.artwork),
-  };
-}
-
-function readGenres(value: unknown): string[] {
-  return Array.isArray(value) ? value.filter((genre) => typeof genre === "string") : [];
+  return (
+    resource && {
+      id: resource.id,
+      name: resource.name,
+      curator: readCurator(resource.attributes.curatorName),
+      artwork: readArtwork(resource.attributes.artwork),
+    }
+  );
 }
