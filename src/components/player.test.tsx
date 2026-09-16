@@ -19,6 +19,7 @@ import {
   stubMusicKit,
   stubMusicKitGlobals,
 } from "@/test/fake-music-kit";
+import { stubSliderLayout } from "@/test/stub-slider-layout";
 import { stubViewport } from "@/test/stub-viewport";
 import { Player } from "./player";
 
@@ -80,6 +81,7 @@ beforeEach(() => {
   resetPlayerState();
   resetPlaybackTime();
   stubViewport({ mobile: false, prefersReducedMotion: true });
+  stubSliderLayout();
   stubMusicKitGlobals();
   music = fakeMusicKit();
   stubMusicKit(music);
@@ -89,6 +91,7 @@ afterEach(() => {
   cleanup();
   act(() => setAuthStatus("checking"));
   vi.clearAllMocks();
+  vi.restoreAllMocks();
   vi.unstubAllGlobals();
 });
 
@@ -265,8 +268,12 @@ describe("Player", () => {
     music.capabilities.canSkipToPreviousItem = false;
     loadQueue([item("1", "First")]);
 
-    expect(screen.getByLabelText<HTMLButtonElement>("Next song").disabled).toBe(true);
-    expect(screen.getByLabelText<HTMLButtonElement>("Previous song").disabled).toBe(true);
+    expect(screen.getByRole<HTMLButtonElement>("button", { name: "Next song" }).disabled).toBe(
+      true,
+    );
+    expect(screen.getByRole<HTMLButtonElement>("button", { name: "Previous song" }).disabled).toBe(
+      true,
+    );
   });
 
   it("turns them on again when MusicKit allows a skip", async () => {
@@ -274,7 +281,9 @@ describe("Player", () => {
 
     loadQueue([item("1", "First"), item("2", "Second")]);
 
-    expect(screen.getByLabelText<HTMLButtonElement>("Next song").disabled).toBe(false);
+    expect(screen.getByRole<HTMLButtonElement>("button", { name: "Next song" }).disabled).toBe(
+      false,
+    );
   });
 
   it("never shows a play icon on the way to a new song", async () => {
@@ -381,7 +390,7 @@ describe("Player", () => {
     await waitForSeekBar();
     setTime(42, 210);
 
-    fireEvent.keyDown(screen.getByLabelText("Seek"), { key: "PageUp" });
+    fireEvent.keyDown(screen.getByRole("slider", { name: "Seek" }), { key: "PageUp" });
     expect(elapsed()).toBe("0:57");
 
     music.nowPlayingItemIndex = 1;
@@ -423,7 +432,7 @@ describe("Player", () => {
     await waitForSeekBar();
     setTime(42, 210);
 
-    fireEvent.keyDown(screen.getByLabelText("Seek"), { key: "ArrowRight" });
+    fireEvent.keyDown(screen.getByRole("slider", { name: "Seek" }), { key: "ArrowRight" });
 
     await waitFor(() => expect(music.seekToTime).toHaveBeenCalledWith(43));
   });
@@ -435,7 +444,7 @@ describe("Player", () => {
     await waitForSeekBar();
     setTime(42, 210);
 
-    fireEvent.keyDown(screen.getByLabelText("Seek"), { key: "PageUp" });
+    fireEvent.keyDown(screen.getByRole("slider", { name: "Seek" }), { key: "PageUp" });
 
     expect(elapsed()).toBe("0:57");
 
@@ -452,7 +461,7 @@ describe("Player", () => {
     loadQueue([item("1", "First")]);
     await waitForSeekBar();
 
-    expect(screen.getByLabelText<HTMLInputElement>("Seek").disabled).toBe(true);
+    expect(screen.getByRole<HTMLInputElement>("slider", { name: "Seek" }).disabled).toBe(true);
   });
 
   it("keeps every control and the queue on a wide viewport", async () => {
@@ -502,7 +511,7 @@ describe("Player", () => {
 
     expect(screen.getByText("First")).toBeTruthy();
     expect(screen.getByText("The Band")).toBeTruthy();
-    expect(screen.queryByLabelText("Seek")).toBeNull();
+    expect(screen.queryByRole("slider", { name: "Seek", hidden: true })).toBeNull();
   });
 
   it("goes away when a person signs out", async () => {

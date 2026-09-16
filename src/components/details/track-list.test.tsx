@@ -116,7 +116,7 @@ describe("TrackList", () => {
       ],
     });
 
-    expect(screen.getAllByLabelText("Explicit")).toHaveLength(1);
+    expect(screen.getAllByRole("img", { name: "Explicit" })).toHaveLength(1);
   });
 
   it("names each disc of an album that has more than one", () => {
