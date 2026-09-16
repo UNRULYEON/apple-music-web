@@ -102,7 +102,7 @@ string is therefore a full sign out for this browser.
 | Key                                | Who writes it | What is in it                       |
 | ---------------------------------- | ------------- | ----------------------------------- |
 | `music.<team id>.media-user-token` | MusicKit      | The live Music User Token           |
-| `music-kit-devtools.saved-token`   | This panel    | The copy, with the date it was made |
+| `apple-music-web.devtools-token`   | This panel    | The copy, with the date it was made |
 
 MusicKit builds its own key from your Apple Team ID, in lower case. It also keeps
 `music.<team id>.itua` for the storefront country.

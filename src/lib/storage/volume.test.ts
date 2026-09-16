@@ -1,9 +1,10 @@
 // @vitest-environment happy-dom
 
 import { afterEach, describe, expect, it } from "vitest";
+import { STORAGE_KEYS } from "@/lib/storage/keys";
 import { forgetStoredVolume, readStoredVolume, writeStoredVolume } from "@/lib/storage/volume";
 
-const KEY = "volume";
+const KEY = STORAGE_KEYS.volume;
 
 afterEach(() => {
   localStorage.clear();

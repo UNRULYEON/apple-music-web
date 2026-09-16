@@ -1,9 +1,10 @@
 import { isRecord } from "@/lib/is-record";
 import { setAuthStatus } from "@/lib/music-kit/auth";
 import { getMusicKit } from "@/lib/music-kit/instance";
+import { STORAGE_KEYS } from "@/lib/storage/keys";
 import { readStorage, removeStorage, writeStorage } from "@/lib/storage/local";
 
-const SAVED_KEY = "music-kit-devtools.saved-token";
+const STORAGE_KEY = STORAGE_KEYS.devtoolsToken;
 
 interface SavedToken {
   token: string;
@@ -22,7 +23,7 @@ export async function keepSession(): Promise<boolean> {
   }
 
   const saved: SavedToken = { savedAt: new Date().toISOString(), token };
-  writeStorage(SAVED_KEY, JSON.stringify(saved));
+  writeStorage(STORAGE_KEY, JSON.stringify(saved));
 
   return true;
 }
@@ -38,7 +39,7 @@ export async function restoreToken(): Promise<boolean> {
 }
 
 export function forgetSession(): void {
-  removeStorage(SAVED_KEY);
+  removeStorage(STORAGE_KEY);
 }
 
 async function setToken(token: string): Promise<boolean> {
@@ -58,7 +59,7 @@ async function fetchLiveToken(): Promise<string | undefined> {
 }
 
 function readSaved(): SavedToken | undefined {
-  const raw = readStorage(SAVED_KEY);
+  const raw = readStorage(STORAGE_KEY);
 
   if (!raw) {
     return undefined;

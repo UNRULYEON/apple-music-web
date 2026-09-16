@@ -1,6 +1,7 @@
+import { STORAGE_KEYS } from "@/lib/storage/keys";
 import { readStorage, removeStorage, writeStorage } from "@/lib/storage/local";
 
-const STORAGE_KEY = "volume";
+const STORAGE_KEY = STORAGE_KEYS.volume;
 
 export function readStoredVolume(): number | undefined {
   const stored = readStorage(STORAGE_KEY);

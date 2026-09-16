@@ -5,6 +5,7 @@ import { readDemoMode, setDemoMode, subscribeToDemoMode } from "@/lib/demo/mode"
 import { libraryAlbumsQuery } from "@/lib/music-kit/album";
 import { libraryPlaylistsQuery } from "@/lib/music-kit/playlists";
 import { recentlyPlayedQuery } from "@/lib/music-kit/recently-played";
+import { STORAGE_KEYS } from "@/lib/storage/keys";
 
 afterEach(() => {
   setDemoMode(false);
@@ -18,10 +19,10 @@ describe("setDemoMode", () => {
 
   it("keeps the choice in the browser", () => {
     setDemoMode(true);
-    expect(localStorage.getItem("demo-mode")).toBe("true");
+    expect(localStorage.getItem(STORAGE_KEYS.demoMode)).toBe("true");
 
     setDemoMode(false);
-    expect(localStorage.getItem("demo-mode")).toBeNull();
+    expect(localStorage.getItem(STORAGE_KEYS.demoMode)).toBeNull();
   });
 
   it("tells a listener only when the mode changes", () => {

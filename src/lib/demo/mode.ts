@@ -1,8 +1,9 @@
 import type { QueryClient } from "@tanstack/react-query";
 import { createListeners } from "@/lib/listeners";
+import { STORAGE_KEYS } from "@/lib/storage/keys";
 import { readStorage, removeStorage, writeStorage } from "@/lib/storage/local";
 
-const STORAGE_KEY = "demo-mode";
+const STORAGE_KEY = STORAGE_KEYS.demoMode;
 
 const DEMO_QUERY_KEY = ["music-kit", "demo"];
 

@@ -31,6 +31,7 @@ import type { RouterContext } from "@/integrations/tanstack-query/root-provider"
 import { BAR_INSET } from "@/lib/layout";
 import { PRE_HYDRATION_SCRIPT as NODE_SHIM_SCRIPT } from "@/lib/music-kit/node-shim";
 import { SCROLL_AREA_ID } from "@/lib/scroll-area";
+import { MIGRATION_SCRIPT } from "@/lib/storage/keys";
 import { PRE_HYDRATION_SCRIPT as SIDEBAR_SCRIPT } from "@/lib/storage/sidebar";
 import { PRE_HYDRATION_SCRIPT as THEME_SCRIPT } from "@/lib/storage/theme";
 import { cn } from "@/lib/utils";
@@ -102,6 +103,9 @@ export const Route = createRootRouteWithContext<RouterContext>()({
       },
     ],
     scripts: [
+      {
+        children: MIGRATION_SCRIPT,
+      },
       {
         children: THEME_SCRIPT,
       },

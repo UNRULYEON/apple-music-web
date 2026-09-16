@@ -3,6 +3,7 @@
 import { act, cleanup, render } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { useTheme } from "@/hooks";
+import { STORAGE_KEYS } from "@/lib/storage/keys";
 import { PRE_HYDRATION_SCRIPT, type Theme } from "@/lib/storage/theme";
 import { stubMatchMedia } from "@/test/stub-viewport";
 import { ThemeProvider } from "./theme-context";
@@ -42,7 +43,7 @@ function renderProvider() {
 
 describe("PRE_HYDRATION_SCRIPT", () => {
   it("marks a stored dark theme before the first paint", () => {
-    localStorage.setItem("theme", "dark");
+    localStorage.setItem(STORAGE_KEYS.theme, "dark");
     setPrefersDark(false);
 
     runPreHydrationScript();
@@ -51,7 +52,7 @@ describe("PRE_HYDRATION_SCRIPT", () => {
   });
 
   it("keeps a stored light theme against a dark system", () => {
-    localStorage.setItem("theme", "light");
+    localStorage.setItem(STORAGE_KEYS.theme, "light");
     setPrefersDark(true);
 
     runPreHydrationScript();
@@ -76,14 +77,14 @@ describe("ThemeProvider", () => {
   });
 
   it("selects the stored theme on the first render", () => {
-    localStorage.setItem("theme", "dark");
+    localStorage.setItem(STORAGE_KEYS.theme, "dark");
     setPrefersDark(false);
 
     expect(renderProvider().current?.theme).toBe("dark");
   });
 
   it("hydrates with the system theme, which is what the server rendered", () => {
-    localStorage.setItem("theme", "dark");
+    localStorage.setItem(STORAGE_KEYS.theme, "dark");
     setPrefersDark(false);
 
     const renders: Theme[] = [];
@@ -105,7 +106,7 @@ describe("ThemeProvider", () => {
   });
 
   it("leaves the first paint to the pre-hydration script", () => {
-    localStorage.setItem("theme", "light");
+    localStorage.setItem(STORAGE_KEYS.theme, "light");
     setPrefersDark(true);
 
     renderProvider();
@@ -120,13 +121,13 @@ describe("ThemeProvider", () => {
     act(() => seen.current?.setTheme("dark"));
 
     expect(seen.current?.theme).toBe("dark");
-    expect(localStorage.getItem("theme")).toBe("dark");
+    expect(localStorage.getItem(STORAGE_KEYS.theme)).toBe("dark");
     expect(document.documentElement.classList.contains("dark")).toBe(true);
     expect(document.documentElement.style.colorScheme).toBe("dark");
   });
 
   it("follows the system preference for the system theme", () => {
-    localStorage.setItem("theme", "light");
+    localStorage.setItem(STORAGE_KEYS.theme, "light");
     setPrefersDark(true);
     const seen = renderProvider();
 

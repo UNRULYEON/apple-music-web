@@ -1,8 +1,9 @@
 import { isRecord } from "@/lib/is-record";
 import type { QueueSource } from "@/lib/music-kit/playback";
+import { STORAGE_KEYS } from "@/lib/storage/keys";
 import { readStorage, removeStorage, writeStorage } from "@/lib/storage/local";
 
-const STORAGE_KEY = "now-playing";
+const STORAGE_KEY = STORAGE_KEYS.nowPlaying;
 
 export interface StoredQueue {
   songs: string[];
