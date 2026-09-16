@@ -1,14 +1,14 @@
-import { DetailsFooter } from "@/components/details/details-footer";
-import { DetailsHeader } from "@/components/details/details-header";
-import { DetailsShell } from "@/components/details/details-shell";
-import { HiddenItems } from "@/components/details/hidden-items";
-import { TrackList } from "@/components/details/track-list";
+import { useMemo } from "react";
 import { EmptyStates } from "@/components/empty-states";
-import { relativeDate } from "@/lib/format";
 import { useSearch, useSignedInQuery } from "@/hooks";
+import { relativeDate } from "@/lib/format";
 import { fetchPlaylist, type PlaylistType } from "@/lib/music-kit/playlists";
 import { searchSongs } from "@/lib/music-kit/track";
-import { useMemo } from "react";
+import { DetailsFooter } from "./details-footer";
+import { DetailsHeader } from "./details-header";
+import { DetailsShell } from "./details-shell";
+import { HiddenItems } from "./hidden-items";
+import { TrackList } from "./track-list";
 
 export function PlaylistDetails({ type, id }: { type: PlaylistType; id: string }) {
   const { data: playlist, isPending } = useSignedInQuery({

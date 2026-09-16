@@ -1,5 +1,5 @@
-import { insistOnBrowser, preHydrationScript, withoutNodeMark } from "@/lib/music-kit/node-shim";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { insistOnBrowser, preHydrationScript, withoutNodeMark } from "@/lib/music-kit/node-shim";
 
 afterEach(() => {
   vi.unstubAllGlobals();

@@ -1,7 +1,7 @@
-import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { relativeDate, totalDuration, releaseYear, songDuration } from "@/lib/format";
-import type { Song } from "@/lib/music-kit/track";
 import { intlFormat, parseISO } from "date-fns";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { relativeDate, releaseYear, songDuration, totalDuration } from "@/lib/format";
+import type { Song } from "@/lib/music-kit/track";
 
 function song(durationInMillis?: number): Song {
   return { id: "1", name: "Forecast", durationInMillis };

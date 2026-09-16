@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { parseEvents } from "./parse-events.ts";
+import { parseEvents } from "./parse-events";
 
 describe("parseEvents", () => {
   it("reads a block of events and drops workflow_call", () => {

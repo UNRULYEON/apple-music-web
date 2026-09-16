@@ -1,17 +1,17 @@
-// @vitest-environment happy-dom
-import { MainContent } from "@/components/main-content";
-import { PLAYER_SPACE } from "@/components/player";
+import { act, cleanup, render, screen, waitFor } from "@testing-library/react";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { PlayerProvider } from "@/contexts";
 import {
   fakeMusicKit,
+  type FakeMusicKit,
   songItem,
   stubMusicKitGlobals,
-  type FakeMusicKit,
 } from "@/lib/music-kit/fake-music-kit";
 import { getMusicKit } from "@/lib/music-kit/instance";
 import { resetPlayerState } from "@/lib/music-kit/player-state";
-import { act, cleanup, render, screen, waitFor } from "@testing-library/react";
-import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+// @vitest-environment happy-dom
+import { MainContent } from "./main-content";
+import { PLAYER_SPACE } from "./player";
 
 vi.mock("@/lib/music-kit/instance", () => ({ getMusicKit: vi.fn() }));
 

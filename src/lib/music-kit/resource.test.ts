@@ -1,11 +1,11 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 import {
+  type Artwork,
   artworkUrl,
   mosaicArtwork,
   readArtist,
   readArtwork,
   readCurator,
-  type Artwork,
 } from "@/lib/music-kit/resource";
 
 function artwork(overrides: Partial<Artwork> = {}): Artwork {

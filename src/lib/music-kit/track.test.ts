@@ -1,3 +1,4 @@
+import { describe, expect, it } from "vitest";
 import {
   discStarts,
   isExplicit,
@@ -6,7 +7,6 @@ import {
   searchSongs,
   type Song,
 } from "@/lib/music-kit/track";
-import { describe, expect, it } from "vitest";
 
 describe("isSameSong", () => {
   it("holds a song against itself", () => {

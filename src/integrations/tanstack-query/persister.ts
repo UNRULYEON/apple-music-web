@@ -1,6 +1,6 @@
-import { readAuthStatus } from "@/lib/music-kit/auth";
-import { removeOldestQuery, type Persister } from "@tanstack/query-persist-client-core";
 import { createAsyncStoragePersister } from "@tanstack/query-async-storage-persister";
+import { type Persister, removeOldestQuery } from "@tanstack/query-persist-client-core";
+import { readAuthStatus } from "@/lib/music-kit/auth";
 
 const KEY = "apple-music-web.cache";
 

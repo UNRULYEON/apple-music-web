@@ -3,6 +3,8 @@ import { demoQueryKey, readDemoMode } from "@/lib/demo/mode";
 import { fetchCatalogResources } from "@/lib/music-kit/catalog-resources";
 import { getMusicKit } from "@/lib/music-kit/instance";
 import {
+  type Artist,
+  type Artwork,
   hasNextPage,
   readArtist,
   readArtwork,
@@ -11,11 +13,9 @@ import {
   readRelated,
   readStandard,
   readText,
-  type Artist,
-  type Artwork,
 } from "@/lib/music-kit/resource";
-import { isSameSong, readSong, type Song } from "@/lib/music-kit/track";
 import { fetchStorefront } from "@/lib/music-kit/storefront";
+import { isSameSong, readSong, type Song } from "@/lib/music-kit/track";
 
 const TYPES = ["albums", "library-albums"] as const;
 const INCLUDE = "tracks,artists";

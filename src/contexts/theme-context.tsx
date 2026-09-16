@@ -1,3 +1,12 @@
+import {
+  createContext,
+  type ReactNode,
+  useCallback,
+  useEffect,
+  useLayoutEffect,
+  useRef,
+  useSyncExternalStore,
+} from "react";
 import { useMediaQuery } from "@/hooks";
 import {
   applyTheme,
@@ -5,18 +14,9 @@ import {
   readInitialTheme,
   readStoredTheme,
   subscribeToTheme,
-  writeStoredTheme,
   type Theme,
+  writeStoredTheme,
 } from "@/lib/theme-storage";
-import {
-  createContext,
-  useCallback,
-  useEffect,
-  useLayoutEffect,
-  useRef,
-  useSyncExternalStore,
-  type ReactNode,
-} from "react";
 
 export type ThemeContextType = {
   theme: Theme;

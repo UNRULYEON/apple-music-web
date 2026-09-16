@@ -1,9 +1,9 @@
-// @vitest-environment happy-dom
-import { DrmNotice, NOTICE_DELAY } from "@/components/drm-notice";
-import { ToastProvider } from "@/components/ui/toast";
-import { NO_DRM_TITLE, hasDrm } from "@/lib/music-kit/drm";
 import { act, cleanup, render, screen } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { ToastProvider } from "@/components/ui/toast";
+import { hasDrm, NO_DRM_TITLE } from "@/lib/music-kit/drm";
+// @vitest-environment happy-dom
+import { DrmNotice, NOTICE_DELAY } from "./drm-notice";
 
 vi.mock("@/lib/music-kit/drm", async (importOriginal) => ({
   ...(await importOriginal<typeof import("@/lib/music-kit/drm")>()),

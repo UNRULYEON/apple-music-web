@@ -1,6 +1,6 @@
+import { afterEach, describe, expect, it, vi } from "vitest";
 import { getMusicKit } from "@/lib/music-kit/instance";
 import { FULL_VOLUME, readVolume, setVolume } from "@/lib/music-kit/volume";
-import { afterEach, describe, expect, it, vi } from "vitest";
 
 vi.mock("@/lib/music-kit/instance", () => ({ getMusicKit: vi.fn() }));
 

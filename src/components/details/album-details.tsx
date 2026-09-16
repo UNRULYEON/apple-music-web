@@ -1,24 +1,24 @@
-import { DetailsFooter } from "@/components/details/details-footer";
-import { DetailsHeader } from "@/components/details/details-header";
-import { LibraryMark } from "@/components/details/library-mark";
-import { ArtistLinks } from "@/components/artist-links";
-import { DetailsShell } from "@/components/details/details-shell";
-import { HiddenItems } from "@/components/details/hidden-items";
-import { TrackList } from "@/components/details/track-list";
-import { EmptyStates } from "@/components/empty-states";
-import { releaseYear } from "@/lib/format";
-import { useSearch, useSignedInQuery } from "@/hooks";
-import {
-  fetchAlbum,
-  isAlbumInLibrary,
-  libraryAlbumsQuery,
-  libraryAlbumSongsQuery,
-  markInLibrary,
-  type AlbumType,
-} from "@/lib/music-kit/album";
-import { searchSongs } from "@/lib/music-kit/track";
 import { intlFormat } from "date-fns";
 import { useMemo } from "react";
+import { ArtistLinks } from "@/components";
+import { EmptyStates } from "@/components/empty-states";
+import { useSearch, useSignedInQuery } from "@/hooks";
+import { releaseYear } from "@/lib/format";
+import {
+  type AlbumType,
+  fetchAlbum,
+  isAlbumInLibrary,
+  libraryAlbumSongsQuery,
+  libraryAlbumsQuery,
+  markInLibrary,
+} from "@/lib/music-kit/album";
+import { searchSongs } from "@/lib/music-kit/track";
+import { DetailsFooter } from "./details-footer";
+import { DetailsHeader } from "./details-header";
+import { DetailsShell } from "./details-shell";
+import { HiddenItems } from "./hidden-items";
+import { LibraryMark } from "./library-mark";
+import { TrackList } from "./track-list";
 
 export function AlbumDetails({ type, id }: { type: AlbumType; id: string }) {
   const { data: album, isPending } = useSignedInQuery({

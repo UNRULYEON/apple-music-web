@@ -1,8 +1,8 @@
-import { useIsHydrated } from "@/hooks/use-is-hydrated";
-import { startAtTop } from "@/lib/scroll-area";
-import { HOME, isTopLevel, readView, viewKey, type View } from "@/lib/views/view";
 import { useCanGoBack, useLocation, useNavigate, useRouter } from "@tanstack/react-router";
 import { useCallback } from "react";
+import { startAtTop } from "@/lib/scroll-area";
+import { HOME, isTopLevel, readView, type View, viewKey } from "@/lib/views/view";
+import { useIsHydrated } from "./use-is-hydrated";
 
 export interface ViewNavigation {
   view: View;

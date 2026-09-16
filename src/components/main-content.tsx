@@ -1,8 +1,8 @@
-import { PLAYER_SPACE } from "@/components/player";
-import { usePlayer } from "@/hooks";
-import { TRANSITION_CLOSE, TRANSITION_REVEAL } from "@/lib/motion";
 import { motion, useReducedMotion } from "motion/react";
 import type { ReactNode } from "react";
+import { usePlayer } from "@/hooks";
+import { TRANSITION_CLOSE, TRANSITION_REVEAL } from "@/lib/motion";
+import { PLAYER_SPACE } from "./player";
 
 export function MainContent({ children }: { children: ReactNode }) {
   const { nowPlaying } = usePlayer();

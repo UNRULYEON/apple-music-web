@@ -1,13 +1,15 @@
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { hasDrm, MissingDrmError } from "@/lib/music-kit/drm";
 import {
   fakeMusicKit,
+  type FakeMusicKit,
   REPEAT_MODES,
   SHUFFLE_MODES,
   stubMusicKitGlobals,
-  type FakeMusicKit,
 } from "@/lib/music-kit/fake-music-kit";
-import { hasDrm, MissingDrmError } from "@/lib/music-kit/drm";
 import { getMusicKit } from "@/lib/music-kit/instance";
 import {
+  changeToIndex,
   clearPlayback,
   describeError,
   pausePlayback,
@@ -19,11 +21,9 @@ import {
   setRepeatMode,
   setShuffleMode,
   silenceKnownRejections,
-  changeToIndex,
   subscribeToPlaybackErrors,
 } from "@/lib/music-kit/playback";
 import type { Song } from "@/lib/music-kit/track";
-import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 vi.mock("@/lib/music-kit/instance", () => ({ getMusicKit: vi.fn() }));
 vi.mock("@/lib/music-kit/drm", async (importOriginal) => ({

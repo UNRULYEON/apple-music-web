@@ -1,11 +1,12 @@
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import {
   fakeMusicKit,
+  type FakeMusicKit,
   PLAYBACK_STATES,
   REPEAT_MODES,
   SHUFFLE_MODES,
   songItem,
   stubMusicKitGlobals,
-  type FakeMusicKit,
 } from "@/lib/music-kit/fake-music-kit";
 import { getMusicKit } from "@/lib/music-kit/instance";
 import {
@@ -15,7 +16,6 @@ import {
   subscribeToPlayer,
   toMusicKitRepeat,
 } from "@/lib/music-kit/player-state";
-import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 vi.mock("@/lib/music-kit/instance", () => ({ getMusicKit: vi.fn() }));
 

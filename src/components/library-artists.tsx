@@ -1,8 +1,10 @@
+import { AnimatePresence } from "motion/react";
+import { useMemo } from "react";
 import { EmptyStates } from "@/components/empty-states";
 import { ErrorStates } from "@/components/error-states";
-import { LoadingState } from "@/components/loading-state";
-import { MediaGrid } from "@/components/media-grid";
 import { useSearch, useSignedInQuery, useView } from "@/hooks";
+import { count } from "@/lib/format";
+import { VIEW_INSET } from "@/lib/layout";
 import { libraryAlbumsQuery } from "@/lib/music-kit/album";
 import {
   artistPicturesQuery,
@@ -10,11 +12,9 @@ import {
   searchArtists,
   withPictures,
 } from "@/lib/music-kit/library-artists";
-import { count } from "@/lib/format";
-import { VIEW_INSET } from "@/lib/layout";
 import { cn } from "@/lib/utils";
-import { AnimatePresence } from "motion/react";
-import { useMemo } from "react";
+import { LoadingState } from "./loading-state";
+import { MediaGrid } from "./media-grid";
 
 export function LibraryArtists() {
   const { open } = useView();
@@ -41,7 +41,7 @@ export function LibraryArtists() {
   );
 
   return (
-    <div className={cn("flex flex-col grow pb-4", VIEW_INSET)}>
+    <div className={cn("flex grow flex-col pb-4", VIEW_INSET)}>
       <AnimatePresence mode="popLayout">
         {isPending && <LoadingState key="library-artists-loading-state" />}
         {isError && !isPending && <ErrorStates.Artists key="library-artists-error-state" />}

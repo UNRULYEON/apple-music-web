@@ -1,14 +1,14 @@
-import { useVolume } from "@/hooks";
-import { PLAYER_HOTKEYS } from "@/lib/hotkeys";
-import { cn } from "@/lib/utils";
 import { VolumeHighIcon, VolumeLowIcon, VolumeMute02Icon } from "@hugeicons/core-free-icons";
 import { HugeiconsIcon } from "@hugeicons/react";
 import { RollingNumber } from "@kitlangton/rolling-number/react";
 import { useHotkeys } from "@tanstack/react-hotkeys";
-import { useEffect, useRef, useState, type RefObject } from "react";
-import { Button } from "./ui/button";
-import { PopoverPrimitive } from "./ui/popover";
-import { SliderPrimitive } from "./ui/slider";
+import { type RefObject, useEffect, useRef, useState } from "react";
+import { Button } from "@/components/ui/button";
+import { PopoverPrimitive } from "@/components/ui/popover";
+import { SliderPrimitive } from "@/components/ui/slider";
+import { useVolume } from "@/hooks";
+import { PLAYER_HOTKEYS } from "@/lib/hotkeys";
+import { cn } from "@/lib/utils";
 
 const PERCENT = 100;
 const STEP = 0.01;
@@ -62,7 +62,7 @@ function VolumeHint({
             finalFocus={false}
             className={cn(
               "px-2 py-1 text-xs font-medium tabular-nums select-none",
-              "bg-neutral-100 dark:bg-neutral-950 border border-neutral-50 dark:border-neutral-800 rounded-full",
+              "rounded-full border border-neutral-50 bg-neutral-100 dark:border-neutral-800 dark:bg-neutral-950",
               "transition-[translate,opacity,background-color,border-color] duration-(--hint-in-dur) ease-(--hint-ease)",
               "data-starting-style:translate-y-(--hint-in-offset) data-starting-style:opacity-0",
               "data-ending-style:opacity-0",
@@ -121,14 +121,14 @@ export function VolumeSlider({
       >
         <SliderPrimitive.Track
           className={cn(
-            "relative rounded-full bg-neutral-300 dark:bg-neutral-800 theme-fade",
+            "relative rounded-full bg-neutral-300 theme-fade dark:bg-neutral-800",
             "data-[orientation=vertical]:h-full data-[orientation=vertical]:w-1",
             "data-[orientation=horizontal]:h-1 data-[orientation=horizontal]:w-full",
           )}
         >
           <SliderPrimitive.Indicator
             className={cn(
-              "rounded-full bg-neutral-900 dark:bg-neutral-100 theme-fade",
+              "rounded-full bg-neutral-900 theme-fade dark:bg-neutral-100",
               "data-[orientation=horizontal]:h-full",
             )}
           />
@@ -138,11 +138,11 @@ export function VolumeSlider({
             getAriaValueText={(_, value) => `${percent(value)} percent`}
             className={cn(
               "rounded-full bg-neutral-900 dark:bg-neutral-100",
-              "outline-none transition-[scale,opacity,background-color]",
+              "transition-[scale,opacity,background-color] outline-none",
               "has-focus-visible:ring-2 has-focus-visible:ring-neutral-500",
               "data-[orientation=horizontal]:size-2.5",
               "data-[orientation=horizontal]:opacity-0 group-hover:data-[orientation=horizontal]:opacity-100",
-              "data-dragging:opacity-100 has-focus-visible:opacity-100 data-dragging:scale-125",
+              "has-focus-visible:opacity-100 data-dragging:scale-125 data-dragging:opacity-100",
             )}
           />
         </SliderPrimitive.Track>
@@ -157,7 +157,7 @@ export function PlayerVolumeSlider({ className }: { className?: string }) {
   useVolumeKeys((by) => change(nudge(volume, by)));
 
   return (
-    <div className={cn("flex items-center gap-2 min-w-0 px-12", className)}>
+    <div className={cn("flex min-w-0 items-center gap-2 px-12", className)}>
       <HugeiconsIcon
         icon={VolumeMute02Icon}
         size={14}
@@ -168,7 +168,7 @@ export function PlayerVolumeSlider({ className }: { className?: string }) {
         volume={volume}
         change={change}
         orientation="horizontal"
-        className="grow min-w-0"
+        className="min-w-0 grow"
       />
       <HugeiconsIcon
         icon={VolumeHighIcon}
@@ -213,7 +213,7 @@ export function PlayerVolume() {
           <PopoverPrimitive.Positioner sideOffset={6}>
             <PopoverPrimitive.Popup
               className={cn(
-                "px-0.5 py-2 bg-neutral-100 dark:bg-neutral-950 border border-neutral-200 dark:border-neutral-800 rounded-full",
+                "rounded-full border border-neutral-200 bg-neutral-100 px-0.5 py-2 dark:border-neutral-800 dark:bg-neutral-950",
                 "origin-(--transform-origin) will-change-[transform,opacity]",
                 "transition-[transform,opacity,background-color,border-color] duration-(--dropdown-open-dur) ease-(--dropdown-ease)",
                 "data-starting-style:scale-(--dropdown-pre-scale) data-starting-style:opacity-0",

@@ -1,26 +1,3 @@
-import { useIsMobile, usePlayer, usePlayerHotkeys, useSignedInQuery, useView } from "@/hooks";
-import { useAuthStatus } from "@/lib/music-kit/auth";
-import {
-  EASE,
-  TRANSITION,
-  TRANSITION_CLOSE,
-  TRANSITION_REVEAL,
-  TRANSITION_SWAP,
-} from "@/lib/motion";
-import type { QueueSource } from "@/lib/music-kit/playback";
-import { isPlaylistType } from "@/lib/music-kit/playlists";
-import { artworkColors, type Artist, type Artwork } from "@/lib/music-kit/resource";
-import { songArtistsQuery } from "@/lib/music-kit/artists";
-import { songSourceQuery } from "@/lib/music-kit/song-source";
-import type { RepeatMode } from "@/lib/music-kit/player-state";
-import { PLAYER_HOTKEYS } from "@/lib/hotkeys";
-import { cn } from "@/lib/utils";
-import {
-  ContextMenu,
-  ContextMenuItem,
-  ContextMenuPopup,
-  ContextMenuTrigger,
-} from "@/components/ui/context-menu";
 import {
   ArrowDown01Icon,
   Cancel01Icon,
@@ -35,15 +12,38 @@ import {
   ShuffleIcon,
 } from "@hugeicons/core-free-icons";
 import { HugeiconsIcon } from "@hugeicons/react";
-import { useHotkey } from "@tanstack/react-hotkeys";
 import { MeshGradient } from "@paper-design/shaders-react";
-import { AnimatePresence, mixColor, motion, useReducedMotion, type Transition } from "motion/react";
-import { useEffect, useMemo, useRef, useState, type ReactNode } from "react";
+import { useHotkey } from "@tanstack/react-hotkeys";
+import { AnimatePresence, mixColor, motion, type Transition, useReducedMotion } from "motion/react";
+import { type ReactNode, useEffect, useMemo, useRef, useState } from "react";
+import { Button } from "@/components/ui/button";
+import {
+  ContextMenu,
+  ContextMenuItem,
+  ContextMenuPopup,
+  ContextMenuTrigger,
+} from "@/components/ui/context-menu";
+import { useIsMobile, usePlayer, usePlayerHotkeys, useSignedInQuery, useView } from "@/hooks";
+import { PLAYER_HOTKEYS } from "@/lib/hotkeys";
+import {
+  EASE,
+  TRANSITION,
+  TRANSITION_CLOSE,
+  TRANSITION_REVEAL,
+  TRANSITION_SWAP,
+} from "@/lib/motion";
+import { songArtistsQuery } from "@/lib/music-kit/artists";
+import { useAuthStatus } from "@/lib/music-kit/auth";
+import type { QueueSource } from "@/lib/music-kit/playback";
+import type { RepeatMode } from "@/lib/music-kit/player-state";
+import { isPlaylistType } from "@/lib/music-kit/playlists";
+import { type Artist, type Artwork, artworkColors } from "@/lib/music-kit/resource";
+import { songSourceQuery } from "@/lib/music-kit/song-source";
+import { cn } from "@/lib/utils";
 import { ArtistLinks } from "./artist-links";
 import { ArtworkImage } from "./artwork";
 import { PlayerProgress, PlayerProgressStacked } from "./player-progress";
 import { PlayerVolume, PlayerVolumeSlider } from "./player-volume";
-import { Button } from "./ui/button";
 
 const ARTWORK_SIZE = 64;
 const EXPANDED_ARTWORK_SIZE = 512;
@@ -266,7 +266,7 @@ function NowPlayingArtwork({
           onClick={onClick}
           className={cn(
             "absolute inset-0 cursor-pointer rounded-xl",
-            "transition-transform duration-(--duration-quick) ease-(--ease-smooth-out) motion-reduce:transition-none hover:scale-101",
+            "transition-transform duration-(--duration-quick) ease-(--ease-smooth-out) hover:scale-101 motion-reduce:transition-none",
             FOCUS_RING,
           )}
         >
@@ -484,7 +484,7 @@ function ExpandedBackdrop() {
       {washed.length > 0 && (
         <motion.div
           data-slot="player-backdrop"
-          className="absolute inset-0 pointer-events-none"
+          className="pointer-events-none absolute inset-0"
           initial={FADED}
           animate={{ opacity: BACKDROP_OPACITY, transition: wash }}
           exit={{ ...FADED, transition: prefersReducedMotion ? NO_TRANSITION : TRANSITION_CLOSE }}
@@ -541,7 +541,7 @@ function ExpandedPlayer({ onCollapse }: { onCollapse: () => void }) {
       aria-label="Now playing"
       className={cn(
         "fixed inset-0 z-50 flex flex-col select-none",
-        "bg-neutral-100 dark:bg-neutral-950 theme-fade",
+        "bg-neutral-100 theme-fade dark:bg-neutral-950",
       )}
       initial={FADED}
       animate={{ ...OPAQUE, transition: openTransition }}
@@ -564,7 +564,7 @@ function ExpandedPlayer({ onCollapse }: { onCollapse: () => void }) {
 
       <div
         className={cn(
-          "relative flex flex-col items-center justify-center-safe grow min-h-0 px-6",
+          "relative flex min-h-0 grow flex-col items-center justify-center-safe px-6",
           "gap-8 pb-12 short:gap-4 short:pb-4",
           "short-wide:flex-row short-wide:gap-6",
           "overflow-y-auto overscroll-contain",
@@ -588,14 +588,14 @@ function ExpandedPlayer({ onCollapse }: { onCollapse: () => void }) {
         />
 
         <motion.div
-          className="flex flex-col items-center gap-6 short:gap-4 w-[min(88vw,24rem)] shrink-0"
+          className="flex w-[min(88vw,24rem)] shrink-0 flex-col items-center gap-6 short:gap-4"
           initial={detailsHidden}
           animate={{ ...detailsShown, transition: openTransition }}
           exit={{ ...detailsHidden, transition: closeTransition }}
         >
-          <div className="flex flex-col items-center gap-1 w-full text-center">
+          <div className="flex w-full flex-col items-center gap-1 text-center">
             <PlayingFrom
-              className="relative w-full h-7 text-center"
+              className="relative h-7 w-full text-center"
               hoverClassName="hover:underline"
               name={nowPlaying.name}
               onNavigate={onCollapse}
@@ -613,11 +613,11 @@ function ExpandedPlayer({ onCollapse }: { onCollapse: () => void }) {
                 </motion.span>
               </AnimatePresence>
             </PlayingFrom>
-            <div className="relative w-full h-5">
+            <div className="relative h-5 w-full">
               <AnimatePresence initial={false}>
                 <motion.span
                   key={nowPlaying.artist?.name ?? "no-artist"}
-                  className="absolute inset-x-0 top-0 truncate text-sm text-neutral-500 dark:text-neutral-400 theme-fade-text"
+                  className="absolute inset-x-0 top-0 truncate text-sm text-neutral-500 theme-fade-text dark:text-neutral-400"
                   initial={blurred}
                   animate={sharp}
                   exit={blurred}
@@ -634,12 +634,12 @@ function ExpandedPlayer({ onCollapse }: { onCollapse: () => void }) {
           </div>
 
           <PlayerProgressStacked
-            className="w-full text-xs cursor-default"
+            className="w-full cursor-default text-xs"
             songId={nowPlaying.id}
             durationInMillis={nowPlaying.durationInMillis}
           />
 
-          <div className="flex flex-col items-center gap-3 w-full">
+          <div className="flex w-full flex-col items-center gap-3">
             <div className="flex items-center gap-1">
               <ShuffleButton size="icon" iconSize={18} />
               <PreviousButton size="icon-lg" iconSize={22} />
@@ -692,7 +692,7 @@ export function Player() {
       {nowPlaying && isShown && !isExpanded && (
         <div
           key="player"
-          className="absolute inset-x-0 bottom-0 flex justify-center p-2 pointer-events-none cursor-n-resize"
+          className="pointer-events-none absolute inset-x-0 bottom-0 flex cursor-n-resize justify-center p-2"
           onClick={(event) => {
             if (!isControl(event.target)) {
               setIsExpanded(true);
@@ -712,8 +712,8 @@ export function Player() {
                 onTouchStart={keepControlMenus}
                 className={cn(
                   "pointer-events-auto",
-                  "flex items-center max-w-full",
-                  isMobile ? "pl-4 pr-4 py-1" : "px-4 pt-0 pb-0",
+                  "flex max-w-full items-center",
+                  isMobile ? "py-1 pr-4 pl-4" : "px-4 pt-0 pb-0",
                   "bg-neutral-100 dark:bg-neutral-950",
                   "border border-neutral-50 dark:border-neutral-800",
                   "theme-fade",
@@ -731,7 +731,7 @@ export function Player() {
                       exit={GROUP_AT_END}
                       transition={shapeTransition}
                     >
-                      <div className="flex items-center w-max">
+                      <div className="flex w-max items-center">
                         <ShuffleButton />
                         <PreviousButton />
                         <PlayButton />
@@ -741,10 +741,10 @@ export function Player() {
                     </motion.div>
                   )}
                 </AnimatePresence>
-                <div className="flex flex-col min-w-0" style={{ width: META_WIDTH }}>
+                <div className="flex min-w-0 flex-col" style={{ width: META_WIDTH }}>
                   <div
                     className={cn(
-                      "flex items-center gap-2 pt-2 min-w-0",
+                      "flex min-w-0 items-center gap-2 pt-2",
                       isMobile ? "pb-2" : "pb-0",
                     )}
                   >
@@ -756,7 +756,7 @@ export function Player() {
                       transition={closeTransition}
                     />
 
-                    <div className="flex flex-col grow min-w-0">
+                    <div className="flex min-w-0 grow flex-col">
                       <PlayingFrom
                         className="relative min-w-0 self-start"
                         hoverClassName="hover:underline"
@@ -765,7 +765,7 @@ export function Player() {
                         <AnimatePresence mode="popLayout" initial={false}>
                           <motion.span
                             key={nowPlaying.name}
-                            className="block truncate text-xs font-bold self-start"
+                            className="block self-start truncate text-xs font-bold"
                             initial={blurred}
                             animate={sharp}
                             exit={blurred}
@@ -779,7 +779,7 @@ export function Player() {
                         <AnimatePresence mode="popLayout" initial={false}>
                           <motion.span
                             key={nowPlaying.artist?.name ?? "no-artist"}
-                            className="block truncate text-xs text-neutral-500 dark:text-neutral-400 theme-fade-text"
+                            className="block truncate text-xs text-neutral-500 theme-fade-text dark:text-neutral-400"
                             initial={blurred}
                             animate={sharp}
                             exit={blurred}
@@ -795,7 +795,7 @@ export function Player() {
                     {!isMobile && (
                       <motion.div
                         key="progress"
-                        className="overflow-hidden cursor-default"
+                        className="cursor-default overflow-hidden"
                         initial={ROW_COLLAPSED}
                         animate={ROW_EXPANDED}
                         exit={ROW_COLLAPSED}
@@ -819,7 +819,7 @@ export function Player() {
                       exit={GROUP_AT_START}
                       transition={shapeTransition}
                     >
-                      <div className="flex items-center w-max">
+                      <div className="flex w-max items-center">
                         <PlayButton size="icon-lg" />
                         <NextButton size="icon-lg" />
                       </div>
@@ -833,7 +833,7 @@ export function Player() {
                       exit={GROUP_AT_START}
                       transition={shapeTransition}
                     >
-                      <div className="flex items-center w-max">
+                      <div className="flex w-max items-center">
                         <Button variant="ghost" size="icon" aria-label="Queue">
                           <HugeiconsIcon icon={Playlist03Icon} size={16} strokeWidth={2} />
                         </Button>

@@ -1,8 +1,8 @@
-// @vitest-environment happy-dom
-import { chunk, columnCount, gapFor, MediaGrid, sameMetrics } from "@/components/media-grid";
 import { cleanup, render } from "@testing-library/react";
 import { createRef } from "react";
 import { afterEach, describe, expect, it, vi } from "vitest";
+// @vitest-environment happy-dom
+import { chunk, columnCount, gapFor, MediaGrid, sameMetrics } from "./media-grid";
 
 afterEach(cleanup);
 

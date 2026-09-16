@@ -1,11 +1,9 @@
-import { createRouter as createTanStackRouter } from "@tanstack/react-router";
+import { createRouter as createTanStackRouter, type ParsedLocation } from "@tanstack/react-router";
 import { setupRouterSsrQueryIntegration } from "@tanstack/react-router-ssr-query";
-import { routeTree } from "./routeTree.gen";
-import { getContext } from "./integrations/tanstack-query/root-provider";
-
+import { getContext } from "@/integrations/tanstack-query/root-provider";
 import { SCROLL_AREA } from "@/lib/scroll-area";
-import { HOME, isTopLevel, readView, viewKey, type View } from "@/lib/views/view";
-import type { ParsedLocation } from "@tanstack/react-router";
+import { HOME, isTopLevel, readView, type View, viewKey } from "@/lib/views/view";
+import { routeTree } from "@/routeTree.gen";
 
 function scrollRestorationKey(location: ParsedLocation): string {
   const view = readView(location.state.view) ?? HOME;

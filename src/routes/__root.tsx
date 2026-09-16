@@ -1,27 +1,24 @@
-import { HeadContent, Scripts, createRootRouteWithContext } from "@tanstack/react-router";
-import { TanStackRouterDevtoolsPanel } from "@tanstack/react-router-devtools";
-import { TanStackDevtools } from "@tanstack/react-devtools";
-
-import TanStackQueryDevtools from "@/integrations/tanstack-query/devtools";
-import { MusicKitDevtools } from "@/components/music-kit-devtools";
-import { PlayerDevtools } from "@/components/player-devtools";
-import { MusicKitGate } from "@/components/music-kit-gate";
-import { CommandMenu } from "@/components/command-menu";
-
-import appCss from "../styles.css?url";
-
+import { TanStackDevtools, type TanStackDevtoolsReactPlugin } from "@tanstack/react-devtools";
+import { hotkeysDevtoolsPlugin } from "@tanstack/react-hotkeys-devtools";
 import type { QueryClient } from "@tanstack/react-query";
-import type { TanStackDevtoolsReactPlugin } from "@tanstack/react-devtools";
+import { createRootRouteWithContext, HeadContent, Scripts } from "@tanstack/react-router";
+import { TanStackRouterDevtoolsPanel } from "@tanstack/react-router-devtools";
 import {
   BackButton,
+  CommandMenu,
   DrmNotice,
-  NotificationNotice,
   MainContent,
-  Nav,
+  MusicKitDevtools,
+  MusicKitGate,
+  NotificationNotice,
   Player,
+  PlayerDevtools,
   SearchInput,
   SidebarToggle,
 } from "@/components";
+import { Nav } from "@/components/nav";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { ToastProvider } from "@/components/ui/toast";
 import {
   BackdropProvider,
   PlayerProvider,
@@ -29,15 +26,14 @@ import {
   SidebarProvider,
   ThemeProvider,
 } from "@/contexts";
+import TanStackQueryDevtools from "@/integrations/tanstack-query/devtools";
+import { BAR_INSET } from "@/lib/layout";
+import { preHydrationScript as nodeShimPreHydrationScript } from "@/lib/music-kit/node-shim";
+import { SCROLL_AREA_ID } from "@/lib/scroll-area";
 import { preHydrationScript as sidebarPreHydrationScript } from "@/lib/sidebar-storage";
 import { preHydrationScript as themePreHydrationScript } from "@/lib/theme-storage";
-import { preHydrationScript as nodeShimPreHydrationScript } from "@/lib/music-kit/node-shim";
-import { ScrollArea } from "@/components/ui/scroll-area";
-import { SCROLL_AREA_ID } from "@/lib/scroll-area";
-import { BAR_INSET } from "@/lib/layout";
 import { cn } from "@/lib/utils";
-import { ToastProvider } from "@/components/ui/toast";
-import { hotkeysDevtoolsPlugin } from "@tanstack/react-hotkeys-devtools";
+import appCss from "@/styles.css?url";
 
 const DEV_NAME_SUFFIX = import.meta.env.DEV ? " [dev]" : "";
 const DEV_ASSET_SUFFIX = import.meta.env.DEV ? "-dev" : "";
@@ -134,7 +130,7 @@ function RootDocument({ children }: { children: React.ReactNode }) {
         <HeadContent />
       </head>
       <body className="relative overflow-clip">
-        <div className="isolate relative flex flex-col h-svh bg-background">
+        <div className="relative isolate flex h-svh flex-col bg-background">
           <BackdropProvider>
             <ThemeProvider>
               <SidebarProvider>
@@ -145,16 +141,16 @@ function RootDocument({ children }: { children: React.ReactNode }) {
                     <MusicKitGate>
                       <SearchProvider>
                         <Nav />
-                        <div className="relative flex flex-col grow min-w-0 min-h-0 gap-2">
+                        <div className="relative flex min-h-0 min-w-0 grow flex-col gap-2">
                           <div
-                            className={cn("flex items-center py-2 gap-2 bg-transparent", BAR_INSET)}
+                            className={cn("flex items-center gap-2 bg-transparent py-2", BAR_INSET)}
                           >
                             <SidebarToggle />
                             <BackButton />
                             <SearchInput />
                           </div>
                           <ScrollArea
-                            className="flex-1 min-w-0"
+                            className="min-w-0 flex-1"
                             fill
                             scrollFade
                             horizontal={false}

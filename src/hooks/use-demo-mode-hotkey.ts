@@ -1,11 +1,11 @@
-import { toastManager } from "@/components/ui/toast";
-import { usePlayer } from "@/hooks/use-player";
-import { isDemoSource } from "@/lib/demo/library";
-import { DEMO_MODE_HOTKEY } from "@/lib/hotkeys";
-import { DEMO_QUERY_KEY, readDemoMode, setDemoMode } from "@/lib/demo/mode";
-import { useAuthStatus } from "@/lib/music-kit/auth";
 import { useHotkey } from "@tanstack/react-hotkeys";
 import { useQueryClient } from "@tanstack/react-query";
+import { toastManager } from "@/components/ui/toast";
+import { isDemoSource } from "@/lib/demo/library";
+import { DEMO_QUERY_KEY, readDemoMode, setDemoMode } from "@/lib/demo/mode";
+import { DEMO_MODE_HOTKEY } from "@/lib/hotkeys";
+import { useAuthStatus } from "@/lib/music-kit/auth";
+import { usePlayer } from "./use-player";
 
 const TOAST_ID = "demo-mode";
 

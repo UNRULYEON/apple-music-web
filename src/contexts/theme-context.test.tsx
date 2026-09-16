@@ -1,9 +1,9 @@
 // @vitest-environment happy-dom
 import { act, cleanup, render } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { ThemeProvider } from "@/contexts";
 import { useTheme } from "@/hooks";
 import { preHydrationScript, type Theme } from "@/lib/theme-storage";
+import { ThemeProvider } from "./theme-context";
 
 afterEach(() => {
   cleanup();

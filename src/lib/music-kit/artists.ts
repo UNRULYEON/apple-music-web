@@ -1,5 +1,8 @@
 import { getMusicKit } from "@/lib/music-kit/instance";
 import {
+  type Artist,
+  type Artwork,
+  type Curator,
   hasNextPage,
   readArtist,
   readArtistRef,
@@ -8,13 +11,10 @@ import {
   readItems,
   readRelated,
   readText,
-  type Artist,
-  type Artwork,
-  type Curator,
 } from "@/lib/music-kit/resource";
-import { matchesSearch } from "@/lib/search";
-import { readSong, type Song } from "@/lib/music-kit/track";
 import { fetchStorefront } from "@/lib/music-kit/storefront";
+import { readSong, type Song } from "@/lib/music-kit/track";
+import { matchesSearch } from "@/lib/search";
 
 const STALE = 60 * 60 * 1000;
 

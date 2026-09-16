@@ -1,11 +1,3 @@
-import { useCloseSidebarOnMobile, useSidebar, useView } from "@/hooks";
-import { TRANSITION_SLOW } from "@/lib/motion";
-import { cn } from "@/lib/utils";
-import type { View } from "@/lib/views/view";
-import { AnimatePresence, motion } from "motion/react";
-import { BottomNav } from "@/components";
-import { CommandMenuTrigger } from "@/components/command-menu";
-import { Button } from "@/components/ui/button";
 import {
   DiscAlbumIcon,
   Mic01Icon,
@@ -13,6 +5,14 @@ import {
   Playlist01Icon,
 } from "@hugeicons/core-free-icons";
 import { HugeiconsIcon, type IconSvgElement } from "@hugeicons/react";
+import { AnimatePresence, motion } from "motion/react";
+import { CommandMenuTrigger } from "@/components";
+import { Button } from "@/components/ui/button";
+import { useCloseSidebarOnMobile, useSidebar, useView } from "@/hooks";
+import { TRANSITION_SLOW } from "@/lib/motion";
+import { cn } from "@/lib/utils";
+import type { View } from "@/lib/views/view";
+import { BottomNav } from "./bottom-nav";
 
 const SIDEBAR_WIDTH = 256;
 const SWIPE_CLOSE_DISTANCE = SIDEBAR_WIDTH * 0.1;
@@ -51,7 +51,7 @@ export function Nav() {
         )}
       </AnimatePresence>
       <motion.div
-        className="relative flex flex-col grow"
+        className="relative flex grow flex-col"
         data-slot="nav-panel"
         suppressHydrationWarning
         initial={false}
@@ -63,7 +63,7 @@ export function Nav() {
         onHoverEnd={isMobile ? undefined : () => setPeeking(false)}
       >
         <motion.div
-          className="absolute bottom-2 flex flex-col p-2 pb-0 pr-0 z-50"
+          className="absolute bottom-2 z-50 flex flex-col p-2 pr-0 pb-0"
           data-slot="nav-panel-inner"
           suppressHydrationWarning
           style={{ touchAction: "none" }}
@@ -107,7 +107,7 @@ export function Nav() {
               "rounded-lg",
             )}
           >
-            <div className="flex flex-col grow gap-1">
+            <div className="flex grow flex-col gap-1">
               <CommandMenuTrigger />
               <NavItem
                 icon={MusicNote02Icon}

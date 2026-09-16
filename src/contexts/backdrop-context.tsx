@@ -1,7 +1,7 @@
-import { EASE } from "@/lib/motion";
 import { MeshGradient } from "@paper-design/shaders-react";
 import { AnimatePresence, motion, useReducedMotion } from "motion/react";
-import { createContext, useState, type ReactNode } from "react";
+import { createContext, type ReactNode, useState } from "react";
+import { EASE } from "@/lib/motion";
 
 export type SetBackdropColors = (colors: string[] | undefined) => void;
 
@@ -22,7 +22,7 @@ export function BackdropProvider({ children }: { children: ReactNode }) {
         {colors && (
           <motion.div
             key="backdrop"
-            className="fixed inset-0 -z-10 pointer-events-none"
+            className="pointer-events-none fixed inset-0 -z-10"
             initial={{ opacity: 0 }}
             animate={{ opacity: 0.2, transition: wash }}
             exit={{ opacity: 0 }}

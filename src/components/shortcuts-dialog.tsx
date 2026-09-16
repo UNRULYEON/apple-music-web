@@ -1,3 +1,7 @@
+import { KeyboardIcon } from "@hugeicons/core-free-icons";
+import { HugeiconsIcon } from "@hugeicons/react";
+import { type Hotkey, useHotkey } from "@tanstack/react-hotkeys";
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -8,7 +12,6 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import { HotkeyKeys } from "@/components/hotkey-keys";
 import { useCloseSidebarOnMobile } from "@/hooks";
 import {
   COMMAND_MENU_HOTKEY,
@@ -17,10 +20,7 @@ import {
   SHORTCUTS_HOTKEY,
   SIDEBAR_HOTKEY,
 } from "@/lib/hotkeys";
-import { KeyboardIcon } from "@hugeicons/core-free-icons";
-import { HugeiconsIcon } from "@hugeicons/react";
-import { useHotkey, type Hotkey } from "@tanstack/react-hotkeys";
-import { useState } from "react";
+import { HotkeyKeys } from "./hotkey-keys";
 
 interface Shortcut {
   hotkey: Hotkey;

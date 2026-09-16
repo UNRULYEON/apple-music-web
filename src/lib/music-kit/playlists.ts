@@ -1,23 +1,23 @@
 import {
   DEMO_CURATOR,
   DEMO_LIBRARY,
-  findDemoPlaylist,
   type DemoPlaylist,
+  findDemoPlaylist,
 } from "@/lib/demo/library";
 import { demoQueryKey, readDemoMode } from "@/lib/demo/mode";
 import { fetchCatalogResources } from "@/lib/music-kit/catalog-resources";
 import { getMusicKit } from "@/lib/music-kit/instance";
 import {
+  type Artwork,
+  type Curator,
   hasNextPage,
+  mosaicArtwork,
   readArtwork,
   readCurator,
-  mosaicArtwork,
   readItems,
   readRelated,
   readStandard,
   readText,
-  type Artwork,
-  type Curator,
 } from "@/lib/music-kit/resource";
 import { fetchStorefront } from "@/lib/music-kit/storefront";
 import { readSong, type Song } from "@/lib/music-kit/track";

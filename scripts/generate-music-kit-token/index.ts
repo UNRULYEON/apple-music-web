@@ -6,8 +6,8 @@ import { homedir } from "node:os";
 import { basename, dirname, join } from "node:path";
 import { parseArgs } from "node:util";
 import * as prompts from "@clack/prompts";
-import { hasToken, mergeDevVars, VARIABLE } from "./dev-vars.ts";
-import { keyIdFromFileName, signDeveloperToken } from "./sign.ts";
+import { hasToken, mergeDevVars, VARIABLE } from "./dev-vars";
+import { keyIdFromFileName, signDeveloperToken } from "./sign";
 
 const ROOT = join(import.meta.dirname, "../..");
 

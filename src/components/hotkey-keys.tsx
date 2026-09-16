@@ -1,7 +1,7 @@
-import { Kbd, KbdGroup } from "@/components/ui/kbd";
-import { resolveHotkey } from "@/lib/hotkeys";
 import { formatForDisplay, type Hotkey } from "@tanstack/react-hotkeys";
 import type { ComponentProps } from "react";
+import { Kbd, KbdGroup } from "@/components/ui/kbd";
+import { resolveHotkey } from "@/lib/hotkeys";
 
 function keyLabel(key: string): string {
   return key === "Space" ? "Space" : formatForDisplay(key);

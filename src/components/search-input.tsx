@@ -1,8 +1,8 @@
+import { Cancel01Icon, Search01Icon } from "@hugeicons/core-free-icons";
+import { HugeiconsIcon } from "@hugeicons/react";
 import { InputGroup, InputGroupAddon, InputGroupInput } from "@/components/ui/input-group";
 import { useSearch, useView } from "@/hooks";
 import { canSearch, searchLabel } from "@/lib/views/view";
-import { Cancel01Icon, Search01Icon } from "@hugeicons/core-free-icons";
-import { HugeiconsIcon } from "@hugeicons/react";
 
 export function SearchInput() {
   const { view } = useView();
@@ -33,7 +33,7 @@ export function SearchInput() {
             type="button"
             aria-label="Clear the search"
             onClick={() => setTerm("")}
-            className="flex mr-2 cursor-pointer rounded-sm text-muted-foreground outline-none transition-colors duration-(--duration-quick) ease-(--ease-smooth-out) motion-reduce:transition-none hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring"
+            className="mr-2 flex cursor-pointer rounded-sm text-muted-foreground transition-colors duration-(--duration-quick) ease-(--ease-smooth-out) outline-none hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring motion-reduce:transition-none"
           >
             <HugeiconsIcon icon={Cancel01Icon} size={14} strokeWidth={2} />
           </button>

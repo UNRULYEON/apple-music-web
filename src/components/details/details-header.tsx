@@ -1,10 +1,10 @@
-import { DetailsArtwork } from "@/components/details/details-artwork";
+import type { ReactNode } from "react";
+import { Button } from "@/components/ui/button";
 import { usePlayer } from "@/hooks";
 import type { QueueSource } from "@/lib/music-kit/playback";
 import type { Artwork } from "@/lib/music-kit/resource";
 import type { Song } from "@/lib/music-kit/track";
-import type { ReactNode } from "react";
-import { Button } from "@/components/ui/button";
+import { DetailsArtwork } from "./details-artwork";
 
 export function DetailsHeader({
   artwork,
@@ -25,17 +25,17 @@ export function DetailsHeader({
   const isEmpty = songs.length === 0;
 
   return (
-    <div className="flex flex-col gap-8 sm:gap-8 sm:flex-row items-center">
+    <div className="flex flex-col items-center gap-8 sm:flex-row sm:gap-8">
       <div className="w-full max-w-96 sm:w-64 sm:shrink-0">
         <DetailsArtwork artwork={artwork} name={name} />
       </div>
-      <div className="flex flex-col gap-4 items-center sm:items-start">
+      <div className="flex flex-col items-center gap-4 sm:items-start">
         <div className="flex flex-col items-center sm:items-start">
-          <span className="font-bold text-xl sm:text-2xl">{name}</span>
+          <span className="text-xl font-bold sm:text-2xl">{name}</span>
           {subtitle && <span className="text-base">{subtitle}</span>}
         </div>
         {meta && (
-          <div className="flex flex-col gap-1 items-center sm:items-start text-center sm:text-left text-xs text-neutral-500 dark:text-neutral-400 theme-fade-text">
+          <div className="flex flex-col items-center gap-1 text-center text-xs text-neutral-500 theme-fade-text sm:items-start sm:text-left dark:text-neutral-400">
             {meta}
           </div>
         )}

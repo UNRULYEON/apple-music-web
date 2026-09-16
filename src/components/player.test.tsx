@@ -1,24 +1,24 @@
-// @vitest-environment happy-dom
-import { Player } from "@/components/player";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { act, cleanup, fireEvent, render, screen, waitFor, within } from "@testing-library/react";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { PlayerProvider } from "@/contexts";
 import { usePlayer } from "@/hooks";
 import { setAuthStatus } from "@/lib/music-kit/auth";
-import { HOME } from "@/lib/views/view";
-import type { Song } from "@/lib/music-kit/track";
 import {
   fakeMusicKit,
+  type FakeMusicKit,
   PLAYBACK_STATES,
   REPEAT_MODES,
   SHUFFLE_MODES,
   stubMusicKitGlobals,
-  type FakeMusicKit,
 } from "@/lib/music-kit/fake-music-kit";
 import { getMusicKit } from "@/lib/music-kit/instance";
 import { resetPlaybackTime } from "@/lib/music-kit/playback-time";
 import { resetPlayerState } from "@/lib/music-kit/player-state";
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { act, cleanup, fireEvent, render, screen, waitFor, within } from "@testing-library/react";
-import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import type { Song } from "@/lib/music-kit/track";
+import { HOME } from "@/lib/views/view";
+// @vitest-environment happy-dom
+import { Player } from "./player";
 
 vi.mock("@/lib/music-kit/instance", () => ({ getMusicKit: vi.fn() }));
 

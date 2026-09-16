@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { hasToken, mergeDevVars } from "./dev-vars.ts";
+import { hasToken, mergeDevVars } from "./dev-vars";
 
 describe("mergeDevVars", () => {
   it("writes the only line into an empty file", () => {

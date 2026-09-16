@@ -12,8 +12,8 @@ import {
 import { Spinner } from "@/components/ui/spinner";
 import { useDemoModeHotkey, usePersistedCache, useResetWhenSignedOut } from "@/hooks";
 import { fireConfetti } from "@/lib/confetti";
-import { loadAuthorization, readAuthStatus, signIn, useAuthStatus } from "@/lib/music-kit/auth";
 import { TRANSITION } from "@/lib/motion";
+import { loadAuthorization, readAuthStatus, signIn, useAuthStatus } from "@/lib/music-kit/auth";
 
 const SWAP = {
   initial: { opacity: 0, scale: 0.96, filter: "blur(2px)" },
@@ -54,7 +54,7 @@ export function MusicKitGate({ children }: { children: React.ReactNode }): React
   return (
     <MotionConfig reducedMotion="user">
       <motion.div
-        className="flex grow min-h-0"
+        className="flex min-h-0 grow"
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}
@@ -101,12 +101,12 @@ export function MusicKitGate({ children }: { children: React.ReactNode }): React
                         Continue with Apple Music
                       </Button>
                       {error && (
-                        <p className="text-destructive-foreground text-sm" role="alert">
+                        <p className="text-sm text-destructive-foreground" role="alert">
                           {error}
                         </p>
                       )}
                     </CardPanel>
-                    <CardFooter className="flex flex-col text-center text-muted-foreground text-xs">
+                    <CardFooter className="flex flex-col text-center text-xs text-muted-foreground">
                       <p>Not affiliated with or endorsed by Apple Inc.</p>
                       <p>Apple Music is a trademark of Apple Inc.</p>
                     </CardFooter>

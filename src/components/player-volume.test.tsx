@@ -1,10 +1,10 @@
-// @vitest-environment happy-dom
-import { PlayerVolume } from "@/components/player-volume";
+import { cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { fakeMusicKit, type FakeMusicKit } from "@/lib/music-kit/fake-music-kit";
 import { getMusicKit } from "@/lib/music-kit/instance";
 import { readStoredVolume, writeStoredVolume } from "@/lib/volume-storage";
-import { cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
-import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+// @vitest-environment happy-dom
+import { PlayerVolume } from "./player-volume";
 
 vi.mock("@/lib/music-kit/instance", () => ({ getMusicKit: vi.fn() }));
 

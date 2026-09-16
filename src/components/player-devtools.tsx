@@ -1,12 +1,12 @@
-import { NOTICE_KEY } from "@/components/notification-notice";
+import { type ReactNode, useEffect, useState } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { usePlayer } from "@/hooks";
-import { probeDrm, type DrmSupport } from "@/lib/music-kit/drm";
+import { type DrmSupport, probeDrm } from "@/lib/music-kit/drm";
 import type { Song } from "@/lib/music-kit/track";
 import { askToNotify, isTabInFront, notifyPermission, notifySong } from "@/lib/player/notify";
 import { cn } from "@/lib/utils";
-import { useEffect, useState, type ReactNode } from "react";
+import { NOTICE_KEY } from "./notification-notice";
 
 const UP_NEXT = 8;
 
@@ -22,7 +22,7 @@ export function PlayerDevtools({ theme }: { theme: "light" | "dark" }): React.Re
   return (
     <div
       className={cn(
-        "flex h-full flex-col gap-4 overflow-auto bg-background p-4 font-sans text-foreground text-sm",
+        "flex h-full flex-col gap-4 overflow-auto bg-background p-4 font-sans text-sm text-foreground",
         theme === "dark" && "dark",
       )}
     >
@@ -79,7 +79,7 @@ export function PlayerDevtools({ theme }: { theme: "light" | "dark" }): React.Re
             </div>
           ))}
           {drm.length > 0 && drm.every(({ supported }) => !supported) && (
-            <p className="text-muted-foreground text-xs">
+            <p className="text-xs text-muted-foreground">
               Full songs need DRM. Without it Apple Music takes the queue and then plays nothing.
             </p>
           )}
@@ -155,7 +155,7 @@ function Notifications({ song }: { song?: Song }) {
           </Button>
         </div>
 
-        <p className="text-muted-foreground text-xs">
+        <p className="text-xs text-muted-foreground">
           A song change tells you only when the queue moves on by itself and this tab is behind
           another one.
         </p>
@@ -167,7 +167,7 @@ function Notifications({ song }: { song?: Song }) {
 function Section({ title, children }: { title: string; children: ReactNode }) {
   return (
     <div className="flex flex-col gap-2">
-      <span className="text-muted-foreground text-xs uppercase">{title}</span>
+      <span className="text-xs text-muted-foreground uppercase">{title}</span>
       {children}
     </div>
   );

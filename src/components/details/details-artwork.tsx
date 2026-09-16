@@ -1,4 +1,4 @@
-import { ArtworkImage } from "@/components/artwork";
+import { ArtworkImage } from "@/components";
 import type { Artwork } from "@/lib/music-kit/resource";
 
 const ARTWORK_SIZE = 512;

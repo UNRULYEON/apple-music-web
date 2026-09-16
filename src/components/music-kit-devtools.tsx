@@ -2,7 +2,6 @@ import { useEffect, useState } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { fireConfetti } from "@/lib/confetti";
-import { cn } from "@/lib/utils";
 import { useAuthStatus } from "@/lib/music-kit/auth";
 import {
   dropToken,
@@ -11,6 +10,7 @@ import {
   readSavedAt,
   restoreToken,
 } from "@/lib/music-kit/dev-session";
+import { cn } from "@/lib/utils";
 
 export function MusicKitDevtools({ theme }: { theme: "light" | "dark" }): React.ReactElement {
   const status = useAuthStatus();
@@ -33,7 +33,7 @@ export function MusicKitDevtools({ theme }: { theme: "light" | "dark" }): React.
   return (
     <div
       className={cn(
-        "flex h-full flex-col gap-4 bg-background p-4 font-sans text-foreground text-sm",
+        "flex h-full flex-col gap-4 bg-background p-4 font-sans text-sm text-foreground",
         theme === "dark" && "dark",
       )}
     >
@@ -78,7 +78,7 @@ export function MusicKitDevtools({ theme }: { theme: "light" | "dark" }): React.
         </Button>
       </div>
 
-      <div className="text-muted-foreground text-xs">
+      <div className="text-xs text-muted-foreground">
         <p>
           {savedAt
             ? `Session in local storage from ${new Date(savedAt).toLocaleString()}.`

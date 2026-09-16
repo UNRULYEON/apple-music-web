@@ -1,4 +1,4 @@
-import { formatHotkey, parseHotkey, type Hotkey } from "@tanstack/react-hotkeys";
+import { formatHotkey, type Hotkey, parseHotkey } from "@tanstack/react-hotkeys";
 
 export const SIDEBAR_HOTKEY = "[" satisfies Hotkey;
 

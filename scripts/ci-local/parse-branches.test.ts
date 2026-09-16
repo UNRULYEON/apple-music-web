@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { parseBranches } from "./parse-branches.ts";
+import { parseBranches } from "./parse-branches";
 
 describe("parseBranches", () => {
   it("drops the bare remote name that stands for the remote HEAD", () => {

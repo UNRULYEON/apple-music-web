@@ -1,22 +1,22 @@
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { act, cleanup, fireEvent, render, waitFor } from "@testing-library/react";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 // @vitest-environment happy-dom
 import { PlayerProvider } from "@/contexts";
-import { usePlayer } from "@/hooks";
-import { useDemoModeHotkey } from "@/hooks/use-demo-mode-hotkey";
 import { DEMO_LIBRARY } from "@/lib/demo/library";
 import { readDemoMode, setDemoMode } from "@/lib/demo/mode";
 import { setAuthStatus } from "@/lib/music-kit/auth";
 import {
   fakeMusicKit,
+  type FakeMusicKit,
   songItem,
   stubMusicKitGlobals,
-  type FakeMusicKit,
 } from "@/lib/music-kit/fake-music-kit";
 import { getMusicKit } from "@/lib/music-kit/instance";
 import type { QueueSource } from "@/lib/music-kit/playback";
 import { resetPlayerState } from "@/lib/music-kit/player-state";
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { act, cleanup, fireEvent, render, waitFor } from "@testing-library/react";
-import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { useDemoModeHotkey } from "./use-demo-mode-hotkey";
+import { usePlayer } from "./use-player";
 
 vi.mock("@/lib/music-kit/instance", () => ({ getMusicKit: vi.fn() }));
 vi.mock("@/lib/music-kit/drm", async (importOriginal) => ({

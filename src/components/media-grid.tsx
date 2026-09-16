@@ -1,19 +1,19 @@
-import { ArtworkImage } from "@/components/artwork";
-import { TRANSITION, TRANSITION_REVEAL } from "@/lib/motion";
-import type { Artwork } from "@/lib/music-kit/resource";
 import { useVirtualizer } from "@tanstack/react-virtual";
 import { motion } from "motion/react";
 import {
+  type Dispatch,
+  type Ref,
+  type SetStateAction,
   useCallback,
   useEffect,
   useLayoutEffect,
   useMemo,
   useRef,
   useState,
-  type Dispatch,
-  type Ref,
-  type SetStateAction,
 } from "react";
+import { TRANSITION, TRANSITION_REVEAL } from "@/lib/motion";
+import type { Artwork } from "@/lib/music-kit/resource";
+import { ArtworkImage } from "./artwork";
 
 const ARTWORK_SIZE = 256;
 const MIN_TILE = 208;
@@ -174,18 +174,18 @@ export function MediaGrid({ items, ref }: { items: MediaTileItem[]; ref?: Ref<HT
 function MediaTile({ name, credit, artwork, onClick }: MediaTileItem) {
   return (
     <motion.div
-      className="flex flex-col gap-2 cursor-pointer"
+      className="flex cursor-pointer flex-col gap-2"
       whileHover={{ scale: 1.01 }}
       transition={TRANSITION}
       onClick={onClick}
     >
       <ArtworkImage artwork={artwork} size={ARTWORK_SIZE} className="rounded-xl" />
       <div className="flex flex-col">
-        <div className="truncate text-xs text-neutral-600 dark:text-neutral-300 select-none theme-fade-text">
+        <div className="truncate text-xs text-neutral-600 theme-fade-text select-none dark:text-neutral-300">
           {name}
         </div>
         {credit && (
-          <div className="truncate text-muted-foreground text-xs select-none">{credit}</div>
+          <div className="truncate text-xs text-muted-foreground select-none">{credit}</div>
         )}
       </div>
     </motion.div>

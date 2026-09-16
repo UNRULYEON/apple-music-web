@@ -1,9 +1,9 @@
+import { RollingNumber } from "@kitlangton/rolling-number/react";
+import { useEffect, useState } from "react";
+import { SliderPrimitive } from "@/components/ui/slider";
 import { usePlaybackTime } from "@/hooks";
 import { clockTime } from "@/lib/format";
 import { cn } from "@/lib/utils";
-import { RollingNumber } from "@kitlangton/rolling-number/react";
-import { useEffect, useState } from "react";
-import { SliderPrimitive } from "./ui/slider";
 
 const MILLIS_PER_SECOND = 1000;
 const SECONDS_PER_MINUTE = 60;
@@ -64,7 +64,7 @@ export function usePlayerProgress(songId: string, durationInMillis?: number) {
 export function PlayerElapsed({ seconds, className }: { seconds: number; className?: string }) {
   return (
     <span
-      className={cn("shrink-0 text-neutral-500 dark:text-neutral-400 theme-fade-text", className)}
+      className={cn("shrink-0 text-neutral-500 theme-fade-text dark:text-neutral-400", className)}
     >
       <RollingClock seconds={seconds} slot="player-elapsed" />
     </span>
@@ -86,7 +86,7 @@ export function PlayerSeek({
 }) {
   return (
     <SliderPrimitive.Root
-      className={cn("px-1 cursor-ew-resize", className)}
+      className={cn("cursor-ew-resize px-1", className)}
       value={at}
       min={0}
       max={length || 1}
@@ -99,18 +99,18 @@ export function PlayerSeek({
     >
       <SliderPrimitive.Control
         data-slot="slider-control"
-        className="group flex w-full touch-none select-none items-center py-2 data-disabled:pointer-events-none data-disabled:opacity-40"
+        className="group flex w-full touch-none items-center py-2 select-none data-disabled:pointer-events-none data-disabled:opacity-40"
       >
-        <SliderPrimitive.Track className="relative h-1 w-full rounded-full bg-neutral-300 dark:bg-neutral-800 theme-fade">
-          <SliderPrimitive.Indicator className="h-full rounded-full bg-neutral-900 dark:bg-neutral-100 theme-fade" />
+        <SliderPrimitive.Track className="relative h-1 w-full rounded-full bg-neutral-300 theme-fade dark:bg-neutral-800">
+          <SliderPrimitive.Indicator className="h-full rounded-full bg-neutral-900 theme-fade dark:bg-neutral-100" />
           <SliderPrimitive.Thumb
             index={0}
             aria-label="Seek"
             getAriaValueText={(_, value) => clockTime(value)}
             className={cn(
               "size-2.5 rounded-full bg-neutral-900 dark:bg-neutral-100",
-              "outline-none transition-[scale,opacity,background-color]",
-              "opacity-0 group-hover:opacity-100 data-dragging:opacity-100 has-focus-visible:opacity-100",
+              "transition-[scale,opacity,background-color] outline-none",
+              "opacity-0 group-hover:opacity-100 has-focus-visible:opacity-100 data-dragging:opacity-100",
               "data-dragging:scale-125",
               "has-focus-visible:ring-2 has-focus-visible:ring-neutral-500",
             )}
@@ -144,7 +144,7 @@ export function PlayerLength({
       className={cn(
         "shrink-0 text-right tabular-nums",
         "text-neutral-500 dark:text-neutral-400",
-        "transition-colors duration-(--duration-quick) ease-(--ease-smooth-out) motion-reduce:transition-none hover:text-neutral-900 dark:hover:text-neutral-100",
+        "transition-colors duration-(--duration-quick) ease-(--ease-smooth-out) hover:text-neutral-900 motion-reduce:transition-none dark:hover:text-neutral-100",
         "outline-none focus-visible:ring-2 focus-visible:ring-neutral-500",
         "cursor-pointer",
         className,
@@ -163,9 +163,9 @@ export function PlayerProgress({ songId, durationInMillis, className }: PlayerPr
   const { at, left, length, scrub, seek } = usePlayerProgress(songId, durationInMillis);
 
   return (
-    <div className={cn("flex items-center gap-1 cursor-ew-resize", CLOCKS, className)}>
+    <div className={cn("flex cursor-ew-resize items-center gap-1", CLOCKS, className)}>
       <PlayerElapsed seconds={at} />
-      <PlayerSeek at={at} length={length} onScrub={scrub} onSeek={seek} className="grow min-w-0" />
+      <PlayerSeek at={at} length={length} onScrub={scrub} onSeek={seek} className="min-w-0 grow" />
       <PlayerLength length={length} left={left} />
     </div>
   );

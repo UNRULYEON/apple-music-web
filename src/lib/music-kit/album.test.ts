@@ -6,14 +6,14 @@ import {
   fetchLibraryAlbumSongs,
   isAlbumInLibrary,
   isAlbumType,
+  type LibraryAlbum,
   libraryAlbumsQuery,
   markInLibrary,
   sortAlbums,
-  type LibraryAlbum,
 } from "@/lib/music-kit/album";
-import type { Song } from "@/lib/music-kit/track";
 import { getMusicKit } from "@/lib/music-kit/instance";
 import { fetchStorefront } from "@/lib/music-kit/storefront";
+import type { Song } from "@/lib/music-kit/track";
 
 vi.mock("@/lib/music-kit/instance", () => ({ getMusicKit: vi.fn() }));
 vi.mock("@/lib/music-kit/storefront", () => ({ fetchStorefront: vi.fn() }));
