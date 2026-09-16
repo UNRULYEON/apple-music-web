@@ -20,13 +20,7 @@ export type SidebarContextType = {
   setPeeking: Dispatch<React.SetStateAction<boolean>>;
 };
 
-export const SidebarContext = createContext<SidebarContextType | undefined>({
-  isOpen: false,
-  isPeeking: false,
-  isMobile: false,
-  setOpen: () => {},
-  setPeeking: () => {},
-});
+export const SidebarContext = createContext<SidebarContextType | undefined>(undefined);
 
 const useIsomorphicLayoutEffect = typeof window === "undefined" ? useEffect : useLayoutEffect;
 
