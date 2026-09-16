@@ -41,7 +41,7 @@ export async function fetchRecentlyPlayed(limit = PAGE_SIZE): Promise<RecentlyPl
     .slice(0, limit);
 }
 
-export async function fetchRecentlyPlayedFromCatalog(
+async function fetchRecentlyPlayedFromCatalog(
   refs: readonly CatalogRef[],
 ): Promise<RecentlyPlayedItem[]> {
   const items = await fetchCatalogResources(refs);

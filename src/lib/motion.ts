@@ -1,4 +1,4 @@
-export const REDUCED_MOTION_QUERY = "(prefers-reduced-motion: reduce)";
+const REDUCED_MOTION_QUERY = "(prefers-reduced-motion: reduce)";
 
 export function readReducedMotion(): boolean {
   return (

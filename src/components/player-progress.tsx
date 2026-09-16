@@ -61,7 +61,7 @@ function usePlayerProgress(songId: string, durationInMillis?: number) {
   return { at, left, length, scrub: setWanted, seek };
 }
 
-export function PlayerElapsed({ seconds, className }: { seconds: number; className?: string }) {
+function PlayerElapsed({ seconds, className }: { seconds: number; className?: string }) {
   return (
     <span
       className={cn("shrink-0 text-neutral-500 theme-fade-text dark:text-neutral-400", className)}
@@ -71,7 +71,7 @@ export function PlayerElapsed({ seconds, className }: { seconds: number; classNa
   );
 }
 
-export function PlayerSeek({
+function PlayerSeek({
   at,
   length,
   onScrub,
@@ -121,7 +121,7 @@ export function PlayerSeek({
   );
 }
 
-export function PlayerLength({
+function PlayerLength({
   length,
   left,
   className,

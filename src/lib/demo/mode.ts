@@ -4,7 +4,7 @@ import { readStorage, removeStorage, writeStorage } from "@/lib/storage/local";
 
 const STORAGE_KEY = "demo-mode";
 
-export const DEMO_QUERY_KEY = ["music-kit", "demo"];
+const DEMO_QUERY_KEY = ["music-kit", "demo"];
 
 let isOn = readStored();
 const listeners = createListeners();

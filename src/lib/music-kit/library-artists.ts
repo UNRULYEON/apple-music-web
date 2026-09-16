@@ -153,7 +153,7 @@ export function pickArtistId(
   return found?.id;
 }
 
-export async function fetchCatalogArtistId(
+async function fetchCatalogArtistId(
   album: Pick<LibraryAlbum, "type" | "id">,
   name: string,
 ): Promise<string | null> {
