@@ -1,6 +1,7 @@
+import { STORAGE_KEYS } from "@/lib/storage/keys";
 import { readStorage, removeStorage, writeStorage } from "@/lib/storage/local";
 
-const STORAGE_KEY = "notification-notice";
+const STORAGE_KEY = STORAGE_KEYS.notificationNotice;
 
 export function readNoticeShown(): boolean {
   return readStorage(STORAGE_KEY) !== undefined;

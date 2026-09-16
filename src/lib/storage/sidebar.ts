@@ -1,7 +1,8 @@
 import { BREAKPOINTS } from "@/lib/layout";
+import { STORAGE_KEYS } from "@/lib/storage/keys";
 import { readStorage, writeStorage } from "@/lib/storage/local";
 
-const STORAGE_KEY = "sidebar-open";
+const STORAGE_KEY = STORAGE_KEYS.sidebarOpen;
 const DESKTOP_QUERY = `(min-width: ${BREAKPOINTS.md}px)`;
 
 export function readStoredOpen(): boolean {

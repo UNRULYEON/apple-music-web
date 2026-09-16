@@ -1,9 +1,10 @@
 import { createListeners } from "@/lib/listeners";
+import { STORAGE_KEYS } from "@/lib/storage/keys";
 import { readStorage, writeStorage } from "@/lib/storage/local";
 
 export type Theme = "light" | "dark" | "system";
 
-const STORAGE_KEY = "theme";
+const STORAGE_KEY = STORAGE_KEYS.theme;
 const DARK_QUERY = "(prefers-color-scheme: dark)";
 
 const listeners = createListeners();

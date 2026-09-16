@@ -1,6 +1,7 @@
 // @vitest-environment happy-dom
 
 import { afterEach, describe, expect, it } from "vitest";
+import { STORAGE_KEYS } from "@/lib/storage/keys";
 import {
   forgetStoredQueue,
   readStoredQueue,
@@ -8,7 +9,7 @@ import {
   writeStoredQueue,
 } from "@/lib/storage/now-playing";
 
-const KEY = "now-playing";
+const KEY = STORAGE_KEYS.nowPlaying;
 
 const QUEUE = { songs: ["111", "222"], index: 1, source: { type: "albums" as const, id: "a.1" } };
 

@@ -6,6 +6,7 @@ import { fireConfetti } from "@/lib/confetti";
 import { setAuthStatus } from "@/lib/music-kit/auth";
 import { dropToken, restoreToken } from "@/lib/music-kit/dev-session";
 import { getMusicKit } from "@/lib/music-kit/instance";
+import { STORAGE_KEYS } from "@/lib/storage/keys";
 import { stubMusicKit } from "@/test/fake-music-kit";
 import { MusicKitGate } from "./music-kit-gate";
 
@@ -194,7 +195,7 @@ describe("MusicKitGate", () => {
   it("goes away when the devtools give the token back", async () => {
     const music = mockMusic("a-music-user-token");
     localStorage.setItem(
-      "music-kit-devtools.saved-token",
+      STORAGE_KEYS.devtoolsToken,
       JSON.stringify({ savedAt: new Date().toISOString(), token: "a-music-user-token" }),
     );
 

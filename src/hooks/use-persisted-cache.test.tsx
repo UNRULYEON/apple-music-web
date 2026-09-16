@@ -6,10 +6,11 @@ import { act, cleanup, render, screen, waitFor } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, type Mock, vi } from "vitest";
 import { CACHE_VERSION, createCachePersister } from "@/integrations/tanstack-query/persister";
 import { setAuthStatus } from "@/lib/music-kit/auth";
+import { STORAGE_KEYS } from "@/lib/storage/keys";
 import { usePersistedCache } from "./use-persisted-cache";
 import { useSignedInQuery } from "./use-signed-in-query";
 
-const STORE_KEY = "apple-music-web.cache";
+const STORE_KEY = STORAGE_KEYS.cache;
 const KEY = ["music-kit", "recently-played"];
 
 const STORED = { timeout: 3000 };

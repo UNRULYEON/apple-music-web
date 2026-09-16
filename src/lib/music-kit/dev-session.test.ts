@@ -10,11 +10,12 @@ import {
   restoreToken,
 } from "@/lib/music-kit/dev-session";
 import { getMusicKit } from "@/lib/music-kit/instance";
+import { STORAGE_KEYS } from "@/lib/storage/keys";
 import { stubMusicKit } from "@/test/fake-music-kit";
 
 vi.mock("@/lib/music-kit/instance", () => ({ getMusicKit: vi.fn() }));
 
-const SAVED_KEY = "music-kit-devtools.saved-token";
+const SAVED_KEY = STORAGE_KEYS.devtoolsToken;
 
 function mockMusic(token = "") {
   let current = token;
