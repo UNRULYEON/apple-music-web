@@ -1,8 +1,8 @@
 import { useQueryClient } from "@tanstack/react-query";
 import { useEffect } from "react";
-import { useDemoMode } from "@/lib/demo/mode";
-import { useAuthStatus } from "@/lib/music-kit/auth";
 import { recentlyPlayedQuery } from "@/lib/music-kit/recently-played";
+import { useAuthStatus } from "./use-auth-status";
+import { useDemoMode } from "./use-demo-mode";
 
 export function usePrefetchRecentlyPlayed(): void {
   const status = useAuthStatus();

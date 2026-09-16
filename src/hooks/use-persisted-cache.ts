@@ -6,8 +6,8 @@ import {
   CACHE_VERSION,
   createCachePersister,
 } from "@/integrations/tanstack-query/persister";
-import { useAuthStatus } from "@/lib/music-kit/auth";
 import { browserStorage } from "@/lib/storage/local";
+import { useAuthStatus } from "./use-auth-status";
 
 export function usePersistedCache(): void {
   const status = useAuthStatus();

@@ -14,7 +14,7 @@ export function readSavedAt(): string | undefined {
 }
 
 export async function keepSession(): Promise<boolean> {
-  const token = await liveToken();
+  const token = await fetchLiveToken();
 
   if (!token || token === readSaved()?.token) {
     return false;
@@ -50,7 +50,7 @@ async function setToken(token: string): Promise<boolean> {
   return isAuthorized;
 }
 
-async function liveToken(): Promise<string | undefined> {
+async function fetchLiveToken(): Promise<string | undefined> {
   return await getMusicKit()
     .then((music) => music.musicUserToken)
     .catch(() => undefined);

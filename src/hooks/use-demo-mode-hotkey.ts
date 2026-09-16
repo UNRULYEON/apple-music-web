@@ -4,7 +4,7 @@ import { toastManager } from "@/components/ui/toast";
 import { isDemoSource } from "@/lib/demo/library";
 import { readDemoMode, removeDemoQueries, setDemoMode } from "@/lib/demo/mode";
 import { DEMO_MODE_HOTKEY } from "@/lib/hotkeys";
-import { useAuthStatus } from "@/lib/music-kit/auth";
+import { useAuthStatus } from "./use-auth-status";
 import { usePlayer } from "./use-player";
 
 const TOAST_ID = "demo-mode";

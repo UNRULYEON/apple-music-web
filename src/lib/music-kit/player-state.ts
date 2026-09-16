@@ -1,3 +1,4 @@
+import { createListeners } from "@/lib/listeners";
 import { getMusicKit } from "@/lib/music-kit/instance";
 import { readSong, type Song } from "@/lib/music-kit/track";
 
@@ -45,15 +46,12 @@ let songs: Song[] = [];
 let instance: MusicKit.MusicKitInstance | undefined;
 let listening = false;
 
-const listeners = new Set<() => void>();
+const listeners = createListeners();
 
 export function subscribeToPlayer(listener: () => void): () => void {
-  listeners.add(listener);
   void listen();
 
-  return () => {
-    listeners.delete(listener);
-  };
+  return listeners.subscribe(listener);
 }
 
 export function readPlayerState(): PlayerState {
@@ -145,9 +143,7 @@ function readPlayback(): void {
     canSkipPrevious: music.capabilities?.canSkipToPreviousItem === true,
   };
 
-  for (const listener of listeners) {
-    listener();
-  }
+  listeners.notify();
 }
 
 function fromMusicKitRepeat(mode: number): RepeatMode {

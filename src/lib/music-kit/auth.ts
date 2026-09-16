@@ -1,14 +1,10 @@
-import { useSyncExternalStore } from "react";
+import { createListeners } from "@/lib/listeners";
 import { getMusicKit } from "@/lib/music-kit/instance";
 
 export type AuthStatus = "checking" | "signed-out" | "signed-in";
 
 let status: AuthStatus = "checking";
-const listeners = new Set<() => void>();
-
-export function useAuthStatus(): AuthStatus {
-  return useSyncExternalStore(subscribeToAuthStatus, readAuthStatus, readInitialStatus);
-}
+const listeners = createListeners();
 
 export function setAuthStatus(next: AuthStatus): void {
   if (next === status) {
@@ -17,12 +13,10 @@ export function setAuthStatus(next: AuthStatus): void {
 
   status = next;
 
-  for (const listener of listeners) {
-    listener();
-  }
+  listeners.notify();
 }
 
-export async function loadAuthorization(): Promise<void> {
+export async function checkAuthorization(): Promise<void> {
   const authorized = await getMusicKit()
     .then((music) => music.isAuthorized)
     .catch(() => false);
@@ -45,17 +39,13 @@ export async function signOut(): Promise<void> {
 }
 
 export function subscribeToAuthStatus(listener: () => void): () => void {
-  listeners.add(listener);
-
-  return () => {
-    listeners.delete(listener);
-  };
+  return listeners.subscribe(listener);
 }
 
 export function readAuthStatus(): AuthStatus {
   return status;
 }
 
-function readInitialStatus(): AuthStatus {
+export function readInitialAuthStatus(): AuthStatus {
   return "checking";
 }

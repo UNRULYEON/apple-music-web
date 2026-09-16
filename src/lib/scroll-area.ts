@@ -1,17 +1,11 @@
 import { animate } from "motion";
-import { EASE, TRANSITION_REVEAL } from "@/lib/motion";
+import { EASE, readReducedMotion, TRANSITION_REVEAL } from "@/lib/motion";
 
 export const SCROLL_AREA_ID = "main";
 
 export const SCROLL_AREA = `[data-scroll-restoration-id="${SCROLL_AREA_ID}"]`;
 
 const GLIDE = TRANSITION_REVEAL.duration;
-
-const REDUCED_MOTION = "(prefers-reduced-motion: reduce)";
-
-function wantsNoMotion(): boolean {
-  return window.matchMedia?.(REDUCED_MOTION).matches === true;
-}
 
 export function startAtTop(): void {
   requestAnimationFrame(() => {
@@ -21,7 +15,7 @@ export function startAtTop(): void {
       return;
     }
 
-    if (wantsNoMotion()) {
+    if (readReducedMotion()) {
       area.scrollTop = 0;
       return;
     }

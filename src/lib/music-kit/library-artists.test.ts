@@ -5,8 +5,8 @@ import {
   albumsOfArtist,
   fetchArtistPictures,
   fetchCatalogArtistPictures,
+  groupLibraryArtists,
   pickArtistId,
-  readLibraryArtists,
   searchArtists,
   withPictures,
 } from "@/lib/music-kit/library-artists";
@@ -58,9 +58,9 @@ function album(id: string, name: string, artist?: string, artwork?: string): Lib
   };
 }
 
-describe("readLibraryArtists", () => {
+describe("groupLibraryArtists", () => {
   it("counts the albums of each artist", () => {
-    const artists = readLibraryArtists([
+    const artists = groupLibraryArtists([
       album("1", "Kid A", "Radiohead"),
       album("2", "In Rainbows", "Radiohead"),
       album("3", "Vespertine", "Björk"),
@@ -73,7 +73,7 @@ describe("readLibraryArtists", () => {
   });
 
   it("sorts the artists by name", () => {
-    const artists = readLibraryArtists([
+    const artists = groupLibraryArtists([
       album("1", "Blue", "Joni Mitchell"),
       album("2", "Aja", "Steely Dan"),
       album("3", "Bitches Brew", "Miles Davis"),
@@ -87,7 +87,7 @@ describe("readLibraryArtists", () => {
   });
 
   it("takes the artwork of the first album that has one", () => {
-    const [artist] = readLibraryArtists([
+    const [artist] = groupLibraryArtists([
       album("1", "Kid A", "Radiohead"),
       album("2", "In Rainbows", "Radiohead", "https://example.test/rainbows"),
     ]);
@@ -96,16 +96,16 @@ describe("readLibraryArtists", () => {
   });
 
   it("leaves out an album that names no artist", () => {
-    expect(readLibraryArtists([album("1", "A voice memo")])).toEqual([]);
+    expect(groupLibraryArtists([album("1", "A voice memo")])).toEqual([]);
   });
 
   it("gives no artist for an empty library", () => {
-    expect(readLibraryArtists([])).toEqual([]);
+    expect(groupLibraryArtists([])).toEqual([]);
   });
 });
 
 describe("searchArtists", () => {
-  const artists = readLibraryArtists([
+  const artists = groupLibraryArtists([
     album("1", "Vespertine", "Björk"),
     album("2", "Kid A", "Radiohead"),
   ]);
@@ -160,7 +160,7 @@ describe("albumsOfArtist", () => {
 
 describe("withPictures", () => {
   it("gives an artist its own picture and keeps the album cover for the rest", () => {
-    const artists = readLibraryArtists([
+    const artists = groupLibraryArtists([
       album("1", "Seychelles", "Masayoshi Takanaka", "cover-1"),
       album("2", "Headphones", "Een Glish", "cover-2"),
     ]);
@@ -171,13 +171,13 @@ describe("withPictures", () => {
   });
 
   it("keeps the album covers while there are no pictures", () => {
-    const artists = readLibraryArtists([album("1", "Kid A", "Radiohead", "cover")]);
+    const artists = groupLibraryArtists([album("1", "Kid A", "Radiohead", "cover")]);
 
     expect(withPictures(artists, undefined)).toBe(artists);
   });
 
   it("does not take a name like constructor for a picture", () => {
-    const artists = readLibraryArtists([album("1", "Record", "constructor", "cover")]);
+    const artists = groupLibraryArtists([album("1", "Record", "constructor", "cover")]);
 
     expect(withPictures(artists, {})[0]?.artwork?.url).toBe("cover");
   });

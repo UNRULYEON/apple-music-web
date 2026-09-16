@@ -21,6 +21,7 @@ import {
 } from "@/components/ui/command";
 import { Tabs, TabsList, TabsTab } from "@/components/ui/tabs";
 import {
+  useAuthStatus,
   useCloseSidebarOnMobile,
   useDebounced,
   useIsHydrated,
@@ -30,12 +31,11 @@ import {
 import { count } from "@/lib/format";
 import { COMMAND_MENU_HOTKEY, resolveHotkey } from "@/lib/hotkeys";
 import { type LibraryAlbum, libraryAlbumsQuery } from "@/lib/music-kit/album";
-import { useAuthStatus } from "@/lib/music-kit/auth";
 import { type CatalogItem, catalogSearchQuery } from "@/lib/music-kit/catalog-search";
 import {
   artistPicturesQuery,
+  groupLibraryArtists,
   type LibraryArtist,
-  readLibraryArtists,
   searchArtists,
   withPictures,
 } from "@/lib/music-kit/library-artists";
@@ -165,7 +165,7 @@ function useLibraryResults(query: string): Found {
   const pictures = useSignedInQuery(artistPicturesQuery());
 
   const artists = useMemo(
-    () => withPictures(readLibraryArtists(albums.data ?? []), pictures.data),
+    () => withPictures(groupLibraryArtists(albums.data ?? []), pictures.data),
     [albums.data, pictures.data],
   );
 

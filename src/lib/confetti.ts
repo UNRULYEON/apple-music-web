@@ -1,3 +1,4 @@
+import { readReducedMotion } from "@/lib/motion";
 const COLOR_TOKENS = [
   "--color-chart-1",
   "--color-chart-2",
@@ -25,10 +26,7 @@ interface Piece {
 }
 
 export function fireConfetti(): void {
-  if (
-    typeof document === "undefined" ||
-    window.matchMedia?.("(prefers-reduced-motion: reduce)").matches
-  ) {
+  if (typeof document === "undefined" || readReducedMotion()) {
     return;
   }
 

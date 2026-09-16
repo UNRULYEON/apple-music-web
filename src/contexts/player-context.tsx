@@ -8,7 +8,7 @@ import {
   useState,
   useSyncExternalStore,
 } from "react";
-import { useAuthStatus } from "@/lib/music-kit/auth";
+import { useAuthStatus } from "@/hooks";
 import {
   changeToIndex,
   clearPlayback,

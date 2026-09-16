@@ -10,10 +10,15 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Spinner } from "@/components/ui/spinner";
-import { useDemoModeHotkey, usePersistedCache, useResetWhenSignedOut } from "@/hooks";
+import {
+  useAuthStatus,
+  useDemoModeHotkey,
+  usePersistedCache,
+  useResetWhenSignedOut,
+} from "@/hooks";
 import { fireConfetti } from "@/lib/confetti";
 import { TRANSITION } from "@/lib/motion";
-import { loadAuthorization, readAuthStatus, signIn, useAuthStatus } from "@/lib/music-kit/auth";
+import { checkAuthorization, readAuthStatus, signIn } from "@/lib/music-kit/auth";
 
 const SWAP = {
   initial: { opacity: 0, scale: 0.96, filter: "blur(2px)" },
@@ -31,7 +36,7 @@ export function MusicKitGate({ children }: { children: ReactNode }) {
   useDemoModeHotkey();
 
   useEffect(() => {
-    void loadAuthorization();
+    void checkAuthorization();
   }, []);
 
   async function startSignIn(): Promise<void> {

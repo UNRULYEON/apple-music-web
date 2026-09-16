@@ -33,7 +33,7 @@ afterEach(() => {
   vi.clearAllMocks();
 });
 
-describe("loadAuthorization", () => {
+describe("checkAuthorization", () => {
   it("starts as checking, before MusicKit answers", async () => {
     const { readAuthStatus } = await loadModule();
 
@@ -41,27 +41,27 @@ describe("loadAuthorization", () => {
   });
 
   it("reports a signed in user", async () => {
-    const { loadAuthorization, readAuthStatus } = await loadModule();
+    const { checkAuthorization, readAuthStatus } = await loadModule();
     loadMusicKit.mockResolvedValue(mockMusic(true));
 
-    await loadAuthorization();
+    await checkAuthorization();
 
     expect(readAuthStatus()).toBe("signed-in");
   });
 
   it("reports a user who has not signed in", async () => {
-    const { loadAuthorization, readAuthStatus } = await loadModule();
+    const { checkAuthorization, readAuthStatus } = await loadModule();
 
-    await loadAuthorization();
+    await checkAuthorization();
 
     expect(readAuthStatus()).toBe("signed-out");
   });
 
   it("reports signed out when MusicKit cannot start", async () => {
-    const { loadAuthorization, readAuthStatus } = await loadModule();
+    const { checkAuthorization, readAuthStatus } = await loadModule();
     loadMusicKit.mockRejectedValue(new Error("MUSICKIT_DEVELOPER_TOKEN is not set."));
 
-    await loadAuthorization();
+    await checkAuthorization();
 
     expect(readAuthStatus()).toBe("signed-out");
   });
@@ -91,10 +91,10 @@ describe("signIn", () => {
 
 describe("signOut", () => {
   it("ends the Apple session and moves the store", async () => {
-    const { loadAuthorization, signOut, readAuthStatus } = await loadModule();
+    const { checkAuthorization, signOut, readAuthStatus } = await loadModule();
     const music = mockMusic(true);
     loadMusicKit.mockResolvedValue(music);
-    await loadAuthorization();
+    await checkAuthorization();
 
     await signOut();
 

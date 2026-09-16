@@ -1,5 +1,5 @@
 import type { QueryClient } from "@tanstack/react-query";
-import { useSyncExternalStore } from "react";
+import { createListeners } from "@/lib/listeners";
 import { readStorage, removeStorage, writeStorage } from "@/lib/storage/local";
 
 const STORAGE_KEY = "demo-mode";
@@ -7,11 +7,7 @@ const STORAGE_KEY = "demo-mode";
 export const DEMO_QUERY_KEY = ["music-kit", "demo"];
 
 let isOn = readStored();
-const listeners = new Set<() => void>();
-
-export function useDemoMode(): boolean {
-  return useSyncExternalStore(subscribeToDemoMode, readDemoMode, readServerDemoMode);
-}
+const listeners = createListeners();
 
 export function readDemoMode(): boolean {
   return isOn;
@@ -25,9 +21,7 @@ export function setDemoMode(next: boolean): void {
   isOn = next;
   writeStored(next);
 
-  for (const listener of listeners) {
-    listener();
-  }
+  listeners.notify();
 }
 
 export function demoQueryKey(name: string): string[] {
@@ -39,14 +33,10 @@ export function removeDemoQueries(client: QueryClient): void {
 }
 
 export function subscribeToDemoMode(listener: () => void): () => void {
-  listeners.add(listener);
-
-  return () => {
-    listeners.delete(listener);
-  };
+  return listeners.subscribe(listener);
 }
 
-function readServerDemoMode(): boolean {
+export function readInitialDemoMode(): boolean {
   return false;
 }
 
