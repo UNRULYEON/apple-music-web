@@ -34,8 +34,6 @@ function Probe() {
   return <div>{data ?? "nothing"}</div>;
 }
 
-// a mounted view makes an empty query for its key again, so what counts is that no
-// query holds an answer any more
 function held() {
   return client
     .getQueryCache()

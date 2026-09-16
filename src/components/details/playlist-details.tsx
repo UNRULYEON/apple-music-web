@@ -18,8 +18,6 @@ export function PlaylistDetails({ type, id }: { type: PlaylistType; id: string }
 
   const modified = playlist?.lastModifiedDate ?? playlist?.dateAdded;
 
-  // the search narrows the list of songs. The header and the foot go on telling a
-  // person about the whole playlist, so Play still plays it whole.
   const { term } = useSearch();
   const songs = playlist?.songs;
   const shown = useMemo(() => searchSongs(songs ?? [], term), [songs, term]);

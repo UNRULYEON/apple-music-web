@@ -22,8 +22,6 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 vi.mock("@/lib/music-kit/instance", () => ({ getMusicKit: vi.fn() }));
 
-// the player sits in the shell, above the router, so the tests give it the view alone.
-// Not opening the screen a person is already on is useView's own rule.
 const openView = vi.fn();
 
 vi.mock("@/hooks/use-view", () => ({
@@ -55,8 +53,6 @@ function clock(selector: string): HTMLElement {
   return found;
 }
 
-// a rolling number keeps the text a person reads in one span of its own and a copy of
-// it out of sight, which it measures against, so only the first one is read here
 function reads(selector: string): string {
   return [...clock(selector).childNodes]
     .map((node) =>
@@ -143,12 +139,10 @@ function loadQueue(items: MusicKit.MediaItem[], index = 0) {
   act(() => music.emit("queueItemsDidChange", items));
 }
 
-// a person pressing play is what makes the app want sound at all
 function start() {
   fireEvent.click(screen.getByLabelText("Play"));
 }
 
-// the progress bar reaches MusicKit only once the bar itself is on screen
 async function waitForSeekBar() {
   await waitFor(() =>
     expect(music.addEventListener).toHaveBeenCalledWith(
@@ -300,7 +294,6 @@ describe("Player", () => {
 
     fireEvent.click(screen.getByLabelText("Next song"));
 
-    // MusicKit goes through stopped, where it neither plays nor loads
     setState(PLAYBACK_STATES.stopped);
     expect(screen.queryByLabelText("Play")).toBeNull();
     expect(screen.getByLabelText("Stop loading")).toBeTruthy();
@@ -337,11 +330,9 @@ describe("Player", () => {
 
     fireEvent.click(screen.getByLabelText("Stop loading"));
 
-    // nothing on the screen says a song is still coming
     expect(screen.getByLabelText("Play")).toBeTruthy();
     expect(screen.queryByLabelText("Stop loading")).toBeNull();
 
-    // MusicKit finished loading behind the scenes and started the song anyway
     setState(PLAYBACK_STATES.playing);
 
     expect(screen.getByLabelText("Play")).toBeTruthy();
@@ -455,7 +446,6 @@ describe("Player", () => {
 
     expect(elapsed()).toBe("0:57");
 
-    // MusicKit is still back where the song was
     setTime(43, 210);
     expect(elapsed()).toBe("0:57");
 

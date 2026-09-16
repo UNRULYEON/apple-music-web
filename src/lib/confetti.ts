@@ -104,7 +104,6 @@ export function fireConfetti(): void {
     context.rotate(piece.tilt);
     context.globalAlpha = alpha;
     context.fillStyle = piece.color;
-    // the cosine squashes the paper as it turns, so the piece flutters
     context.fillRect(
       -piece.size / 2,
       -piece.size / 4,
@@ -137,7 +136,6 @@ function createPiece(width: number, height: number, colors: string[]): Piece {
   };
 }
 
-// a token reads back as `var(...)`, so let the browser resolve it on a probe
 function readColors(): string[] {
   const probe = document.createElement("span");
   probe.style.display = "none";

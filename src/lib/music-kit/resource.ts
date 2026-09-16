@@ -2,8 +2,6 @@ const CROP = "bb";
 const FORMAT = "jpg";
 
 export interface Artist {
-  // only an artist that came from a relationship has one. The display string a song
-  // carries, "A & B", cannot be cut into names an id could be found for.
   id?: string;
   name: string;
 }
@@ -77,7 +75,6 @@ export function readArtist(value: unknown): Artist | undefined {
   return readName(value);
 }
 
-// an artist out of a relationship, which names one artist and gives its id
 export function readArtistRef(value: unknown): Artist | undefined {
   if (typeof value !== "object" || value === null) {
     return undefined;
@@ -137,7 +134,6 @@ export function readArtwork(value: unknown): Artwork | undefined {
   };
 }
 
-// the api gives a hex color without the leading hash
 function readColor(value: unknown): string | undefined {
   return typeof value === "string" && value !== "" ? `#${value}` : undefined;
 }
@@ -160,7 +156,6 @@ export function readNumber(value: unknown): number | undefined {
   return typeof value === "number" ? value : undefined;
 }
 
-// editorial notes and playlist descriptions share this shape
 export function readStandard(value: unknown): string | undefined {
   if (typeof value !== "object" || value === null) {
     return undefined;

@@ -20,15 +20,10 @@ export function useView(): ViewNavigation {
 
   const view = isHydrated ? (stored ?? HOME) : HOME;
 
-  // the name of the screen, not the view itself, so opening keeps the same identity
-  // from one render to the next
   const key = viewKey(view);
 
   const open = useCallback(
     (next: View) => {
-      // asking again for the screen a person is already on takes them to its start, the
-      // way a tab bar does. A step in the history that leads nowhere would give them
-      // nothing but a back button that does not go back.
       if (viewKey(next) === key) {
         startAtTop();
         return;

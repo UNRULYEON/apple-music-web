@@ -17,8 +17,6 @@ export function usePlaybackTime() {
   );
 
   const seek = useCallback((seconds: number) => {
-    // a song that is not open takes no time from MusicKit, so the place a person moves
-    // the thumb to is held with the rest and goes to the song when it starts
     if (readHeldPlaybackTime() !== undefined) {
       holdPlaybackTime(seconds);
     }

@@ -244,14 +244,12 @@ describe("PlayerProvider", () => {
       ];
       act(() => music.emit("queueItemsDidChange", music.queue.items));
 
-      // three taps while MusicKit is still on the first song
       act(() => seen.current?.next());
       act(() => seen.current?.next());
       act(() => seen.current?.next());
 
       expect(music.changeToMediaAtIndex).not.toHaveBeenCalled();
 
-      // the bar has already moved on, so the taps feel answered
       expect(seen.current?.nowPlaying?.name).toBe("Four");
 
       await act(async () => {
@@ -349,7 +347,6 @@ describe("PlayerProvider", () => {
     act(() => seen.current?.toggle());
     act(() => seen.current?.toggle());
 
-    // MusicKit loaded the song and started it, though nobody asked
     music.playbackState = PLAYBACK_STATES.playing;
     act(() =>
       music.emit("playbackStateDidChange", { oldState: 1, state: PLAYBACK_STATES.playing }),
@@ -528,7 +525,6 @@ describe("PlayerProvider", () => {
   it("takes a person back to the place they left off at when the song starts", async () => {
     await restoreAt(1, 42);
 
-    // MusicKit opens the song only when it plays, so nothing is asked for before that
     expect(music.seekToTime).not.toHaveBeenCalled();
 
     startsPlaying(1);
@@ -568,7 +564,6 @@ describe("PlayerProvider", () => {
 
     await waitFor(() => expect(music.seekToTime).toHaveBeenCalledWith(42));
 
-    // what MusicKit reports while the song is still on its way to the place
     music.currentPlaybackTime = 0.4;
     act(() => music.emit("playbackTimeDidChange", { currentPlaybackTime: 0.4 }));
 
@@ -625,7 +620,6 @@ describe("PlayerProvider", () => {
   it("keeps the place a person came back to until the song has it again", async () => {
     await restoreAt(1, 42);
 
-    // the song starts again at nought, and its first seconds must not rub out the place
     music.currentPlaybackTime = 1.2;
     act(() => music.emit("playbackTimeDidChange", { currentPlaybackTime: 1.2 }));
 
@@ -635,7 +629,6 @@ describe("PlayerProvider", () => {
   it("keeps a place a person moves the thumb to before the song starts", async () => {
     await restoreAt(1, 42);
 
-    // what the bar does with a thumb that lands before the first sound
     act(() => holdPlaybackTime(90));
 
     await waitFor(() => expect(readStoredQueue()?.position).toBe(90));

@@ -18,8 +18,6 @@ function skeleton() {
   return document.querySelector(SKELETON);
 }
 
-// happy-dom calls every image complete with no width, which the component reads as a
-// picture that cannot be shown. These tests say when an image is done themselves.
 const original = Object.getOwnPropertyDescriptor(HTMLImageElement.prototype, "complete");
 
 beforeEach(() => {
@@ -44,8 +42,6 @@ describe("ArtworkImage", () => {
     expect(skeleton()).toBeTruthy();
   });
 
-  // a long list keeps only the rows in sight, so a row that comes back must not reveal
-  // its picture again and read as the list flashing
   it("shows a picture it has shown before at once", () => {
     show(cover("two"));
     fireEvent.load(screen.getByAltText("Cover"));

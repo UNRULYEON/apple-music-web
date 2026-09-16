@@ -81,7 +81,6 @@ describe("withoutNodeMark", () => {
 
     await expect(waiting).resolves.toBe("done");
 
-    // a script MusicKit fetches would run in a turn like this one, and must find it
     expect(duringMacrotask).toBe(shim);
   });
 

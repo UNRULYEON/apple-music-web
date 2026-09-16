@@ -31,10 +31,6 @@ function credit(item: RecentlyPlayedItem): string | undefined {
 
 export const Route = createFileRoute("/")({ component: Home });
 
-// The shell keeps two places open for the route, one inside the other, and writes
-// nothing in either. A route that is split off is not loaded when the server writes
-// them, which is why there are two. React counts these places while it takes the page
-// over, so the browser has to keep the same number and leave them as empty.
 function Home() {
   return (
     <Suspense fallback={null}>
@@ -86,7 +82,6 @@ function RecentlyPlayed() {
           name: item.name,
           credit: credit(item),
           artwork: item.artwork,
-          // a station has nothing to show, so it plays where a person taps it
           onClick: () =>
             item.type === "stations"
               ? playStation(item.id)

@@ -57,7 +57,6 @@ describe("readView", () => {
     ["a detail without an id", { name: "detail", type: "albums" }],
     ["a detail with an id that is not a string", { name: "detail", type: "albums", id: 1 }],
     ["a detail with an unknown type", { name: "detail", type: "movies", id: "a.1" }],
-    // a station only plays, so it has no screen to go back to
     ["a station", { name: "detail", type: "stations", id: "ra.1" }],
   ])("gives no view for %s", (_name, value) => {
     expect(readView(value)).toBeUndefined();
@@ -93,7 +92,6 @@ describe("viewKey", () => {
     expect(viewKey(view)).toBe(key);
   });
 
-  // both show the recently played songs, so both keep one place
   it("gives home and recently played one name", () => {
     expect(viewKey({ name: "home" })).toBe(viewKey({ name: "list", list: "recently-played" }));
   });

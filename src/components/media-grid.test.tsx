@@ -6,7 +6,6 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 
 afterEach(cleanup);
 
-// what the css grid drew: repeat(auto-fill, minmax(min(13rem, 50% - 1rem), 1fr))
 function cssColumns(width: number): number {
   const gap = gapFor(width);
   const smallest = Math.min(208, width / 2 - 16);
@@ -73,8 +72,6 @@ describe("sameMetrics", () => {
 });
 
 describe("the node the grid hands on", () => {
-  // AnimatePresence needs it to take the grid out of the flow while it leaves. Without
-  // it the grid keeps its space and the state that follows sits under it.
   it("goes to a ref object", () => {
     const ref = createRef<HTMLDivElement>();
 

@@ -17,7 +17,6 @@ export function LibraryMark({
   return (
     <TooltipProvider delay={INTENT_DELAY}>
       <Tooltip>
-        {/* a span, not the default button, because a track row is itself a button */}
         <TooltipTrigger render={<span />} className="inline-flex items-center gap-1">
           <HugeiconsIcon
             icon={CheckmarkCircle02Icon}

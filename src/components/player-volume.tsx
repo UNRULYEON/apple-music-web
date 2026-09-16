@@ -13,7 +13,6 @@ import { SliderPrimitive } from "./ui/slider";
 const PERCENT = 100;
 const STEP = 0.01;
 
-// arrow keys move a hundredth, page keys a tenth
 const LARGE_STEP = 0.1;
 
 const HALF = 0.5;
@@ -215,8 +214,6 @@ export function PlayerVolume() {
             <PopoverPrimitive.Popup
               className={cn(
                 "px-0.5 py-2 bg-neutral-100 dark:bg-neutral-950 border border-neutral-200 dark:border-neutral-800 rounded-full",
-                // it grows out of the corner of the button it belongs to, which the
-                // positioner works out again whenever the popup has to move
                 "origin-(--transform-origin) will-change-[transform,opacity]",
                 "transition-[transform,opacity,background-color,border-color] duration-(--dropdown-open-dur) ease-(--dropdown-ease)",
                 "data-starting-style:scale-(--dropdown-pre-scale) data-starting-style:opacity-0",

@@ -1,8 +1,6 @@
 import { useView } from "@/hooks";
 import type { Artist } from "@/lib/music-kit/resource";
 
-// the artists of a song, one after another, each leading to its own screen. Apple sends
-// them only when it is asked, so a song without them keeps its plain text.
 export function ArtistLinks({
   artists,
   fallback,
@@ -36,8 +34,6 @@ function ArtistLink({
   onOpen: ReturnType<typeof useView>["open"];
   onNavigate?: () => void;
 }) {
-  // a track row is itself a button, so this is a span. The tap must not reach the row
-  // behind it, or a person who asks for an artist would start the song instead.
   function go(event: { stopPropagation: () => void }) {
     event.stopPropagation();
     onOpen({ name: "detail", type: "artists", id: artist.id ?? "" });

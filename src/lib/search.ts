@@ -1,5 +1,3 @@
-// a person types what they remember, not what Apple stored. The match ignores case and
-// accent marks, so "bjork" finds "Björk", and it looks anywhere in the text.
 export function matchesSearch(term: string, ...fields: (string | undefined)[]): boolean {
   const wanted = plain(term);
 

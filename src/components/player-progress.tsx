@@ -8,15 +8,10 @@ import { SliderPrimitive } from "./ui/slider";
 const MILLIS_PER_SECOND = 1000;
 const SECONDS_PER_MINUTE = 60;
 
-// as long as the rest of the player takes to move, and short enough that a second is
-// over before the next one arrives
 const ROLL = 240;
 
-// the seconds keep both places, so 0:07 does not turn into 0:7
 const SECONDS_FORMAT = { minimumIntegerDigits: 2 } as const;
 
-// the minutes and the seconds roll on their own, so a minute that does not change
-// stands still while the seconds move under it
 function RollingClock({ seconds, sign, slot }: { seconds: number; sign?: string; slot: string }) {
   const whole = Math.max(Math.round(seconds), 0);
 
@@ -29,12 +24,8 @@ function RollingClock({ seconds, sign, slot }: { seconds: number; sign?: string;
   );
 }
 
-// arrow keys move a second, page keys a quarter minute
 const LARGE_STEP = 15;
 
-// how near MusicKit must come to the place a person let the thumb go before the bar
-// follows MusicKit again. A seek takes a moment to land and the bar must not fall
-// back to where the song was in the meantime.
 const LANDED = 1.5;
 
 interface PlayerProgressProps {
@@ -48,11 +39,8 @@ const CLOCKS = "min-w-0 text-[9px] tabular-nums";
 export function usePlayerProgress(songId: string, durationInMillis?: number) {
   const { position, duration, seek } = usePlaybackTime();
 
-  // where a person has put the thumb, which runs ahead of where MusicKit has arrived
   const [wanted, setWanted] = useState<number | undefined>(undefined);
 
-  // a new song starts at the beginning, so a place asked for in the song before it
-  // must go, while the time a person picked stays
   const [seen, setSeen] = useState(songId);
 
   if (seen !== songId) {
@@ -60,8 +48,6 @@ export function usePlayerProgress(songId: string, durationInMillis?: number) {
     setWanted(undefined);
   }
 
-  // MusicKit gives the length only once it has the song open, the catalog gives it
-  // before that, so a song that has not started still shows how long it is
   const length = duration || (durationInMillis ?? 0) / MILLIS_PER_SECOND;
   const at = Math.min(wanted ?? position, length);
   const left = Math.max(length - at, 0);

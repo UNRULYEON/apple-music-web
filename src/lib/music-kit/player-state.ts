@@ -76,7 +76,6 @@ export function toMusicKitRepeat(mode: RepeatMode): number {
   return mode === "queue" ? MusicKit.PlayerRepeatMode.all : MusicKit.PlayerRepeatMode.none;
 }
 
-// only for the tests, which need a store that forgets what an earlier test taught it
 export function resetPlayerState(): void {
   state = EMPTY_STATE;
   songs = [];

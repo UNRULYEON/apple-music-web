@@ -6,8 +6,6 @@ import { fetchStorefront } from "@/lib/music-kit/storefront";
 const INCLUDE = "albums";
 const SOURCE_STALE = 24 * 60 * 60 * 1000;
 
-// the album a song sits on. A queue that came back without the album or the playlist it
-// was built from still leads somewhere with this.
 export async function fetchSongSource(id: string): Promise<QueueSource | null> {
   const storefront = await fetchStorefront();
   const music = await getMusicKit();
@@ -37,7 +35,6 @@ function readId(value: unknown): string | undefined {
   return typeof id === "string" ? id : undefined;
 }
 
-// asked for only when the queue holds no album or playlist of its own
 export function songSourceQuery(id?: string) {
   return {
     queryKey: ["music-kit", "song-source", id],

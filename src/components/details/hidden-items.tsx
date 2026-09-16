@@ -1,5 +1,3 @@
-// a search takes rows out of a list. This says so, or a person could think the list
-// holds fewer rows than it does.
 export function HiddenItems({
   shown,
   total,

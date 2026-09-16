@@ -71,17 +71,12 @@ export type PlayerContextType = PlayerState & {
   close: () => void;
 };
 
-// long enough to gather a burst of taps, short enough that one tap still feels direct
 const SKIP_SETTLE = 150;
 
-// a broken session is built again at most this often, so a song that always fails
-// cannot put the app in a loop
 const REBUILD_GAP = 5000;
 
-// how long the button waits for a song that was asked for before it gives up on it
 const STARTING_LIMIT = 20_000;
 
-// how long the bar holds a place for a song that does not take it
 const GIVE_BACK = 3000;
 
 export const PlayerContext = createContext<PlayerContextType | undefined>(undefined);
@@ -91,20 +86,13 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
   const { index, queue, isPlaying, isLoading, isShuffled, repeat } = state;
   const status = useAuthStatus();
 
-  // where the taps have asked to go, which runs ahead of where MusicKit has arrived
   const [wanted, setWanted] = useState<number | undefined>(undefined);
   const timer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
 
-  // what the person asked for. MusicKit keeps loading a song after a pause and plays
-  // it when it is ready, so the app holds the wish itself and puts MusicKit back.
   const [wantsSound, setWantsSound] = useState(false);
 
-  // the album or the playlist the queue was built from, which MusicKit does not keep
   const [source, setSource] = useState<QueueSource | undefined>(undefined);
 
-  // a song was asked for and has not started yet. MusicKit passes through stopped on
-  // the way, where it is neither playing nor loading, and the button must not read
-  // that moment as "paused" and show a play icon in the middle of a skip.
   const [isStarting, setStarting] = useState(false);
   const startingTimer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
 
@@ -125,7 +113,6 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
     }
   }, [isPlaying, startsNoMore]);
 
-  // the song finished loading and MusicKit started it, though nobody asked it to
   useEffect(() => {
     if (!wantsSound && isPlaying) {
       void pausePlayback().catch(() => undefined);
@@ -140,15 +127,8 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
     }
   }, [index, wanted]);
 
-  // the queue a person left behind comes back as it was, at the same song and from the
-  // same album or playlist, but with nothing playing. The songs come back only while
-  // the player holds nothing, so it never takes a song away from a person who is
-  // quicker than the sign in. The album or the playlist comes back either way, so a
-  // player that already holds the queue still knows where the songs came from.
   const [isRestored, setRestored] = useState(false);
 
-  // which song the held place belongs to. The place itself lives with the playback
-  // time, so the bar shows it and a person can move it before the song starts.
   const pending = useRef<{ index: number } | undefined>(undefined);
   const giveBack = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
 
@@ -184,9 +164,6 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
     });
   }, [isRestored, queue.length, status]);
 
-  // the held place goes to the song at its first sound, and the bar keeps showing it
-  // until the seek lands. It is used once, and only on the song it belongs to, so a
-  // person who skips before they press play starts that song at its beginning.
   useEffect(() => {
     const place = pending.current;
     const held = readHeldPlaybackTime();
@@ -202,8 +179,6 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
       return;
     }
 
-    // the song takes the bar back when it arrives. This is only for a song that never
-    // does, so the bar cannot sit on a place it will never reach.
     void seekTo(held)
       .catch(() => undefined)
       .finally(() => {
@@ -211,10 +186,6 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
       });
   }, [index, isPlaying]);
 
-  // the place in the song, kept once a second and never at nought. The time moves many
-  // times a second, and a song at its start has no place worth keeping. A held place
-  // stands in for the time of the song, so this keeps that instead until it is given
-  // back, and a person who moves the thumb before the first sound comes back there.
   useEffect(() => {
     if (status !== "signed-in") {
       return;
@@ -234,8 +205,6 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
     });
   }, [status]);
 
-  // nothing of the player is left behind for the next person at this browser. The queue
-  // and the way it was played go with the session, and the bar goes with them.
   useEffect(() => {
     if (status !== "signed-out") {
       return;
@@ -252,10 +221,6 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
     void clearPlayback().catch(() => undefined);
   }, [startsNoMore, status]);
 
-  // what the player holds is kept for the next time. An empty player writes nothing, so
-  // what a person left behind stays until they sign out. A queue with no album or
-  // playlist writes nothing before the stored one has come back either, so a queue that
-  // arrives early cannot rub out the album or the playlist a person left behind.
   useEffect(() => {
     if (queue.length === 0 || (!isRestored && !source)) {
       return;
@@ -300,7 +265,6 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
 
   useEffect(silenceKnownRejections, []);
 
-  // the newest queue and place in it, for the rebuild, which must not hold an old one
   const latest = useRef({ queue, index });
   latest.current = { queue, index };
   const rebuiltAt = useRef(0);
@@ -364,7 +328,6 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
     [startsNoMore, startsSoon],
   );
 
-  // a station has no screen and no list of songs to show, so it only plays
   const playStation: PlayerContextType["playStation"] = useCallback(
     (id) => {
       pending.current = undefined;
@@ -406,9 +369,6 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
 
       const target = to > last ? 0 : to < 0 ? (repeat === "queue" ? last : 0) : to;
 
-      // the bar follows the taps at once, while only the song a person lands on is
-      // fetched. Every song opened on the way would ask Apple for a key and then
-      // drop it half way, which is what makes MusicKit complain about the key.
       setWanted(target);
       setWantsSound(true);
       asked.current = true;
@@ -416,7 +376,6 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
       clearTimeout(timer.current);
 
       timer.current = setTimeout(() => {
-        // a skip that does not land is not something a person needs told
         void changeToIndex(target).catch(() => undefined);
       }, SKIP_SETTLE);
     },
@@ -426,7 +385,6 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
   const next = useCallback(() => step(1), [step]);
   const previous = useCallback(() => step(-1), [step]);
 
-  // a tap while the song loads gives up on it, so a person is never stuck watching it
   const toggle = useCallback(() => {
     if (wantsSound) {
       setWantsSound(false);
@@ -512,8 +470,6 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
       index: shown,
       nowPlaying: queue[shown] ?? state.nowPlaying,
       upNext: queue.slice(shown + 1),
-      // a person who has paused is shown a paused player, whatever MusicKit is
-      // busy with behind it
       isPlaying: wantsSound && isPlaying,
       isLoading: wantsSound && !isPlaying && (isLoading || isStarting),
       play,

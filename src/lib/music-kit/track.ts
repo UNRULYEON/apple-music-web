@@ -14,8 +14,6 @@ export interface Song {
   id: string;
   name: string;
   artist?: Artist;
-  // every artist of the song, each with an id of its own. Apple sends these only when
-  // the request asks for them, so a song can hold none and still show its artist text.
   artists?: Artist[];
   artwork?: Artwork;
   discNumber?: number;
@@ -27,7 +25,6 @@ export interface Song {
   inLibrary?: boolean;
 }
 
-// a person looks for a song by what the list shows of it: its name and who plays it
 export function searchSongs(songs: Song[], term: string): Song[] {
   return songs.filter((song) => matchesSearch(term, song.name, song.artist?.name));
 }
@@ -50,8 +47,6 @@ export function discStarts(songs: Song[]): Map<number, number> {
   return starts.size > 1 ? starts : new Map();
 }
 
-// a song in the library and the song the player queues from the catalog
-// hold the same music under two ids
 export function isSameSong(one?: Song, other?: Song): boolean {
   if (!one || !other) {
     return false;
@@ -96,7 +91,6 @@ export function readSong(value: unknown): Song | undefined {
   };
 }
 
-// a song in the library plays from its catalog id when it has one
 function readPlayId(value: unknown): string | undefined {
   if (typeof value !== "object" || value === null) {
     return undefined;

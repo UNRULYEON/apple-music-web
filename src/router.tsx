@@ -7,9 +7,6 @@ import { SCROLL_AREA } from "@/lib/scroll-area";
 import { HOME, isTopLevel, readView, viewKey, type View } from "@/lib/views/view";
 import type { ParsedLocation } from "@tanstack/react-router";
 
-// a top level view keeps the place a person left it, so moving between recently played
-// and albums arrives back where they were. A destination opens at its start, under the
-// step in the history it was opened from.
 function scrollRestorationKey(location: ParsedLocation): string {
   const view = readView(location.state.view) ?? HOME;
 
@@ -24,8 +21,6 @@ export function getRouter() {
     routeTree,
     context,
     scrollRestoration: true,
-    // the shell keeps one scroll area for every view. Without this the router carries
-    // the place a person left the view before onto the view they open.
     scrollToTopSelectors: [SCROLL_AREA],
     getScrollRestorationKey: scrollRestorationKey,
     defaultPreload: "intent",

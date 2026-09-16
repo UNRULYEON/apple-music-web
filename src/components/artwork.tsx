@@ -13,9 +13,6 @@ const SHARP = { opacity: 1, filter: "blur(0px)" };
 const FADED = { opacity: 0 };
 const OPAQUE = { opacity: 1 };
 
-// the pictures a person has already been shown. A long list keeps only the rows in
-// sight, so a row that comes back would reveal its picture again, which reads as the
-// list flashing while it scrolls.
 const shown = new Set<string>();
 
 interface ArtworkImageProps {
@@ -76,7 +73,6 @@ function SingleArtworkImage({
     setStatus("loaded");
   }, [url]);
 
-  // a cached image can finish before react attaches onLoad
   const settle = useCallback(
     (img: HTMLImageElement | null) => {
       if (!img?.complete) {

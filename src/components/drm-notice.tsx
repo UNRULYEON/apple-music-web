@@ -2,7 +2,6 @@ import { hasDrm } from "@/lib/music-kit/drm";
 import { reportMissingDrm } from "@/lib/player/report";
 import { useEffect } from "react";
 
-// let the app settle before the bad news
 export const NOTICE_DELAY = 3000;
 
 export function DrmNotice(): null {

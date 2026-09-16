@@ -22,7 +22,6 @@ export function isSameSource(one?: QueueSource, other?: QueueSource): boolean {
   return one !== undefined && other !== undefined && one.type === other.type && one.id === other.id;
 }
 
-// what Apple calls the error tells a person more than the message behind it
 const ERROR_REASONS: Record<string, string> = {
   ACCESS_DENIED: "Apple Music does not give this app access to that song.",
   AGE_VERIFICATION: "Apple Music wants an age check for that song.",
@@ -75,8 +74,6 @@ export async function playSongs(songs: Song[], options: PlayOptions = {}): Promi
     return;
   }
 
-  // MusicKit starts a shuffled queue at the song it was given, so a shuffle that nobody
-  // pointed at a song starts at a random one
   const startWith =
     options.startAt ?? (options.shuffle ? Math.floor(Math.random() * ids.length) : 0);
 
@@ -142,8 +139,6 @@ function readMessage(cause: unknown): string {
   return typeof message === "string" ? message : "";
 }
 
-// a station is an endless queue that Apple builds and keeps filling, so the app hands
-// over the name of it and nothing else
 export async function playStation(id: string): Promise<void> {
   await requireDrm();
 
@@ -172,8 +167,6 @@ export async function queueLast(songs: Song[]): Promise<void> {
   await music.playLater({ songs: songs.map((song) => song.playId ?? song.id) });
 }
 
-// the queue a person left behind is built again the way it was built the first time,
-// only without a song starting. Nothing is played, so this asks for no DRM.
 export async function queueWithoutPlaying(songs: string[], startAt: number): Promise<void> {
   const music = await getMusicKit();
 
@@ -185,7 +178,6 @@ export async function resumePlayback(): Promise<void> {
 
   const music = await getMusicKit();
 
-  // MusicKit turns a second play() down, so only ask when it is not playing already
   if (music.isPlaying) {
     return;
   }
@@ -211,11 +203,6 @@ export async function stopPlayback(): Promise<void> {
   music.stop();
 }
 
-// jumping straight to a position drops whatever is loading, so a second tap never
-// waits for the song a first tap started. The stop first is what lets the song being
-// left behind take its key session down cleanly, instead of FairPlay finding it gone.
-// the player belongs to the person who signed in: the sound stops, the queue goes, and
-// the way it was being played goes back to where it started
 export async function clearPlayback(): Promise<void> {
   const music = await getMusicKit();
 
@@ -246,8 +233,6 @@ export async function setRepeatMode(mode: RepeatMode): Promise<void> {
   music.repeatMode = toMusicKitRepeat(mode);
 }
 
-// a key or DRM session that broke leaves the player unable to start anything at all,
-// so it needs the queue built again rather than a word to the person
 const BROKEN_SESSION = new Set(["MEDIA_KEY", "MEDIA_SESSION", "MEDIA_LICENSE"]);
 
 export async function subscribeToPlaybackErrors(listeners: {
@@ -276,9 +261,6 @@ export async function subscribeToPlaybackErrors(listeners: {
   };
 }
 
-// MusicKit asks itself to play while it is still starting a song, then leaves the
-// refusal to nobody. It happens on a quick skip and nothing is wrong, so this keeps
-// that one complaint out of the console and lets every other one through.
 const KNOWN_COMPLAINT = "play() method was called without";
 
 export function silenceKnownRejections(): () => void {
@@ -296,7 +278,6 @@ export function silenceKnownRejections(): () => void {
   return () => globalThis.removeEventListener("unhandledrejection", handle);
 }
 
-// the queue came back empty, so find out what the catalog says about the song itself
 async function askTheCatalog(id: string): Promise<string> {
   try {
     const storefront = await fetchStorefront();

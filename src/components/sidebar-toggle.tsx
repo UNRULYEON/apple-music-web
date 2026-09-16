@@ -15,8 +15,6 @@ export function SidebarToggle() {
   const showsMobile = isHydrated && isMobile;
   const [canPeek, setCanPeek] = useState(false);
 
-  // the hot zone must not catch the cursor while the sidebar is still sliding shut
-  // it is a pointer affordance, thus it must not show on a small screen
   useEffect(() => {
     if (showsOpen || showsMobile) {
       setCanPeek(false);
