@@ -1,3 +1,4 @@
+import { queryOptions } from "@tanstack/react-query";
 import { DEMO_LIBRARY } from "@/lib/demo/library";
 import { demoQueryKey, readDemoMode } from "@/lib/demo/mode";
 import { fetchCatalogResources } from "@/lib/music-kit/catalog-resources";
@@ -23,6 +24,7 @@ const SONG_PARAMS = { include: INCLUDE, "include[songs]": "artists" } as const;
 const LIBRARY_PATH = "/v1/me/library/albums";
 const CATALOG_PATH = "/catalog";
 const PAGE_SIZE = 100;
+const STALE = 5 * 60 * 1000;
 
 export type AlbumType = (typeof TYPES)[number];
 
@@ -121,13 +123,21 @@ export async function fetchLibraryAlbumSongs(id: string): Promise<Song[]> {
   return readAlbum("library-albums", first)?.songs ?? [];
 }
 
+export function albumQuery(type: AlbumType, id: string) {
+  return queryOptions({
+    queryKey: ["music-kit", "album", type, id],
+    queryFn: () => fetchAlbum(type, id),
+    staleTime: STALE,
+  });
+}
+
 export function libraryAlbumSongsQuery(id?: string) {
-  return {
+  return queryOptions({
     queryKey: ["music-kit", "library-album-songs", id],
     queryFn: () => fetchLibraryAlbumSongs(id ?? ""),
     enabled: id !== undefined,
-    staleTime: LIBRARY_ALBUMS_STALE,
-  };
+    staleTime: STALE,
+  });
 }
 
 async function fetchCatalogAlbum(id: string): Promise<Album | undefined> {
@@ -273,17 +283,15 @@ function readGenres(value: unknown): string[] {
   return Array.isArray(value) ? value.filter((genre) => typeof genre === "string") : [];
 }
 
-export const LIBRARY_ALBUMS_STALE = 5 * 60 * 1000;
-
 export function libraryAlbumsQuery() {
   const isDemo = readDemoMode();
 
-  return {
+  return queryOptions({
     queryKey: isDemo ? demoQueryKey("library-albums") : ["music-kit", "library-albums"],
     queryFn: isDemo ? () => fetchCatalogAlbums(DEMO_LIBRARY.albums) : fetchLibraryAlbums,
     select: sortAlbums,
-    staleTime: LIBRARY_ALBUMS_STALE,
-  };
+    staleTime: STALE,
+  });
 }
 
 export function sortAlbums(albums: LibraryAlbum[]): LibraryAlbum[] {

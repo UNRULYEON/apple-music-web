@@ -1,11 +1,12 @@
+// @vitest-environment happy-dom
+
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import type { Song } from "@/lib/music-kit/track";
-// @vitest-environment happy-dom
 import {
-  handleMediaKeys,
   showNowPlaying,
   showPlaybackState,
   showPosition,
+  subscribeToMediaKeys,
 } from "@/lib/player/media-session";
 
 const SONG: Song = {
@@ -126,11 +127,11 @@ describe("showPosition", () => {
   });
 });
 
-describe("handleMediaKeys", () => {
+describe("subscribeToMediaKeys", () => {
   it("takes a drag of the bar to the player", () => {
     const keys = fakeKeys();
 
-    handleMediaKeys(keys);
+    subscribeToMediaKeys(keys);
 
     const seekto = setActionHandler.mock.calls.find(([action]) => action === "seekto")?.[1];
 
@@ -142,7 +143,7 @@ describe("handleMediaKeys", () => {
   it("takes every key the panel offers", () => {
     const keys = fakeKeys();
 
-    handleMediaKeys(keys);
+    subscribeToMediaKeys(keys);
 
     expect(setActionHandler.mock.calls.map(([action]) => action)).toEqual([
       "play",
@@ -155,7 +156,7 @@ describe("handleMediaKeys", () => {
   });
 
   it("gives every key back", () => {
-    const stop = handleMediaKeys(fakeKeys());
+    const stop = subscribeToMediaKeys(fakeKeys());
 
     setActionHandler.mockClear();
     stop();
@@ -171,7 +172,7 @@ describe("handleMediaKeys", () => {
       }
     });
 
-    expect(() => handleMediaKeys(fakeKeys())).not.toThrow();
+    expect(() => subscribeToMediaKeys(fakeKeys())).not.toThrow();
     expect(setActionHandler).toHaveBeenCalledTimes(5);
   });
 });

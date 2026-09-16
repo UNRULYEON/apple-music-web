@@ -1,4 +1,5 @@
 import type { QueueSource } from "@/lib/music-kit/playback";
+import { readStorage, removeStorage, writeStorage } from "@/lib/storage/local";
 
 const STORAGE_KEY = "now-playing";
 
@@ -10,10 +11,14 @@ export interface StoredQueue {
 }
 
 export function readStoredQueue(): StoredQueue | undefined {
-  try {
-    const stored = window.localStorage.getItem(STORAGE_KEY);
+  const stored = readStorage(STORAGE_KEY);
 
-    return stored ? asQueue(JSON.parse(stored)) : undefined;
+  if (!stored) {
+    return undefined;
+  }
+
+  try {
+    return asQueue(JSON.parse(stored));
   } catch {
     return undefined;
   }
@@ -34,16 +39,12 @@ export function writeStoredPosition(position: number): void {
   }
 }
 
-function write(queue: StoredQueue): void {
-  try {
-    window.localStorage.setItem(STORAGE_KEY, JSON.stringify(queue));
-  } catch {}
+export function forgetStoredQueue(): void {
+  removeStorage(STORAGE_KEY);
 }
 
-export function forgetStoredQueue(): void {
-  try {
-    window.localStorage.removeItem(STORAGE_KEY);
-  } catch {}
+function write(queue: StoredQueue): void {
+  writeStorage(STORAGE_KEY, JSON.stringify(queue));
 }
 
 function asQueue(value: unknown): StoredQueue | undefined {

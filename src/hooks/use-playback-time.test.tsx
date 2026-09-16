@@ -1,3 +1,5 @@
+// @vitest-environment happy-dom
+
 import { act, cleanup, renderHook } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { seekTo } from "@/lib/music-kit/playback";
@@ -7,7 +9,6 @@ import {
   readPlaybackTime,
   resetPlaybackTime,
 } from "@/lib/music-kit/playback-time";
-// @vitest-environment happy-dom
 import { usePlaybackTime } from "./use-playback-time";
 
 vi.mock("@/lib/music-kit/playback", () => ({ seekTo: vi.fn().mockResolvedValue(undefined) }));

@@ -1,7 +1,8 @@
+// @vitest-environment happy-dom
+
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { act, cleanup, fireEvent, render, waitFor } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-// @vitest-environment happy-dom
 import { PlayerProvider } from "@/contexts";
 import { DEMO_LIBRARY } from "@/lib/demo/library";
 import { readDemoMode, setDemoMode } from "@/lib/demo/mode";

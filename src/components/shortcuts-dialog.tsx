@@ -54,15 +54,15 @@ const GROUPS: { title: string; shortcuts: Shortcut[] }[] = [
 
 export function ShortcutsDialog() {
   const closeSidebarOnMobile = useCloseSidebarOnMobile();
-  const [isShown, setShown] = useState(false);
+  const [isShown, setIsShown] = useState(false);
 
   useHotkey(SHORTCUTS_HOTKEY, () => {
     closeSidebarOnMobile();
-    setShown(true);
+    setIsShown(true);
   });
 
   return (
-    <Dialog open={isShown} onOpenChange={setShown}>
+    <Dialog open={isShown} onOpenChange={setIsShown}>
       <DialogTrigger
         render={<Button variant="ghost" className="justify-start" />}
         aria-keyshortcuts={SHORTCUTS_HOTKEY}

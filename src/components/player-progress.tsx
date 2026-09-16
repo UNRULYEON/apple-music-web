@@ -36,7 +36,7 @@ interface PlayerProgressProps {
 
 const CLOCKS = "min-w-0 text-[9px] tabular-nums";
 
-export function usePlayerProgress(songId: string, durationInMillis?: number) {
+function usePlayerProgress(songId: string, durationInMillis?: number) {
   const { position, duration, seek } = usePlaybackTime();
 
   const [wanted, setWanted] = useState<number | undefined>(undefined);

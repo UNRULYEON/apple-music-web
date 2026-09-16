@@ -1,4 +1,6 @@
+import type { QueryClient } from "@tanstack/react-query";
 import { useSyncExternalStore } from "react";
+import { readStorage, removeStorage, writeStorage } from "@/lib/storage/local";
 
 const STORAGE_KEY = "demo-mode";
 
@@ -32,6 +34,10 @@ export function demoQueryKey(name: string): string[] {
   return [...DEMO_QUERY_KEY, name];
 }
 
+export function removeDemoQueries(client: QueryClient): void {
+  client.removeQueries({ queryKey: DEMO_QUERY_KEY });
+}
+
 export function subscribeToDemoMode(listener: () => void): () => void {
   listeners.add(listener);
 
@@ -45,19 +51,13 @@ function readServerDemoMode(): boolean {
 }
 
 function readStored(): boolean {
-  try {
-    return localStorage.getItem(STORAGE_KEY) === "true";
-  } catch {
-    return false;
-  }
+  return readStorage(STORAGE_KEY) === "true";
 }
 
 function writeStored(next: boolean): void {
-  try {
-    if (next) {
-      localStorage.setItem(STORAGE_KEY, "true");
-    } else {
-      localStorage.removeItem(STORAGE_KEY);
-    }
-  } catch {}
+  if (next) {
+    writeStorage(STORAGE_KEY, "true");
+  } else {
+    removeStorage(STORAGE_KEY);
+  }
 }

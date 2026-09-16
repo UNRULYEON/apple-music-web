@@ -299,6 +299,7 @@ function ShuffleButton({ size = "icon-xs", iconSize = 16 }: ControlProps) {
           "transition-opacity duration-(--duration-quick) ease-(--ease-smooth-out) motion-reduce:transition-none",
           isShuffled ? "opacity-100" : "opacity-40",
         )}
+        aria-hidden="true"
       />
     </Button>
   );
@@ -324,6 +325,7 @@ function RepeatButton({ size = "icon-xs", iconSize = 16 }: ControlProps) {
           "transition-opacity duration-(--duration-quick) ease-(--ease-smooth-out) motion-reduce:transition-none",
           repeat === "off" ? "opacity-40" : "opacity-100",
         )}
+        aria-hidden="true"
       />
     </Button>
   );
@@ -341,7 +343,7 @@ function PreviousButton({ size = "icon-xs", iconSize = 16 }: ControlProps) {
       aria-label="Previous song"
       aria-keyshortcuts={PLAYER_HOTKEYS.previous}
     >
-      <HugeiconsIcon icon={PreviousIcon} size={iconSize} strokeWidth={2} />
+      <HugeiconsIcon icon={PreviousIcon} size={iconSize} strokeWidth={2} aria-hidden="true" />
     </Button>
   );
 }
@@ -371,6 +373,7 @@ function PlayButton({ size = "icon", iconSize = 16 }: ControlProps) {
             size={iconSize}
             strokeWidth={2}
             className={cn(isLoading && "animate-spin")}
+            aria-hidden="true"
           />
         </motion.div>
       </AnimatePresence>
@@ -390,7 +393,7 @@ function NextButton({ size = "icon-xs", iconSize = 16 }: ControlProps) {
       aria-label="Next song"
       aria-keyshortcuts={PLAYER_HOTKEYS.next}
     >
-      <HugeiconsIcon icon={NextIcon} size={iconSize} strokeWidth={2} />
+      <HugeiconsIcon icon={NextIcon} size={iconSize} strokeWidth={2} aria-hidden="true" />
     </Button>
   );
 }
@@ -558,7 +561,7 @@ function ExpandedPlayer({ onCollapse }: { onCollapse: () => void }) {
           aria-keyshortcuts={PLAYER_HOTKEYS.expand}
           className="cursor-s-resize"
         >
-          <HugeiconsIcon icon={ArrowDown01Icon} size={16} strokeWidth={2} />
+          <HugeiconsIcon icon={ArrowDown01Icon} size={16} strokeWidth={2} aria-hidden="true" />
         </Button>
       </div>
 
@@ -835,7 +838,12 @@ export function Player() {
                     >
                       <div className="flex w-max items-center">
                         <Button variant="ghost" size="icon" aria-label="Queue">
-                          <HugeiconsIcon icon={Playlist03Icon} size={16} strokeWidth={2} />
+                          <HugeiconsIcon
+                            icon={Playlist03Icon}
+                            size={16}
+                            strokeWidth={2}
+                            aria-hidden="true"
+                          />
                         </Button>
                         <PlayerVolume />
                       </div>

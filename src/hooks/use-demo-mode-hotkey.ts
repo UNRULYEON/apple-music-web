@@ -2,7 +2,7 @@ import { useHotkey } from "@tanstack/react-hotkeys";
 import { useQueryClient } from "@tanstack/react-query";
 import { toastManager } from "@/components/ui/toast";
 import { isDemoSource } from "@/lib/demo/library";
-import { DEMO_QUERY_KEY, readDemoMode, setDemoMode } from "@/lib/demo/mode";
+import { readDemoMode, removeDemoQueries, setDemoMode } from "@/lib/demo/mode";
 import { DEMO_MODE_HOTKEY } from "@/lib/hotkeys";
 import { useAuthStatus } from "@/lib/music-kit/auth";
 import { usePlayer } from "./use-player";
@@ -25,7 +25,7 @@ export function useDemoModeHotkey(): void {
         close();
       }
 
-      client.removeQueries({ queryKey: DEMO_QUERY_KEY });
+      removeDemoQueries(client);
       void client.invalidateQueries({ refetchType: "none" });
 
       toastManager.add({

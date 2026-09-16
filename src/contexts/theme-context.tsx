@@ -16,12 +16,12 @@ import {
   subscribeToTheme,
   type Theme,
   writeStoredTheme,
-} from "@/lib/theme-storage";
+} from "@/lib/storage/theme";
 
-export type ThemeContextType = {
+export interface ThemeContextType {
   theme: Theme;
   setTheme: (theme: Theme) => void;
-};
+}
 
 export const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
 

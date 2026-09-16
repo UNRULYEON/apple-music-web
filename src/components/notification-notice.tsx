@@ -10,32 +10,16 @@ import {
 } from "@/components/ui/dialog";
 import { useAuthStatus } from "@/lib/music-kit/auth";
 import { askToNotify, canNotify, isNotifyAnswered } from "@/lib/player/notify";
+import { readNoticeShown, writeNoticeShown } from "@/lib/storage/notification-notice";
 
-export const NOTICE_KEY = "notification-notice";
 const TITLE = "Song notifications";
 
-function wasShown(): boolean {
-  try {
-    return localStorage.getItem(NOTICE_KEY) !== null;
-  } catch {
-    return false;
-  }
-}
-
-function remember(): void {
-  try {
-    localStorage.setItem(NOTICE_KEY, "shown");
-  } catch {
-    return;
-  }
-}
-
-export function NotificationNotice(): React.ReactElement {
+export function NotificationNotice() {
   const status = useAuthStatus();
   const [isOpen, setIsOpen] = useState(false);
 
   useEffect(() => {
-    if (status !== "signed-in" || !canNotify() || isNotifyAnswered() || wasShown()) {
+    if (status !== "signed-in" || !canNotify() || isNotifyAnswered() || readNoticeShown()) {
       return;
     }
 
@@ -43,13 +27,13 @@ export function NotificationNotice(): React.ReactElement {
   }, [status]);
 
   function accept() {
-    remember();
+    writeNoticeShown();
     setIsOpen(false);
     void askToNotify();
   }
 
   function decline() {
-    remember();
+    writeNoticeShown();
     setIsOpen(false);
   }
 

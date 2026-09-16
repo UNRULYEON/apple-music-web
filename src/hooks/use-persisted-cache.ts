@@ -7,19 +7,22 @@ import {
   createCachePersister,
 } from "@/integrations/tanstack-query/persister";
 import { useAuthStatus } from "@/lib/music-kit/auth";
+import { browserStorage } from "@/lib/storage/local";
 
 export function usePersistedCache(): void {
   const status = useAuthStatus();
   const client = useQueryClient();
 
   useEffect(() => {
-    if (status !== "signed-in" || typeof localStorage === "undefined") {
+    const storage = browserStorage();
+
+    if (status !== "signed-in" || !storage) {
       return;
     }
 
     const [unsubscribe, restored] = persistQueryClient({
       queryClient: client,
-      persister: createCachePersister(localStorage),
+      persister: createCachePersister(storage),
       maxAge: CACHE_MAX_AGE,
       buster: CACHE_VERSION,
     });

@@ -1,5 +1,3 @@
-"use client";
-
 import { useCallback, useSyncExternalStore } from "react";
 
 const BREAKPOINTS = {
@@ -52,11 +50,11 @@ function parseQuery(query: BreakpointQuery | MediaQueryInput | (string & {})): s
   return parts.length > 0 ? parts.join(" and ") : query;
 }
 
-export type MediaQueryInput = {
+export interface MediaQueryInput {
   min?: Breakpoint | number;
   max?: Breakpoint | number;
   pointer?: "coarse" | "fine";
-};
+}
 
 export function useMediaQuery(query: BreakpointQuery | MediaQueryInput | (string & {})): boolean {
   const mediaQuery = parseQuery(query);

@@ -1,7 +1,7 @@
 import { useContext } from "react";
-import { PlayerContext } from "@/contexts";
+import { PlayerContext, type PlayerContextType } from "@/contexts";
 
-export function usePlayer() {
+export function usePlayer(): PlayerContextType {
   const context = useContext(PlayerContext);
 
   if (!context) {

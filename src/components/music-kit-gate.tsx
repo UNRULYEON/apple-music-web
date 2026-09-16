@@ -1,5 +1,5 @@
 import { AnimatePresence, motion, MotionConfig } from "motion/react";
-import { useEffect, useState } from "react";
+import { type ReactNode, useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -21,7 +21,7 @@ const SWAP = {
   exit: { opacity: 0, scale: 0.96, filter: "blur(2px)" },
 };
 
-export function MusicKitGate({ children }: { children: React.ReactNode }): React.ReactElement {
+export function MusicKitGate({ children }: { children: ReactNode }) {
   const status = useAuthStatus();
   const [isSigningIn, setIsSigningIn] = useState(false);
   const [error, setError] = useState<string>();
@@ -34,7 +34,7 @@ export function MusicKitGate({ children }: { children: React.ReactNode }): React
     void loadAuthorization();
   }, []);
 
-  async function handleSignIn(): Promise<void> {
+  async function startSignIn(): Promise<void> {
     setIsSigningIn(true);
     setError(undefined);
 
@@ -97,7 +97,7 @@ export function MusicKitGate({ children }: { children: React.ReactNode }): React
                       </CardDescription>
                     </CardHeader>
                     <CardPanel className="flex flex-col">
-                      <Button loading={isSigningIn} onClick={handleSignIn}>
+                      <Button loading={isSigningIn} onClick={startSignIn}>
                         Continue with Apple Music
                       </Button>
                       {error && (

@@ -56,6 +56,7 @@ export function SidebarToggle() {
       >
         <HugeiconsIcon
           icon={showsOpen ? PanelLeftOpenIcon : PanelLeftCloseIcon}
+          strokeWidth={1.5}
           aria-hidden="true"
         />
       </Button>

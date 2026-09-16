@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { decodePem, keyIdFromFileName, signDeveloperToken } from "./sign";
+import { decodePem, keyIdFromFileName, signDeveloperToken } from "./sign.ts";
 
 async function makeTestKeyPem(): Promise<{ pem: string; publicKey: CryptoKey }> {
   const pair = await crypto.subtle.generateKey({ name: "ECDSA", namedCurve: "P-256" }, true, [

@@ -1,9 +1,10 @@
+// @vitest-environment happy-dom
+
 import { act, cleanup, render } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { SidebarProvider } from "@/contexts";
 import { useSidebar } from "@/hooks";
 import { TRANSITION_SLOW } from "@/lib/motion";
-// @vitest-environment happy-dom
 import { SidebarToggle } from "./sidebar-toggle";
 
 const PEEK = '[data-slot="sidebar-peek"]';

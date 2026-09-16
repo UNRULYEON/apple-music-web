@@ -1,8 +1,9 @@
 // @vitest-environment happy-dom
+
 import { act, cleanup, render } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { useSidebar } from "@/hooks";
-import { preHydrationScript } from "@/lib/sidebar-storage";
+import { PRE_HYDRATION_SCRIPT } from "@/lib/storage/sidebar";
 import { SidebarProvider } from "./sidebar-context";
 
 afterEach(() => {
@@ -22,7 +23,7 @@ function setViewport(desktop: boolean) {
 }
 
 function runPreHydrationScript() {
-  new Function(preHydrationScript)();
+  new Function(PRE_HYDRATION_SCRIPT)();
 }
 
 function renderProvider() {
@@ -42,7 +43,7 @@ function renderProvider() {
   return seen;
 }
 
-describe("preHydrationScript", () => {
+describe("PRE_HYDRATION_SCRIPT", () => {
   it("marks a stored closed sidebar before the first paint", () => {
     localStorage.setItem("sidebar-open", "false");
     setViewport(true);
@@ -120,7 +121,7 @@ describe("SidebarProvider", () => {
     localStorage.setItem("sidebar-open", "true");
     setViewport(false);
 
-    const renders: Array<boolean> = [];
+    const renders: boolean[] = [];
 
     function Probe() {
       renders.push(useSidebar().isOpen);

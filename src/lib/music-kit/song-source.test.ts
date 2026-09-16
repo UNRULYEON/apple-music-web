@@ -58,10 +58,7 @@ describe("fetchSongSource", () => {
 
 describe("songSourceQuery", () => {
   it("asks for nothing without a song", () => {
-    const query = songSourceQuery();
-
-    expect(query.enabled).toBe(false);
-    expect(query.queryFn()).toBeNull();
+    expect(songSourceQuery().enabled).toBe(false);
   });
 
   it("asks for the album of the song it is given", () => {

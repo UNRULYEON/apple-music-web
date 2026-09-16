@@ -1,11 +1,12 @@
-import { afterEach, describe, expect, it } from "vitest";
 // @vitest-environment happy-dom
+
+import { afterEach, describe, expect, it } from "vitest";
 import {
   forgetStoredQueue,
   readStoredQueue,
   writeStoredPosition,
   writeStoredQueue,
-} from "@/lib/now-playing-storage";
+} from "@/lib/storage/now-playing";
 
 const KEY = "now-playing";
 

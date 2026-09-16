@@ -1,9 +1,10 @@
+// @vitest-environment happy-dom
+
 import { act, cleanup, fireEvent, render, screen } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { SidebarProvider, ThemeProvider } from "@/contexts";
 import { useSidebar } from "@/hooks";
 import { HOME } from "@/lib/views/view";
-// @vitest-environment happy-dom
 import { Nav } from "./nav";
 
 const openView = vi.fn();

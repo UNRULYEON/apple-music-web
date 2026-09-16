@@ -1,3 +1,5 @@
+// @vitest-environment happy-dom
+
 import { act, cleanup, render, screen, waitFor } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { PlayerProvider } from "@/contexts";
@@ -9,7 +11,6 @@ import {
 } from "@/lib/music-kit/fake-music-kit";
 import { getMusicKit } from "@/lib/music-kit/instance";
 import { resetPlayerState } from "@/lib/music-kit/player-state";
-// @vitest-environment happy-dom
 import { MainContent } from "./main-content";
 import { PLAYER_SPACE } from "./player";
 

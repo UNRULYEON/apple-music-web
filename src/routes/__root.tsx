@@ -1,8 +1,8 @@
 import { TanStackDevtools, type TanStackDevtoolsReactPlugin } from "@tanstack/react-devtools";
 import { hotkeysDevtoolsPlugin } from "@tanstack/react-hotkeys-devtools";
-import type { QueryClient } from "@tanstack/react-query";
 import { createRootRouteWithContext, HeadContent, Scripts } from "@tanstack/react-router";
 import { TanStackRouterDevtoolsPanel } from "@tanstack/react-router-devtools";
+import type { ReactNode } from "react";
 import {
   BackButton,
   CommandMenu,
@@ -26,12 +26,13 @@ import {
   SidebarProvider,
   ThemeProvider,
 } from "@/contexts";
-import TanStackQueryDevtools from "@/integrations/tanstack-query/devtools";
+import { queryDevtools } from "@/integrations/tanstack-query/devtools";
+import type { RouterContext } from "@/integrations/tanstack-query/root-provider";
 import { BAR_INSET } from "@/lib/layout";
-import { preHydrationScript as nodeShimPreHydrationScript } from "@/lib/music-kit/node-shim";
+import { PRE_HYDRATION_SCRIPT as NODE_SHIM_SCRIPT } from "@/lib/music-kit/node-shim";
 import { SCROLL_AREA_ID } from "@/lib/scroll-area";
-import { preHydrationScript as sidebarPreHydrationScript } from "@/lib/sidebar-storage";
-import { preHydrationScript as themePreHydrationScript } from "@/lib/theme-storage";
+import { PRE_HYDRATION_SCRIPT as SIDEBAR_SCRIPT } from "@/lib/storage/sidebar";
+import { PRE_HYDRATION_SCRIPT as THEME_SCRIPT } from "@/lib/storage/theme";
 import { cn } from "@/lib/utils";
 import appCss from "@/styles.css?url";
 
@@ -50,11 +51,7 @@ const playerDevtools: TanStackDevtoolsReactPlugin = {
   render: (_element, props) => <PlayerDevtools theme={props.theme} />,
 };
 
-interface MyRouterContext {
-  queryClient: QueryClient;
-}
-
-export const Route = createRootRouteWithContext<MyRouterContext>()({
+export const Route = createRootRouteWithContext<RouterContext>()({
   head: () => ({
     meta: [
       {
@@ -106,13 +103,13 @@ export const Route = createRootRouteWithContext<MyRouterContext>()({
     ],
     scripts: [
       {
-        children: themePreHydrationScript,
+        children: THEME_SCRIPT,
       },
       {
-        children: sidebarPreHydrationScript,
+        children: SIDEBAR_SCRIPT,
       },
       {
-        children: nodeShimPreHydrationScript,
+        children: NODE_SHIM_SCRIPT,
       },
       {
         src: "https://js-cdn.music.apple.com/musickit/v3/musickit.js",
@@ -123,7 +120,7 @@ export const Route = createRootRouteWithContext<MyRouterContext>()({
   shellComponent: RootDocument,
 });
 
-function RootDocument({ children }: { children: React.ReactNode }) {
+function RootDocument({ children }: { children: ReactNode }) {
   return (
     <html lang="en" suppressHydrationWarning>
       <head>
@@ -172,7 +169,7 @@ function RootDocument({ children }: { children: React.ReactNode }) {
                           name: "Tanstack Router",
                           render: <TanStackRouterDevtoolsPanel />,
                         },
-                        TanStackQueryDevtools,
+                        queryDevtools,
                         hotkeysDevtoolsPlugin(),
                         ...(import.meta.env.DEV ? [appleAuthDevtools, playerDevtools] : []),
                       ]}

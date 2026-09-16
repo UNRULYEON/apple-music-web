@@ -1,6 +1,10 @@
-export type JobResult = { name: string; passed: boolean; step?: string };
+export interface JobResult {
+  name: string;
+  passed: boolean;
+  step?: string;
+}
 
-export function collectResults(lines: Array<string>): Array<JobResult> {
+export function collectResults(lines: string[]): JobResult[] {
   const results = new Map<string, JobResult>();
   const lastFailedStep: Record<string, string> = {};
 

@@ -2,7 +2,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 const APP = { name: "Apple Music Web", build: "1.0.0" };
 
-let loadedListeners: Array<() => void>;
+let loadedListeners: (() => void)[];
 let configure: ReturnType<typeof vi.fn>;
 let music: MusicKit.MusicKitInstance;
 

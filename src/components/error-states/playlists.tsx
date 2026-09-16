@@ -13,7 +13,7 @@ export function Playlists() {
     <Empty>
       <EmptyHeader>
         <EmptyMedia variant="icon">
-          <HugeiconsIcon icon={PlayListIcon} />
+          <HugeiconsIcon icon={PlayListIcon} strokeWidth={1.5} aria-hidden="true" />
         </EmptyMedia>
         <EmptyTitle>Couldn't load your playlists</EmptyTitle>
         <EmptyDescription></EmptyDescription>

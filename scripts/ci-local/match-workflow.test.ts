@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { matchWorkflow } from "./match-workflow";
+import { matchWorkflow } from "./match-workflow.ts";
 
 const NAMES = ["cd.yml", "ci.yml"];
 

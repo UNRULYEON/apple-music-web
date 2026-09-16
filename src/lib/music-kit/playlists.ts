@@ -1,3 +1,4 @@
+import { queryOptions } from "@tanstack/react-query";
 import {
   DEMO_CURATOR,
   DEMO_LIBRARY,
@@ -24,6 +25,7 @@ import { readSong, type Song } from "@/lib/music-kit/track";
 
 const PATH = "/v1/me/library/playlists";
 const PAGE_SIZE = 100;
+const STALE = 5 * 60 * 1000;
 
 const TYPES = ["playlists", "library-playlists"] as const;
 const INCLUDE = "tracks";
@@ -86,8 +88,6 @@ export async function fetchLibraryPlaylists(): Promise<LibraryPlaylist[]> {
   }
 }
 
-export const LIBRARY_PLAYLISTS_STALE = 5 * 60 * 1000;
-
 export async function fetchDemoPlaylists(
   playlists: readonly DemoPlaylist[],
 ): Promise<LibraryPlaylist[]> {
@@ -134,11 +134,19 @@ async function fetchDemoPlaylist(playlist: DemoPlaylist): Promise<Playlist> {
 export function libraryPlaylistsQuery() {
   const isDemo = readDemoMode();
 
-  return {
+  return queryOptions({
     queryKey: isDemo ? demoQueryKey("library-playlists") : ["music-kit", "library-playlists"],
     queryFn: isDemo ? () => fetchDemoPlaylists(DEMO_LIBRARY.playlists) : fetchLibraryPlaylists,
-    staleTime: LIBRARY_PLAYLISTS_STALE,
-  };
+    staleTime: STALE,
+  });
+}
+
+export function playlistQuery(type: PlaylistType, id: string) {
+  return queryOptions({
+    queryKey: ["music-kit", "playlist", type, id],
+    queryFn: () => fetchPlaylist(type, id),
+    staleTime: STALE,
+  });
 }
 
 export async function fetchPlaylist(type: PlaylistType, id: string): Promise<Playlist> {

@@ -1,6 +1,7 @@
+// @vitest-environment happy-dom
+
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import type { Song } from "@/lib/music-kit/track";
-// @vitest-environment happy-dom
 import { askToNotify, canNotify, notifySong } from "@/lib/player/notify";
 
 const SONG: Song = {

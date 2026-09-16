@@ -13,7 +13,7 @@ export function NoArtists() {
     <Empty>
       <EmptyHeader>
         <EmptyMedia variant="icon">
-          <HugeiconsIcon icon={Mic01Icon} />
+          <HugeiconsIcon icon={Mic01Icon} strokeWidth={1.5} aria-hidden="true" />
         </EmptyMedia>
         <EmptyTitle>No artists</EmptyTitle>
         <EmptyDescription>Add albums to your library to see their artists here.</EmptyDescription>

@@ -1,10 +1,11 @@
+import { queryOptions } from "@tanstack/react-query";
 import { getMusicKit } from "@/lib/music-kit/instance";
 import type { QueueSource } from "@/lib/music-kit/playback";
 import { readItems, readRelated } from "@/lib/music-kit/resource";
 import { fetchStorefront } from "@/lib/music-kit/storefront";
 
 const INCLUDE = "albums";
-const SOURCE_STALE = 24 * 60 * 60 * 1000;
+const STALE = 24 * 60 * 60 * 1000;
 
 export async function fetchSongSource(id: string): Promise<QueueSource | null> {
   const storefront = await fetchStorefront();
@@ -36,10 +37,10 @@ function readId(value: unknown): string | undefined {
 }
 
 export function songSourceQuery(id?: string) {
-  return {
+  return queryOptions({
     queryKey: ["music-kit", "song-source", id],
-    queryFn: () => (id ? fetchSongSource(id) : null),
+    queryFn: () => fetchSongSource(id ?? ""),
     enabled: id !== undefined,
-    staleTime: SOURCE_STALE,
-  };
+    staleTime: STALE,
+  });
 }

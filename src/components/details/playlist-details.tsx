@@ -2,7 +2,7 @@ import { useMemo } from "react";
 import { EmptyStates } from "@/components/empty-states";
 import { useSearch, useSignedInQuery } from "@/hooks";
 import { relativeDate } from "@/lib/format";
-import { fetchPlaylist, type PlaylistType } from "@/lib/music-kit/playlists";
+import { playlistQuery, type PlaylistType } from "@/lib/music-kit/playlists";
 import { searchSongs } from "@/lib/music-kit/track";
 import { DetailsFooter } from "./details-footer";
 import { DetailsHeader } from "./details-header";
@@ -11,10 +11,7 @@ import { HiddenItems } from "./hidden-items";
 import { TrackList } from "./track-list";
 
 export function PlaylistDetails({ type, id }: { type: PlaylistType; id: string }) {
-  const { data: playlist, isPending } = useSignedInQuery({
-    queryKey: ["music-kit", "playlist", type, id],
-    queryFn: () => fetchPlaylist(type, id),
-  });
+  const { data: playlist, isPending } = useSignedInQuery(playlistQuery(type, id));
 
   const modified = playlist?.lastModifiedDate ?? playlist?.dateAdded;
 

@@ -5,8 +5,8 @@ import { EmptyStates } from "@/components/empty-states";
 import { useSearch, useSignedInQuery } from "@/hooks";
 import { releaseYear } from "@/lib/format";
 import {
+  albumQuery,
   type AlbumType,
-  fetchAlbum,
   isAlbumInLibrary,
   libraryAlbumSongsQuery,
   libraryAlbumsQuery,
@@ -21,10 +21,7 @@ import { LibraryMark } from "./library-mark";
 import { TrackList } from "./track-list";
 
 export function AlbumDetails({ type, id }: { type: AlbumType; id: string }) {
-  const { data: album, isPending } = useSignedInQuery({
-    queryKey: ["music-kit", "album", type, id],
-    queryFn: () => fetchAlbum(type, id),
-  });
+  const { data: album, isPending } = useSignedInQuery(albumQuery(type, id));
 
   const { data: libraryAlbums } = useSignedInQuery({
     ...libraryAlbumsQuery(),

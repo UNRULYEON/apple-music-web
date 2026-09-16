@@ -1,4 +1,5 @@
 // @vitest-environment happy-dom
+
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { readDemoMode, setDemoMode, subscribeToDemoMode } from "@/lib/demo/mode";
 import { libraryAlbumsQuery } from "@/lib/music-kit/album";
