@@ -1,7 +1,10 @@
+export { useAuthStatus } from "./use-auth-status";
 export { useBackdrop } from "./use-backdrop";
 export { useDebounced } from "./use-debounced";
+export { useDemoMode } from "./use-demo-mode";
 export { useDemoModeHotkey } from "./use-demo-mode-hotkey";
 export { useIsHydrated } from "./use-is-hydrated";
+export { useIsomorphicLayoutEffect } from "./use-isomorphic-layout-effect";
 export { useIsMobile, useMediaQuery } from "./use-media-query";
 export { usePersistedCache } from "./use-persisted-cache";
 export { usePlaybackTime } from "./use-playback-time";

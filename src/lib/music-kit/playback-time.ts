@@ -1,3 +1,4 @@
+import { createListeners } from "@/lib/listeners";
 import { getMusicKit } from "@/lib/music-kit/instance";
 
 export interface PlaybackTime {
@@ -23,15 +24,12 @@ let held: number | undefined;
 let instance: MusicKit.MusicKitInstance | undefined;
 let listening = false;
 
-const listeners = new Set<() => void>();
+const listeners = createListeners();
 
 export function subscribeToPlaybackTime(listener: () => void): () => void {
-  listeners.add(listener);
   void listen();
 
-  return () => {
-    listeners.delete(listener);
-  };
+  return listeners.subscribe(listener);
 }
 
 export function readPlaybackTime(): PlaybackTime {
@@ -120,9 +118,7 @@ function show(): void {
 
   shown = next;
 
-  for (const listener of listeners) {
-    listener();
-  }
+  listeners.notify();
 }
 
 function readSeconds(value: number | undefined): number {

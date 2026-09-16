@@ -8,7 +8,7 @@ import {
   DialogPopup,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { useAuthStatus } from "@/lib/music-kit/auth";
+import { useAuthStatus } from "@/hooks";
 import { askToNotify, canNotify, isNotifyAnswered } from "@/lib/player/notify";
 import { readNoticeShown, writeNoticeShown } from "@/lib/storage/notification-notice";
 

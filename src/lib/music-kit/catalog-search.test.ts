@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { catalogSearchQuery, searchCatalog } from "@/lib/music-kit/catalog-search";
+import { catalogSearchQuery, fetchCatalogSearch } from "@/lib/music-kit/catalog-search";
 import { getMusicKit } from "@/lib/music-kit/instance";
 import { fetchStorefront } from "@/lib/music-kit/storefront";
 
@@ -28,9 +28,9 @@ afterEach(() => {
   vi.clearAllMocks();
 });
 
-describe("searchCatalog", () => {
+describe("fetchCatalogSearch", () => {
   it("asks the storefront catalog for the three kinds", async () => {
-    await searchCatalog("boygenius");
+    await fetchCatalogSearch("boygenius");
 
     expect(music).toHaveBeenCalledWith("/v1/catalog/nl/search", {
       term: "boygenius",
@@ -40,7 +40,7 @@ describe("searchCatalog", () => {
   });
 
   it("asks nothing when the term holds no words", async () => {
-    const found = await searchCatalog("   ");
+    const found = await fetchCatalogSearch("   ");
 
     expect(music).not.toHaveBeenCalled();
     expect(found).toEqual({ artists: [], albums: [], playlists: [] });
@@ -55,7 +55,7 @@ describe("searchCatalog", () => {
       }),
     );
 
-    const found = await searchCatalog("the record");
+    const found = await fetchCatalogSearch("the record");
 
     expect(found.albums).toEqual([{ id: "1", name: "the record", credit: "boygenius" }]);
   });
@@ -73,7 +73,7 @@ describe("searchCatalog", () => {
       }),
     );
 
-    const found = await searchCatalog("boygenius");
+    const found = await fetchCatalogSearch("boygenius");
 
     expect(found.artists).toEqual([{ id: "a.1", name: "boygenius", credit: "Alternative" }]);
   });
@@ -96,7 +96,7 @@ describe("searchCatalog", () => {
       }),
     );
 
-    const found = await searchCatalog("hits");
+    const found = await fetchCatalogSearch("hits");
 
     expect(found.playlists.map((playlist) => playlist.credit)).toEqual([
       "Apple Music",
@@ -109,7 +109,7 @@ describe("searchCatalog", () => {
       results({ albums: [{ id: "1", type: "albums", attributes: {} }, "broken"] }),
     );
 
-    const found = await searchCatalog("nothing");
+    const found = await fetchCatalogSearch("nothing");
 
     expect(found.albums).toEqual([]);
   });
@@ -117,7 +117,7 @@ describe("searchCatalog", () => {
   it("stays empty when Apple sends no results at all", async () => {
     music.mockResolvedValue({ data: {} });
 
-    const found = await searchCatalog("nothing");
+    const found = await fetchCatalogSearch("nothing");
 
     expect(found).toEqual({ artists: [], albums: [], playlists: [] });
   });

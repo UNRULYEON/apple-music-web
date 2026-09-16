@@ -6,10 +6,10 @@ import {
   type SetStateAction,
   useCallback,
   useEffect,
-  useLayoutEffect,
+  useMemo,
   useState,
 } from "react";
-import { useMediaQuery } from "@/hooks";
+import { useIsomorphicLayoutEffect, useMediaQuery } from "@/hooks";
 import { SIDEBAR_HOTKEY } from "@/lib/hotkeys";
 import { clearPreHydrationState, readStoredOpen, writeStoredOpen } from "@/lib/storage/sidebar";
 
@@ -23,8 +23,6 @@ export interface SidebarContextType {
 
 export const SidebarContext = createContext<SidebarContextType | undefined>(undefined);
 
-const useIsomorphicLayoutEffect = typeof window === "undefined" ? useEffect : useLayoutEffect;
-
 export function SidebarProvider({ children }: { children: ReactNode }) {
   const [open, setOpen] = useState(readStoredOpen);
   const [peeking, setPeeking] = useState(false);
@@ -36,9 +34,9 @@ export function SidebarProvider({ children }: { children: ReactNode }) {
 
   useHotkey(SIDEBAR_HOTKEY, () => {
     if (isMobile) {
-      setPeeking((v) => !v);
+      setPeeking((wasPeeking) => !wasPeeking);
     } else {
-      setOpen((v) => !v);
+      setOpen((wasOpen) => !wasOpen);
     }
   });
 
@@ -47,29 +45,28 @@ export function SidebarProvider({ children }: { children: ReactNode }) {
   }, [open]);
 
   const setIsOpen: SidebarContextType["setOpen"] = useCallback(
-    (v) => {
+    (next) => {
       if (isMobile) {
-        setPeeking(v);
+        setPeeking(next);
         return;
       }
 
-      setOpen(v);
+      setOpen(next);
       setPeeking(false);
     },
     [isMobile],
   );
 
-  return (
-    <SidebarContext.Provider
-      value={{
-        isOpen,
-        isPeeking: peeking && !isOpen,
-        isMobile,
-        setOpen: setIsOpen,
-        setPeeking: setPeeking,
-      }}
-    >
-      {children}
-    </SidebarContext.Provider>
+  const value = useMemo<SidebarContextType>(
+    () => ({
+      isOpen,
+      isPeeking: peeking && !isOpen,
+      isMobile,
+      setOpen: setIsOpen,
+      setPeeking,
+    }),
+    [isMobile, isOpen, peeking, setIsOpen],
   );
+
+  return <SidebarContext.Provider value={value}>{children}</SidebarContext.Provider>;
 }

@@ -1,3 +1,4 @@
+import { createListeners } from "@/lib/listeners";
 import { readStorage, writeStorage } from "@/lib/storage/local";
 
 export type Theme = "light" | "dark" | "system";
@@ -5,7 +6,7 @@ export type Theme = "light" | "dark" | "system";
 const STORAGE_KEY = "theme";
 const DARK_QUERY = "(prefers-color-scheme: dark)";
 
-const listeners = new Set<() => void>();
+const listeners = createListeners();
 
 export function readStoredTheme(): Theme {
   const stored = readStorage(STORAGE_KEY);
@@ -16,17 +17,11 @@ export function readStoredTheme(): Theme {
 export function writeStoredTheme(theme: Theme): void {
   writeStorage(STORAGE_KEY, theme);
 
-  for (const listener of listeners) {
-    listener();
-  }
+  listeners.notify();
 }
 
 export function subscribeToTheme(listener: () => void): () => void {
-  listeners.add(listener);
-
-  return () => {
-    listeners.delete(listener);
-  };
+  return listeners.subscribe(listener);
 }
 
 export function readInitialTheme(): Theme {

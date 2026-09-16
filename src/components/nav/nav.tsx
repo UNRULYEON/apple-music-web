@@ -9,12 +9,12 @@ import { AnimatePresence, motion } from "motion/react";
 import { CommandMenuTrigger } from "@/components";
 import { Button } from "@/components/ui/button";
 import { useCloseSidebarOnMobile, useSidebar, useView } from "@/hooks";
+import { SIDEBAR_WIDTH } from "@/lib/layout";
 import { TRANSITION_SLOW } from "@/lib/motion";
 import { cn } from "@/lib/utils";
 import type { View } from "@/lib/views/view";
 import { BottomNav } from "./bottom-nav";
 
-const SIDEBAR_WIDTH = 256;
 const SWIPE_CLOSE_DISTANCE = SIDEBAR_WIDTH * 0.1;
 const SWIPE_CLOSE_VELOCITY = 500;
 

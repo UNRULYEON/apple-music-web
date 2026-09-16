@@ -8,7 +8,7 @@ import { VIEW_INSET } from "@/lib/layout";
 import { libraryAlbumsQuery } from "@/lib/music-kit/album";
 import {
   artistPicturesQuery,
-  readLibraryArtists,
+  groupLibraryArtists,
   searchArtists,
   withPictures,
 } from "@/lib/music-kit/library-artists";
@@ -24,7 +24,7 @@ export function LibraryArtists() {
   const { data: pictures } = useSignedInQuery(artistPicturesQuery());
 
   const artists = useMemo(
-    () => withPictures(readLibraryArtists(albums ?? []), pictures),
+    () => withPictures(groupLibraryArtists(albums ?? []), pictures),
     [albums, pictures],
   );
 

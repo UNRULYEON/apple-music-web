@@ -2,12 +2,11 @@ import {
   createContext,
   type ReactNode,
   useCallback,
-  useEffect,
-  useLayoutEffect,
+  useMemo,
   useRef,
   useSyncExternalStore,
 } from "react";
-import { useMediaQuery } from "@/hooks";
+import { useIsomorphicLayoutEffect, useMediaQuery } from "@/hooks";
 import {
   applyTheme,
   DARK_QUERY,
@@ -24,8 +23,6 @@ export interface ThemeContextType {
 }
 
 export const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
-
-const useIsomorphicLayoutEffect = typeof window === "undefined" ? useEffect : useLayoutEffect;
 
 export function ThemeProvider({ children }: { children: ReactNode }) {
   const theme = useSyncExternalStore(subscribeToTheme, readStoredTheme, readInitialTheme);
@@ -45,5 +42,7 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
     writeStoredTheme(next);
   }, []);
 
-  return <ThemeContext.Provider value={{ theme, setTheme }}>{children}</ThemeContext.Provider>;
+  const value = useMemo<ThemeContextType>(() => ({ theme, setTheme }), [setTheme, theme]);
+
+  return <ThemeContext.Provider value={value}>{children}</ThemeContext.Provider>;
 }

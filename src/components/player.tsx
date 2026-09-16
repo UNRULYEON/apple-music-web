@@ -23,7 +23,14 @@ import {
   ContextMenuPopup,
   ContextMenuTrigger,
 } from "@/components/ui/context-menu";
-import { useIsMobile, usePlayer, usePlayerHotkeys, useSignedInQuery, useView } from "@/hooks";
+import {
+  useAuthStatus,
+  useIsMobile,
+  usePlayer,
+  usePlayerHotkeys,
+  useSignedInQuery,
+  useView,
+} from "@/hooks";
 import { PLAYER_HOTKEYS } from "@/lib/hotkeys";
 import {
   EASE,
@@ -33,7 +40,6 @@ import {
   TRANSITION_SWAP,
 } from "@/lib/motion";
 import { songArtistsQuery } from "@/lib/music-kit/artists";
-import { useAuthStatus } from "@/lib/music-kit/auth";
 import type { QueueSource } from "@/lib/music-kit/playback";
 import type { RepeatMode } from "@/lib/music-kit/player-state";
 import { isPlaylistType } from "@/lib/music-kit/playlists";
@@ -675,7 +681,7 @@ export function Player() {
 
   usePlayerHotkeys(isShown);
 
-  useHotkey(PLAYER_HOTKEYS.expand, () => setIsExpanded((v) => !v), {
+  useHotkey(PLAYER_HOTKEYS.expand, () => setIsExpanded((wasExpanded) => !wasExpanded), {
     enabled: isShown,
     requireReset: true,
   });

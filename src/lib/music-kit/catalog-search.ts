@@ -30,7 +30,7 @@ type ReadCredit = (attributes: Record<string, unknown>) => string | undefined;
 
 const EMPTY: CatalogResults = { artists: [], albums: [], playlists: [] };
 
-export async function searchCatalog(term: string): Promise<CatalogResults> {
+export async function fetchCatalogSearch(term: string): Promise<CatalogResults> {
   if (term.trim() === "") {
     return EMPTY;
   }
@@ -110,7 +110,7 @@ function readResults(data: unknown): Record<string, unknown> {
 export function catalogSearchQuery(term: string) {
   return queryOptions({
     queryKey: ["music-kit", "catalog-search", term],
-    queryFn: () => searchCatalog(term),
+    queryFn: () => fetchCatalogSearch(term),
     enabled: term.trim() !== "",
     staleTime: STALE,
   });

@@ -38,7 +38,7 @@ export function SidebarToggle() {
             isPeeking ? "w-48" : "w-12",
             "z-50",
           )}
-          onClick={() => setOpen((v) => !v)}
+          onClick={() => setOpen((wasOpen) => !wasOpen)}
           onHoverStart={() => setPeeking(true)}
           onHoverEnd={() => setPeeking(false)}
         />
@@ -49,7 +49,7 @@ export function SidebarToggle() {
           "relative transition-[background-color] duration-(--duration-quick) ease-(--ease-smooth-out) data-hover:bg-neutral-300 motion-reduce:transition-none data-hover:dark:bg-neutral-800",
           showsMobile ? "z-0" : "z-40",
         )}
-        onClick={() => setOpen((v) => !v)}
+        onClick={() => setOpen((wasOpen) => !wasOpen)}
         aria-label={`${showsOpen ? "Close" : "Open"} sidebar`}
         size="icon"
         data-hover={isPeeking || undefined}

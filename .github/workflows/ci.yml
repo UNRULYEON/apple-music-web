@@ -58,6 +58,12 @@ jobs:
       - name: Set up Bun
         uses: oven-sh/setup-bun@v2
 
+      # The house lint rules are TypeScript, which Node runs from 22.18.
+      - name: Set up Node
+        uses: actions/setup-node@v6
+        with:
+          node-version: 24
+
       - name: Restore node_modules
         id: cache
         uses: actions/cache/restore@v6

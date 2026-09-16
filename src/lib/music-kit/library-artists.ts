@@ -27,7 +27,7 @@ export interface LibraryArtist {
   artwork?: Artwork;
 }
 
-export function readLibraryArtists(albums: LibraryAlbum[]): LibraryArtist[] {
+export function groupLibraryArtists(albums: LibraryAlbum[]): LibraryArtist[] {
   const byName = new Map<string, LibraryArtist>();
 
   for (const album of albums) {
