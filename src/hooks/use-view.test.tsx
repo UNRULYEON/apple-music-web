@@ -35,7 +35,6 @@ function open(view: View) {
   act(() => seen.current?.open(view));
 }
 
-// the one scroll area the shell keeps for every view, already scrolled down
 function scrollArea() {
   const area = document.createElement("div");
 
@@ -71,7 +70,6 @@ describe("useView", () => {
     );
   });
 
-  // the way a tab bar answers a second tap
   it("takes a person to the start of the screen they are already on", async () => {
     const area = scrollArea();
     const router = await renderView();
@@ -101,7 +99,6 @@ describe("useView", () => {
     expect(router.state.location).toBe(before);
   });
 
-  // the router puts the list back where a person left it, so nothing here may move it
   it("leaves the place a person had when they open another screen", async () => {
     const area = scrollArea();
 

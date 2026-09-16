@@ -8,9 +8,6 @@ export interface VolumeControl {
   change: (volume: number) => void;
 }
 
-// the volume belongs to this tab alone, so it lives in the browser and not in the
-// account. The level a person left behind is put on the player again when they come
-// back, and MusicKit is asked only when the browser holds nothing.
 export function useVolume(): VolumeControl {
   const [volume, hold] = useState(FULL_VOLUME);
 

@@ -1,4 +1,3 @@
-// Apple Music plays full songs behind DRM. Safari uses FairPlay, the others Widevine.
 export const KEY_SYSTEMS = ["com.apple.fps", "com.widevine.alpha", "com.microsoft.playready"];
 
 export interface DrmSupport {

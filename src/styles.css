@@ -264,8 +264,6 @@ body {
 
   --hint-delay: var(--duration-micro);
 
-  /* a surface that grows out of the button it belongs to. The close is quicker and
-     quieter than the open, so leaving takes less notice than arriving. */
   --dropdown-open-dur: var(--duration-fast);
   --dropdown-close-dur: var(--duration-quick);
   --dropdown-pre-scale: var(--scale-dropdown);

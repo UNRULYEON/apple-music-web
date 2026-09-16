@@ -26,8 +26,6 @@ export function AlbumDetails({ type, id }: { type: AlbumType; id: string }) {
     queryFn: () => fetchAlbum(type, id),
   });
 
-  // a library album knows its own id. A catalog album must find the library album that
-  // stands for it, which only the list of library albums can tell.
   const { data: libraryAlbums } = useSignedInQuery({
     ...libraryAlbumsQuery(),
     enabled: type === "albums",
@@ -40,8 +38,6 @@ export function AlbumDetails({ type, id }: { type: AlbumType; id: string }) {
   const songs = useMemo(() => markInLibrary(album?.songs ?? [], added), [album?.songs, added]);
   const inLibrary = isAlbumInLibrary(songs, album?.trackCount);
 
-  // the search narrows the list of songs. The header and the foot go on telling a
-  // person about the whole album, so Play still plays the album.
   const { term } = useSearch();
   const shown = useMemo(() => searchSongs(songs, term), [songs, term]);
 

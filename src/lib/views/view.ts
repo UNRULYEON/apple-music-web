@@ -20,8 +20,6 @@ export type View =
 
 export const HOME: View = { name: "home" };
 
-// one name for the screen a view shows, so the place a person left it can be kept
-// under it. Home and recently played show the same screen, so they share a name.
 export function viewKey(view: View): string {
   switch (view.name) {
     case "home":
@@ -35,8 +33,6 @@ export function viewKey(view: View): string {
   }
 }
 
-// the screens that show a list a person can narrow. Home and recently played show the
-// same list, so a search typed on one carries over to the other.
 export function canSearch(view: View): boolean {
   return (
     view.name === "home" ||

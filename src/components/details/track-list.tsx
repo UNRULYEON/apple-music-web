@@ -29,10 +29,6 @@ const MARK_SHOWN = { opacity: 1, scale: 1, filter: "blur(0px)" };
 const FADED = { opacity: 0 };
 const OPAQUE = { opacity: 1 };
 
-// where the list opens. The song a person is on comes to the middle, but never further
-// up than the first song, so a short window does not carry a song near the start to the
-// end of the list. A song that fits on screen with the list at its top leaves the view
-// there, so the header above it stays in sight.
 export function showPlayingSong(list: HTMLElement): void {
   const row = list.querySelector(PLAYING_ROW);
   const viewport = list.closest(VIEWPORT);
@@ -45,8 +41,6 @@ export function showPlayingSong(list: HTMLElement): void {
   const listBox = list.getBoundingClientRect();
   const viewBox = viewport.getBoundingClientRect();
 
-  // the whole view, not the part of it on screen, so nothing here reads the scroll the
-  // view before it was left at
   const scrolled = viewport.scrollTop;
   const rowTop = scrolled + rowBox.top - viewBox.top;
   const listTop = scrolled + listBox.top - viewBox.top;
@@ -79,7 +73,6 @@ export function TrackList({
   const { play, source: playingFrom, nowPlaying } = usePlayer();
   const reduceMotion = useReducedMotion();
   const playsThisList = isSameSource(source, playingFrom);
-  // the column stays on every row, or the durations of the marked rows move
   const marksLibrary = showLibraryMark && songs.some((song) => song.inLibrary);
   const list = useRef<HTMLDivElement>(null);
   const hasShown = useRef(false);
@@ -95,8 +88,6 @@ export function TrackList({
       return;
     }
 
-    // after the paint, so the router has put the view where it opens first. The mark
-    // is set here, not before, so a frame that is dropped is asked for again.
     const frame = requestAnimationFrame(() => {
       hasShown.current = true;
       showPlayingSong(node);
@@ -182,9 +173,6 @@ export function TrackList({
                           />
                         </motion.span>
                       ) : (
-                        // the number Apple Music gives the song on its album, because a
-                        // list can leave songs out and counting the rows would name the
-                        // rest wrongly
                         showTrackNumber &&
                         song.trackNumber !== undefined && (
                           <motion.span

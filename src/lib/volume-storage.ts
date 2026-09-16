@@ -1,12 +1,9 @@
 const STORAGE_KEY = "volume";
 
-// a browser can turn its storage down, and a volume that cannot be kept is no reason
-// to stop the app
 export function readStoredVolume(): number | undefined {
   try {
     const stored = window.localStorage.getItem(STORAGE_KEY);
 
-    // an empty store and a word both turn into a number, and neither is a volume
     if (stored === null || stored.trim() === "") {
       return undefined;
     }

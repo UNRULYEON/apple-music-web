@@ -26,8 +26,6 @@ export function DetailsHeader({
 
   return (
     <div className="flex flex-col gap-8 sm:gap-8 sm:flex-row items-center">
-      {/* the artwork keeps the width it had, with no padding of its own, so its left
-          edge lines up with the titles and the songs below it */}
       <div className="w-full max-w-96 sm:w-64 sm:shrink-0">
         <DetailsArtwork artwork={artwork} name={name} />
       </div>

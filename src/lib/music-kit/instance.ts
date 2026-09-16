@@ -17,14 +17,10 @@ async function configure(): Promise<MusicKit.MusicKitInstance> {
 
   const developerToken = await getDeveloperToken();
 
-  // MusicKit reads the runtime while it configures, and playback stays off if it sees
-  // a process global, so it must not see one for that moment
   await withoutNodeMark(() =>
     MusicKit.configure({
       developerToken,
       app: { name: "Apple Music Web", build: "1.0.0" },
-      // this app says what went wrong in its own words, so MusicKit must not
-      // put its own dialog over the page
       suppressErrorDialog: true,
     }),
   );

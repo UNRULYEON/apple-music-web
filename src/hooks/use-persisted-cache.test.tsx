@@ -10,7 +10,6 @@ import { afterEach, beforeEach, describe, expect, it, vi, type Mock } from "vite
 const STORE_KEY = "apple-music-web.cache";
 const KEY = ["music-kit", "recently-played"];
 
-// a write waits a moment before it lands, so the store is given more than that
 const STORED = { timeout: 3000 };
 
 let client: QueryClient;
@@ -20,8 +19,6 @@ let answer: (album: string) => void;
 beforeEach(() => {
   localStorage.clear();
   client = new QueryClient({ defaultOptions: { queries: { retry: false } } });
-  // the answer from Apple Music is held back, so what the browser put back is what
-  // the view shows in the meantime
   queryFn = vi.fn(() => new Promise<string>((resolve) => (answer = resolve)));
   act(() => setAuthStatus("signed-in"));
 });

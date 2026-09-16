@@ -70,7 +70,6 @@ describe("SearchProvider", () => {
 
     act(() => seen.current?.setTerm("boygenius"));
 
-    // open an album, then go back
     view = { name: "detail", type: "albums", id: "a.1" };
     act(rerender);
     view = { name: "home" };

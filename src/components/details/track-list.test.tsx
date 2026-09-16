@@ -22,7 +22,6 @@ vi.mock("@/lib/music-kit/playback", async (importOriginal) => ({
 
 const ARTWORK = { url: "https://example.test/{w}x{h}{c}.{f}", width: 600, height: 600 };
 
-// three songs a person kept from one album, which is not its first three songs
 const SONGS: Song[] = [
   { id: "s0", name: "First", artwork: ARTWORK, trackNumber: 2 },
   { id: "s1", name: "Second", artwork: ARTWORK, trackNumber: 5 },
@@ -48,7 +47,6 @@ const ALBUM = { type: "albums", id: "a1" } as const;
 const OTHER_ALBUM = { type: "albums", id: "a2" } as const;
 const LIBRARY_PLAYLIST = { type: "library-playlists", id: "p1" } as const;
 
-// a song in the library keeps a library id and plays by its catalog id
 const LIBRARY_SONGS: Song[] = SONGS.map((song, i) => ({
   ...song,
   id: `i.${song.id}`,
@@ -63,8 +61,6 @@ function renderList(props: Partial<ComponentProps<typeof TrackList>> = {}) {
   );
 }
 
-// the queue MusicKit reports, so the list can tell which song plays. It holds the
-// id every song plays by, which is the catalog id of a song in the library
 function nowPlaying(index: number, songs: Song[] = SONGS) {
   music.queue.items = songs.map((song) => ({
     id: song.playId ?? song.id,
@@ -101,8 +97,6 @@ describe("TrackList", () => {
     );
   });
 
-  // a library album holds the songs a person added, not every song of the album, so
-  // counting the rows would name them wrongly
   it("names a song by the number Apple Music gives it, not by its place in the list", () => {
     renderList({ source: ALBUM });
 
@@ -176,7 +170,6 @@ describe("TrackList", () => {
 
     expect(screen.getByLabelText("Playing now")).toBeTruthy();
     expect(screen.getByText("2")).toBeTruthy();
-    // the number leaves with the swap, so it stays until the motion ends
     await waitFor(() => expect(screen.queryByText("5")).toBeNull());
   });
 
@@ -271,7 +264,6 @@ function box(top: number, bottom: number): DOMRect {
 const ROW_HEIGHT = 56;
 const VIEW_HEIGHT = 300;
 
-// a list of rows below a header, with the window looking at it from `scrolled`
 function listInViewport({
   rowIndex,
   listTop,
@@ -308,7 +300,6 @@ describe("showPlayingSong", () => {
 
     showPlayingSong(list);
 
-    // 800 + 39 * 56 + 28 - 150
     expect(viewport.scrollTo).toHaveBeenCalledWith({ top: 2862 });
   });
 
@@ -328,7 +319,6 @@ describe("showPlayingSong", () => {
     expect(viewport.scrollTo).toHaveBeenCalledWith({ top: 0 });
   });
 
-  // the view before it was left far down the page, and none of that may show here
   it("reads the same place whatever the view before it was left at", () => {
     const deep = listInViewport({ rowIndex: 39, listTop: 800, scrolled: 4000 });
     const top = listInViewport({ rowIndex: 39, listTop: 800, scrolled: 0 });

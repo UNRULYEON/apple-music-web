@@ -48,12 +48,8 @@ import { Button } from "./ui/button";
 const ARTWORK_SIZE = 64;
 const EXPANDED_ARTWORK_SIZE = 512;
 
-// The room the artwork, the text and the bar take, when the viewport gives it.
-// It sits on the column itself, so a narrow viewport can take room back from it
-// and the text inside truncates instead of spilling out of the bar.
 const META_WIDTH = 256;
 
-// The room the bar needs at the end of the scrolled content.
 export const PLAYER_SPACE = 96;
 
 const HIDDEN = { opacity: 0, y: 16, scale: 0.97, filter: "blur(2px)" };
@@ -128,8 +124,6 @@ interface ControlProps {
   iconSize?: number;
 }
 
-// the album or the playlist the queue was built from. A queue with none of its own,
-// such as one kept before the app held on to it, falls back to the album the song is on.
 function usePlayingFrom(): QueueSource | undefined {
   const { source, nowPlaying } = usePlayer();
   const song = nowPlaying?.playId ?? nowPlaying?.id;
@@ -138,9 +132,6 @@ function usePlayingFrom(): QueueSource | undefined {
   return source ?? found ?? undefined;
 }
 
-// the artists of the song that plays. MusicKit builds its queue out of media items,
-// which name the artists in one string and hold no artist of their own, so the catalog
-// is asked which artists that string stands for.
 function useNowPlayingArtists(): Artist[] | undefined {
   const { nowPlaying } = usePlayer();
   const known = nowPlaying?.artists;
@@ -154,8 +145,6 @@ function sourceLabel(name: string, source: QueueSource): string {
   return isPlaylistType(source.type) ? `${name}. Show the playlist.` : `${name}. Show the album.`;
 }
 
-// opens the album or the playlist the queue was built from. A queue with no source,
-// such as one built before the app kept it, stays as plain text.
 function PlayingFrom({
   className,
   hoverClassName,
@@ -675,8 +664,6 @@ export function Player() {
 
   const [isExpanded, setIsExpanded] = useState(false);
 
-  // the bar belongs to the person who signed in, so it goes with them and does not wait
-  // for MusicKit to let the queue go
   const isShown = Boolean(nowPlaying) && status !== "signed-out";
 
   if (!isShown && isExpanded) {

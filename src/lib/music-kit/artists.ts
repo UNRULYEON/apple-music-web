@@ -18,7 +18,6 @@ import { fetchStorefront } from "@/lib/music-kit/storefront";
 
 const STALE = 60 * 60 * 1000;
 
-// what the screen shows. Apple sends a view only when the request names it.
 const VIEWS =
   "top-songs,full-albums,singles,featured-playlists,compilation-albums,appears-on-albums";
 
@@ -60,7 +59,6 @@ export interface ArtistDetail {
   appearsOn: ArtistAlbum[];
 }
 
-// a person looks for an album by what the tile shows: its name and who made it
 export function searchAlbums(albums: ArtistAlbum[], term: string): ArtistAlbum[] {
   return albums.filter((album) => matchesSearch(term, album.name, album.artist?.name));
 }
@@ -124,9 +122,6 @@ export function artistQuery(id: string) {
   };
 }
 
-// the artists of one song. The player builds its queue out of MusicKit media items,
-// which name the artists in one string and hold no artist of their own, so the catalog
-// is asked for them.
 export async function fetchSongArtists(id: string): Promise<Artist[]> {
   const storefront = await fetchStorefront();
   const music = await getMusicKit();
@@ -168,7 +163,6 @@ function readArtistDetail(value: unknown): ArtistDetail | undefined {
     name: attributes.name,
     artwork: readArtwork(attributes.artwork),
     genres: readGenres(attributes.genreNames),
-    // a view holds its items under the same key a relationship does
     topSongs: readRelated(candidate.views, "top-songs", readSong),
     albums: readRelated(candidate.views, "full-albums", readArtistAlbum),
     singles: readRelated(candidate.views, "singles", readArtistAlbum),

@@ -21,8 +21,6 @@ const WIDE_GRID = 768;
 const GAP = 16;
 const GAP_WIDE = 24;
 const TEXT_BLOCK = 40;
-// rows held ready above and below the window, so a fast scroll finds them drawn
-// already instead of leaving a gap while it catches up
 const OVERSCAN = 4;
 const VIEWPORT = '[data-slot="scroll-area-viewport"]';
 
@@ -46,8 +44,6 @@ export function gapFor(width: number): number {
   return width >= WIDE_GRID ? GAP_WIDE : GAP;
 }
 
-// the same grid the css drew before: tiles of at least 13rem, and never more than
-// two on a narrow window
 export function columnCount(width: number): number {
   if (width <= 0) {
     return 1;
@@ -81,9 +77,6 @@ export function sameMetrics(a: Metrics, b: Metrics): boolean {
   return a.width === b.width && a.scrollMargin === b.scrollMargin;
 }
 
-// the grid grows taller as the virtualizer measures its rows, which makes the observer
-// fire again. safari ends the loop with an error unless the numbers the grid draws with
-// hold still.
 function updateMetrics(
   node: HTMLElement,
   viewport: HTMLElement,
@@ -104,9 +97,6 @@ export function MediaGrid({ items, ref }: { items: MediaTileItem[]; ref?: Ref<HT
       container.current = node;
       setViewport(node?.closest<HTMLElement>(VIEWPORT) ?? null);
 
-      // AnimatePresence takes the grid out of the flow while it leaves, but only when it
-      // can reach this node. Without it the grid keeps its space and the state that
-      // follows sits under the grid until the grid has gone.
       if (typeof ref === "function") {
         ref(node);
       } else if (ref) {
@@ -145,7 +135,6 @@ export function MediaGrid({ items, ref }: { items: MediaTileItem[]; ref?: Ref<HT
     scrollMargin,
   });
 
-  // a new column count makes every row the virtualizer already measured the wrong height
   useEffect(() => {
     virtualizer.measure();
   }, [virtualizer, columns]);

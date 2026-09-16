@@ -9,8 +9,6 @@ export interface StoredQueue {
   position?: number;
 }
 
-// what the player needs to build the same queue again: the ids it handed MusicKit, the
-// place in them, and the album or the playlist they came from
 export function readStoredQueue(): StoredQueue | undefined {
   try {
     const stored = window.localStorage.getItem(STORAGE_KEY);
@@ -21,8 +19,6 @@ export function readStoredQueue(): StoredQueue | undefined {
   }
 }
 
-// the place in the song is written on its own, so a write of the queue keeps it while a
-// person stays on the same song and drops it when they move to another
 export function writeStoredQueue(queue: StoredQueue): void {
   const kept = readStoredQueue();
   const position = queue.position ?? (kept?.index === queue.index ? kept.position : undefined);
@@ -30,7 +26,6 @@ export function writeStoredQueue(queue: StoredQueue): void {
   write({ ...queue, position });
 }
 
-// how far into the song a person had come, so a reload starts them where they left off
 export function writeStoredPosition(position: number): void {
   const stored = readStoredQueue();
 
@@ -51,8 +46,6 @@ export function forgetStoredQueue(): void {
   } catch {}
 }
 
-// a stored queue this app cannot make sense of is worth nothing, so it is left behind
-// and the player starts empty
 function asQueue(value: unknown): StoredQueue | undefined {
   if (typeof value !== "object" || value === null) {
     return undefined;
@@ -75,7 +68,6 @@ function asQueue(value: unknown): StoredQueue | undefined {
   return { songs, index, source: asSource(source), position: asPosition(position) };
 }
 
-// a song starts at its beginning, so a place of nought is the same as no place at all
 function asPosition(value: unknown): number | undefined {
   return typeof value === "number" && Number.isFinite(value) && value > 0 ? value : undefined;
 }

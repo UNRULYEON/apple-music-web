@@ -15,11 +15,8 @@ export function SearchProvider({ children }: { children: ReactNode }) {
   const status = useAuthStatus();
   const key = viewKey(view);
 
-  // one search for each screen, so a person who opens an album and comes back finds the
-  // list as they left it. Home and recently played share a name, and so a search too.
   const [terms, setTerms] = useState<Record<string, string>>({});
 
-  // a search belongs to the person who signed in, the way the queue and the cache do
   useEffect(() => {
     if (status === "signed-out") {
       setTerms({});

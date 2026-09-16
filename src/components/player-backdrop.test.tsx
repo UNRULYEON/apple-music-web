@@ -44,7 +44,6 @@ const RED_COLORS = "#ff0000";
 const SAMPLES = 8;
 const SAMPLE_GAP = 50;
 
-// a skip that lands while the colours still move must not start the long wash again
 const CATCH_UP = 700;
 
 let music: FakeMusicKit;

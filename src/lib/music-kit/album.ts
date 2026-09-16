@@ -19,8 +19,6 @@ import { fetchStorefront } from "@/lib/music-kit/storefront";
 
 const TYPES = ["albums", "library-albums"] as const;
 const INCLUDE = "tracks,artists";
-// the artists of each song, which name one artist at a time. Without this a song holds
-// only the display string "A & B", which cannot be cut into artists a person can open.
 const SONG_PARAMS = { include: INCLUDE, "include[songs]": "artists" } as const;
 const LIBRARY_PATH = "/v1/me/library/albums";
 const CATALOG_PATH = "/catalog";
@@ -65,8 +63,6 @@ export function isAlbumType(value: unknown): value is AlbumType {
   return TYPES.includes(value as AlbumType);
 }
 
-// the album counts as added only when the library holds every song on it. A part of an
-// album marks its songs one by one instead.
 export function isAlbumInLibrary(songs: Song[], trackCount?: number): boolean {
   return (
     songs.length > 0 &&
@@ -75,8 +71,6 @@ export function isAlbumInLibrary(songs: Song[], trackCount?: number): boolean {
   );
 }
 
-// which songs of an album the library holds. The library song and the catalog song of
-// the same music carry different ids, so the two lists join on the play id.
 export function markInLibrary(songs: Song[], added?: Song[]): Song[] {
   if (!added) {
     return songs;
@@ -103,8 +97,6 @@ export async function fetchAlbum(type: AlbumType, id: string): Promise<Album> {
   return type === "library-albums" ? withCatalogSongs(album, id) : album;
 }
 
-// a library album holds only the songs a person added. The catalog album gives the whole
-// track list, so the view can show which songs are missing from the library.
 async function withCatalogSongs(album: Album, id: string): Promise<Album> {
   const catalog = await fetchCatalogAlbum(id);
 
@@ -114,14 +106,12 @@ async function withCatalogSongs(album: Album, id: string): Promise<Album> {
 
   return {
     ...catalog,
-    // the library ids, so the queue and the screen keep the name they opened under
     id: album.id,
     type: album.type,
     artwork: album.artwork ?? catalog.artwork,
   };
 }
 
-// the songs the library holds from one library album
 export async function fetchLibraryAlbumSongs(id: string): Promise<Song[]> {
   const music = await getMusicKit();
   const path = `${LIBRARY_PATH}/${encodeURIComponent(id)}`;
@@ -150,7 +140,6 @@ async function fetchCatalogAlbum(id: string): Promise<Album | undefined> {
 
     return readAlbum("albums", first);
   } catch {
-    // music a person uploaded has no album in the catalog
     return undefined;
   }
 }
@@ -218,7 +207,6 @@ function readLibraryAlbum(type: AlbumType, value: unknown): LibraryAlbum | undef
   };
 }
 
-// the album in the catalog that a library album stands for
 function readCatalogId(value: unknown): string | undefined {
   if (typeof value !== "object" || value === null) {
     return undefined;
@@ -287,7 +275,6 @@ function readGenres(value: unknown): string[] {
 
 export const LIBRARY_ALBUMS_STALE = 5 * 60 * 1000;
 
-// one place for the query, so the view and any early fetch cannot drift apart
 export function libraryAlbumsQuery() {
   const isDemo = readDemoMode();
 
