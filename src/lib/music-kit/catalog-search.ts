@@ -1,13 +1,16 @@
 import { queryOptions } from "@tanstack/react-query";
+import { isRecord } from "@/lib/is-record";
+import { catalogPath } from "@/lib/music-kit/api";
 import { getMusicKit } from "@/lib/music-kit/instance";
 import {
   type Artwork,
   readArtwork,
+  readGenres,
   readItems,
+  readResource,
   readStandard,
   readText,
 } from "@/lib/music-kit/resource";
-import { fetchStorefront } from "@/lib/music-kit/storefront";
 
 const TYPES = "artists,albums,playlists";
 const LIMIT = 10;
@@ -35,76 +38,39 @@ export async function fetchCatalogSearch(term: string): Promise<CatalogResults> 
     return EMPTY;
   }
 
-  const storefront = await fetchStorefront();
+  const path = await catalogPath("search");
   const music = await getMusicKit();
-  const { data } = await music.api.music(`/v1/catalog/${storefront.id}/search`, {
-    term,
-    types: TYPES,
-    limit: LIMIT,
-  });
-  const results = readResults(data);
+  const { data } = await music.api.music(path, { term, types: TYPES, limit: LIMIT });
+  const results = isRecord(data) && isRecord(data.results) ? data.results : {};
 
   return {
-    artists: readGroup(results.artists, readFirstGenre),
+    artists: readGroup(results.artists, (attributes) => readGenres(attributes.genreNames)[0]),
     albums: readGroup(results.albums, (attributes) => readText(attributes.artistName)),
     playlists: readGroup(results.playlists, readPlaylistCredit),
   };
 }
 
 function readGroup(group: unknown, readCredit: ReadCredit): CatalogItem[] {
-  const items: CatalogItem[] = [];
-
-  for (const value of readItems(group)) {
-    const item = readItem(value, readCredit);
-
-    if (item) {
-      items.push(item);
-    }
-  }
-
-  return items;
+  return readItems(group)
+    .map((value) => readItem(value, readCredit))
+    .filter((item) => item !== undefined);
 }
 
 function readItem(value: unknown, readCredit: ReadCredit): CatalogItem | undefined {
-  if (typeof value !== "object" || value === null) {
-    return undefined;
-  }
+  const resource = readResource(value);
 
-  const candidate = value as { id?: unknown; attributes?: Record<string, unknown> };
-  const attributes = candidate.attributes;
-
-  if (typeof candidate.id !== "string" || typeof attributes?.name !== "string") {
-    return undefined;
-  }
-
-  return {
-    id: candidate.id,
-    name: attributes.name,
-    credit: readCredit(attributes),
-    artwork: readArtwork(attributes.artwork),
-  };
-}
-
-function readFirstGenre(attributes: Record<string, unknown>): string | undefined {
-  const genres = attributes.genreNames;
-
-  return Array.isArray(genres) ? readText(genres[0]) : undefined;
+  return (
+    resource && {
+      id: resource.id,
+      name: resource.name,
+      credit: readCredit(resource.attributes),
+      artwork: readArtwork(resource.attributes.artwork),
+    }
+  );
 }
 
 function readPlaylistCredit(attributes: Record<string, unknown>): string | undefined {
   return readText(attributes.curatorName) ?? readStandard(attributes.description);
-}
-
-function readResults(data: unknown): Record<string, unknown> {
-  if (typeof data !== "object" || data === null) {
-    return {};
-  }
-
-  const results = (data as { results?: unknown }).results;
-
-  return typeof results === "object" && results !== null
-    ? (results as Record<string, unknown>)
-    : {};
 }
 
 export function catalogSearchQuery(term: string) {

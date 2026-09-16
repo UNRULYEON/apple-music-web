@@ -6,21 +6,21 @@ import {
   findDemoPlaylist,
 } from "@/lib/demo/library";
 import { demoQueryKey, readDemoMode } from "@/lib/demo/mode";
+import { catalogPath, fetchEveryPage } from "@/lib/music-kit/api";
 import { fetchCatalogResources } from "@/lib/music-kit/catalog-resources";
 import { getMusicKit } from "@/lib/music-kit/instance";
 import {
   type Artwork,
   type Curator,
-  hasNextPage,
   mosaicArtwork,
   readArtwork,
   readCurator,
   readItems,
   readRelated,
+  readResource,
   readStandard,
   readText,
 } from "@/lib/music-kit/resource";
-import { fetchStorefront } from "@/lib/music-kit/storefront";
 import { readSong, type Song } from "@/lib/music-kit/track";
 
 const PATH = "/v1/me/library/playlists";
@@ -66,26 +66,11 @@ export function isPlaylistType(value: unknown): value is PlaylistType {
 }
 
 export async function fetchLibraryPlaylists(): Promise<LibraryPlaylist[]> {
-  const music = await getMusicKit();
-  const playlists: LibraryPlaylist[] = [];
+  const items = await fetchEveryPage(PATH, {}, PAGE_SIZE);
 
-  for (let offset = 0; ; offset += PAGE_SIZE) {
-    // oxlint-disable-next-line no-await-in-loop
-    const { data } = await music.api.music(PATH, { limit: PAGE_SIZE, offset });
-    const items = readItems(data);
-
-    for (const item of items) {
-      const playlist = readLibraryPlaylist("library-playlists", item);
-
-      if (playlist) {
-        playlists.push(playlist);
-      }
-    }
-
-    if (!hasNextPage(data) || items.length < PAGE_SIZE) {
-      return playlists;
-    }
-  }
+  return items
+    .map((item) => readLibraryPlaylist("library-playlists", item))
+    .filter((playlist) => playlist !== undefined);
 }
 
 export async function fetchDemoPlaylists(
@@ -170,35 +155,24 @@ export async function fetchPlaylist(type: PlaylistType, id: string): Promise<Pla
 }
 
 async function playlistPath(type: PlaylistType, id: string): Promise<string> {
-  if (type === "library-playlists") {
-    return `${PATH}/${encodeURIComponent(id)}`;
-  }
-
-  const storefront = await fetchStorefront();
-
-  return `/v1/catalog/${storefront.id}/playlists/${encodeURIComponent(id)}`;
+  return type === "library-playlists"
+    ? `${PATH}/${encodeURIComponent(id)}`
+    : catalogPath("playlists", id);
 }
 
 function readPlaylist(type: PlaylistType, value: unknown): Playlist | undefined {
-  if (typeof value !== "object" || value === null) {
+  const resource = readResource(value);
+
+  if (!resource) {
     return undefined;
   }
 
-  const candidate = value as {
-    id?: unknown;
-    attributes?: Record<string, unknown>;
-    relationships?: unknown;
-  };
-  const attributes = candidate.attributes;
-
-  if (typeof candidate.id !== "string" || typeof attributes?.name !== "string") {
-    return undefined;
-  }
+  const { attributes, relationships } = resource;
 
   return {
-    id: candidate.id,
+    id: resource.id,
     type,
-    name: attributes.name,
+    name: resource.name,
     curator: readCurator(attributes.curatorName),
     artwork: readArtwork(attributes.artwork),
     description: readStandard(attributes.description),
@@ -208,26 +182,23 @@ function readPlaylist(type: PlaylistType, value: unknown): Playlist | undefined 
     canEdit: attributes.canEdit === true,
     hasCatalog: attributes.hasCatalog === true,
     isPublic: attributes.isPublic === true,
-    songs: readRelated(candidate.relationships, "tracks", readSong),
+    songs: readRelated(relationships, "tracks", readSong),
   };
 }
 
 function readLibraryPlaylist(type: PlaylistType, value: unknown): LibraryPlaylist | undefined {
-  if (typeof value !== "object" || value === null) {
+  const resource = readResource(value);
+
+  if (!resource) {
     return undefined;
   }
 
-  const candidate = value as { id?: unknown; attributes?: Record<string, unknown> };
-  const attributes = candidate.attributes;
-
-  if (typeof candidate.id !== "string" || typeof attributes?.name !== "string") {
-    return undefined;
-  }
+  const { attributes } = resource;
 
   return {
-    id: candidate.id,
+    id: resource.id,
     type,
-    name: attributes.name,
+    name: resource.name,
     description: readStandard(attributes.description),
     artwork: readArtwork(attributes.artwork),
     canEdit: attributes.canEdit === true,

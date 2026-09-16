@@ -1,4 +1,6 @@
+import { isRecord } from "@/lib/is-record";
 import type { AlbumType } from "@/lib/music-kit/album";
+import { catalogPath } from "@/lib/music-kit/api";
 import { hasDrm, MissingDrmError } from "@/lib/music-kit/drm";
 import { getMusicKit } from "@/lib/music-kit/instance";
 import { type RepeatMode, toMusicKitRepeat } from "@/lib/music-kit/player-state";
@@ -130,11 +132,11 @@ function readRefusedIds(cause: unknown): Set<string> {
 }
 
 function readMessage(cause: unknown): string {
-  if (typeof cause !== "object" || cause === null) {
+  if (!isRecord(cause)) {
     return "";
   }
 
-  const { message } = cause as { message?: unknown };
+  const { message } = cause;
 
   return typeof message === "string" ? message : "";
 }
@@ -281,12 +283,11 @@ export function silenceKnownRejections(): () => void {
 async function askTheCatalog(id: string): Promise<string> {
   try {
     const storefront = await fetchStorefront();
+    const path = await catalogPath("songs", id);
     const music = await getMusicKit();
-    const { data } = await music.api.music(
-      `/v1/catalog/${storefront.id}/songs/${encodeURIComponent(id)}`,
-    );
+    const { data } = await music.api.music(path);
     const [first] = readItems(data);
-    const attributes = (first as { attributes?: Record<string, unknown> } | undefined)?.attributes;
+    const attributes = isRecord(first) && isRecord(first.attributes) ? first.attributes : undefined;
 
     if (!attributes) {
       return `The ${storefront.id} catalog holds no song with that id.`;
