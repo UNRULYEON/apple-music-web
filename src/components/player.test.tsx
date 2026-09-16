@@ -523,7 +523,7 @@ describe("Player", () => {
     loadQueue([item("1", "First")]);
     fireEvent.contextMenu(screen.getByText("First"));
 
-    fireEvent.click(await screen.findByRole("menuitem", { name: "Close Player" }));
+    fireEvent.click(await screen.findByRole("menuitem", { name: "Close player" }));
 
     await waitFor(() => expect(music.clearQueue).toHaveBeenCalled());
     expect(screen.queryByRole("button", { name: "Collapse the player" })).toBeNull();
@@ -540,7 +540,7 @@ describe("Player", () => {
     fireEvent.contextMenu(screen.getByRole("button", { name: "Play" }));
 
     await act(async () => undefined);
-    expect(screen.queryByRole("menuitem", { name: "Close Player" })).toBeNull();
+    expect(screen.queryByRole("menuitem", { name: "Close player" })).toBeNull();
   });
 
   it("opens the expanded player when a person taps the artwork", async () => {

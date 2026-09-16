@@ -72,7 +72,7 @@ describe("TrackMenu", () => {
     renderList(SONG, { type: "playlists", id: "p1" });
     openMenu();
 
-    fireEvent.click(await screen.findByRole("menuitem", { name: "Go to Album" }));
+    fireEvent.click(await screen.findByRole("menuitem", { name: "Go to album" }));
 
     expect(openView).toHaveBeenCalledWith({ name: "detail", type: "albums", id: "al1" });
   });
@@ -81,7 +81,7 @@ describe("TrackMenu", () => {
     renderList(SONG, { type: "playlists", id: "p1" });
     openMenu();
 
-    fireEvent.click(await screen.findByRole("menuitem", { name: "Go to Artist" }));
+    fireEvent.click(await screen.findByRole("menuitem", { name: "Go to artist" }));
 
     expect(openView).toHaveBeenCalledWith({ name: "detail", type: "artists", id: "a1" });
   });
@@ -90,16 +90,16 @@ describe("TrackMenu", () => {
     renderList(SONG, { type: "albums", id: "al1" });
     openMenu();
 
-    await screen.findByRole("menuitem", { name: "Go to Artist" });
-    expect(screen.queryByRole("menuitem", { name: "Go to Album" })).toBeNull();
+    await screen.findByRole("menuitem", { name: "Go to artist" });
+    expect(screen.queryByRole("menuitem", { name: "Go to album" })).toBeNull();
   });
 
   it("leaves out the artist whose page is open", async () => {
     renderList(SONG, { type: "artists", id: "a1" });
     openMenu();
 
-    await screen.findByRole("menuitem", { name: "Go to Album" });
-    expect(screen.queryByRole("menuitem", { name: "Go to Artist" })).toBeNull();
+    await screen.findByRole("menuitem", { name: "Go to album" });
+    expect(screen.queryByRole("menuitem", { name: "Go to artist" })).toBeNull();
   });
 
   it("finds the artists of a song that came without them", async () => {
@@ -107,7 +107,7 @@ describe("TrackMenu", () => {
     renderList({ id: "s1", name: "Chala" }, { type: "artists", id: "a1" });
     openMenu();
 
-    fireEvent.click(await screen.findByRole("menuitem", { name: "Go to Artist" }));
+    fireEvent.click(await screen.findByRole("menuitem", { name: "Go to artist" }));
 
     expect(openView).toHaveBeenCalledWith({ name: "detail", type: "artists", id: "a9" });
   });
@@ -125,7 +125,7 @@ describe("TrackMenu", () => {
     );
     openMenu();
 
-    fireEvent.click(await screen.findByRole("menuitem", { name: "Go to Artist" }));
+    fireEvent.click(await screen.findByRole("menuitem", { name: "Go to artist" }));
     fireEvent.click(await screen.findByRole("menuitem", { name: "Tatsuro Yamashita" }));
 
     expect(openView).toHaveBeenCalledWith({ name: "detail", type: "artists", id: "a2" });

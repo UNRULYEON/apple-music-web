@@ -49,26 +49,26 @@ function TrackMenuItems({ song, source }: { song: Song; source?: QueueSource }) 
           onClick={() => album.data && open({ name: "detail", ...album.data })}
         >
           <HugeiconsIcon icon={DiscAlbumIcon} strokeWidth={2} aria-hidden="true" />
-          Go to Album
+          Go to album
         </ContextMenuItem>
       )}
       {artists.length === 0 && found.isLoading && (
         <ContextMenuItem disabled>
           <HugeiconsIcon icon={Mic01Icon} strokeWidth={2} aria-hidden="true" />
-          Go to Artist
+          Go to artist
         </ContextMenuItem>
       )}
       {onlyArtist && (
         <ContextMenuItem onClick={() => openArtist(onlyArtist)}>
           <HugeiconsIcon icon={Mic01Icon} strokeWidth={2} aria-hidden="true" />
-          Go to Artist
+          Go to artist
         </ContextMenuItem>
       )}
       {artists.length > 1 && (
         <ContextMenuSub>
           <ContextMenuSubTrigger>
             <HugeiconsIcon icon={Mic01Icon} strokeWidth={2} aria-hidden="true" />
-            Go to Artist
+            Go to artist
           </ContextMenuSubTrigger>
           <ContextMenuSubPopup>
             {artists.map((artist) => (
