@@ -8,9 +8,9 @@
 @custom-variant dark (&:is(.dark *));
 
 @utility theme-fade {
-  transition-property: background-color, border-color;
-  transition-duration: var(--duration-fast);
-  transition-timing-function: ease-in-out;
+  transition:
+    background-color var(--theme-fade),
+    border-color var(--theme-fade);
 
   @media (prefers-reduced-motion: reduce) {
     transition-property: none;
@@ -18,9 +18,10 @@
 }
 
 @utility theme-fade-all {
-  transition-property: color, background-color, border-color;
-  transition-duration: var(--duration-fast);
-  transition-timing-function: ease-in-out;
+  transition:
+    color var(--theme-fade),
+    background-color var(--theme-fade),
+    border-color var(--theme-fade);
 
   @media (prefers-reduced-motion: reduce) {
     transition-property: none;
@@ -28,36 +29,20 @@
 }
 
 @utility theme-fade-text {
-  transition-property: color;
-  transition-duration: var(--duration-fast);
-  transition-timing-function: ease-in-out;
+  transition: color var(--theme-fade);
 
   @media (prefers-reduced-motion: reduce) {
     transition-property: none;
   }
 }
 
-@custom-variant safari (@supports (-webkit-hyphens: none));
-@custom-variant ios (@supports (-webkit-touch-callout: none));
 @custom-variant short (@media (max-height: 37.5rem));
 @custom-variant short-wide (@media (max-height: 37.5rem) and (min-width: 52rem));
-
-:root {
-  --player-chrome: 18.75rem;
-}
-
-* {
-  box-sizing: border-box;
-}
 
 html,
 body,
 #app {
   min-height: 100%;
-}
-
-body {
-  margin: 0;
 }
 
 @theme inline {
@@ -197,7 +182,6 @@ body {
   --color-code-highlight: var(--code-highlight);
   --color-code-foreground: var(--code-foreground);
   --color-code: var(--code);
-  --color-artwork-outline: var(--artwork-outline);
 }
 
 :root {
@@ -244,25 +228,18 @@ body {
   --code: var(--color-white);
   --code-foreground: var(--foreground);
   --code-highlight: --alpha(var(--color-black) / 4%);
-  --artwork-outline: --alpha(var(--color-neutral-50) / 50%);
 
-  --duration-stagger: 40ms;
-  --duration-micro: 80ms;
+  --player-chrome: 18.75rem;
+
   --duration-quick: 150ms;
   --duration-fast: 250ms;
   --duration-medium: 350ms;
   --duration-slow: 400ms;
-  --duration-very-slow: 500ms;
 
   --ease-smooth-out: cubic-bezier(0.22, 1, 0.36, 1);
-  --ease-bounce: cubic-bezier(0.34, 1.36, 0.64, 1);
 
-  --scale-modal: 0.96;
   --scale-dropdown: 0.97;
-  --scale-hint: 0.98;
   --scale-closing: 0.99;
-
-  --hint-delay: var(--duration-micro);
 
   --dropdown-open-dur: var(--duration-fast);
   --dropdown-close-dur: var(--duration-quick);
@@ -280,11 +257,8 @@ body {
 
 .dark {
   --destructive-foreground: var(--color-red-400);
-  --info: var(--color-blue-500);
   --info-foreground: var(--color-blue-400);
-  --success: var(--color-emerald-500);
   --success-foreground: var(--color-emerald-400);
-  --warning: var(--color-amber-500);
   --warning-foreground: var(--color-amber-400);
   --background-instant: color-mix(in srgb, var(--color-neutral-950) 95%, var(--color-white));
   --background: var(--background-instant);
@@ -321,7 +295,6 @@ body {
   --code: color-mix(in srgb, var(--background) 98%, var(--color-white));
   --code-foreground: var(--foreground);
   --code-highlight: --alpha(var(--color-white) / 4%);
-  --artwork-outline: --alpha(var(--color-neutral-900) / 50%);
 }
 
 @property --destructive-foreground {
@@ -540,12 +513,6 @@ body {
   initial-value: transparent;
 }
 
-@property --artwork-outline {
-  syntax: "<color>";
-  inherits: true;
-  initial-value: transparent;
-}
-
 @media (prefers-reduced-motion: no-preference) {
   :root {
     transition:
@@ -584,8 +551,7 @@ body {
       --sidebar-accent-foreground var(--theme-fade),
       --sidebar-border var(--theme-fade),
       --code var(--theme-fade),
-      --code-highlight var(--theme-fade),
-      --artwork-outline var(--theme-fade);
+      --code-highlight var(--theme-fade);
   }
 }
 
@@ -609,9 +575,6 @@ body {
   pre {
     font-family: var(--font-mono);
   }
-}
-
-@layer base {
   [data-sidebar^="closed"] [data-slot="nav-panel"] {
     width: 0 !important;
   }
