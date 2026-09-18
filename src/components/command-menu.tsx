@@ -219,8 +219,9 @@ function useLibraryResults(query: string): Found {
   const pictures = useSignedInQuery(artistPicturesQuery());
 
   const artists = useMemo(
-    () => withPictures(groupLibraryArtists(albums.data ?? []), pictures.data),
-    [albums.data, pictures.data],
+    () =>
+      withPictures(groupLibraryArtists(albums.data ?? []), pictures.isError ? {} : pictures.data),
+    [albums.data, pictures.data, pictures.isError],
   );
 
   const groups = useMemo<ResultGroup[]>(

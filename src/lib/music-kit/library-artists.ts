@@ -57,14 +57,14 @@ export function withPictures(
   artists: LibraryArtist[],
   pictures: ArtistPictures | undefined,
 ): LibraryArtist[] {
-  if (!pictures) {
-    return artists;
-  }
-
   return artists.map((artist) => ({
     name: artist.name,
     albumCount: artist.albumCount,
-    artwork: Object.hasOwn(pictures, artist.name) ? pictures[artist.name] : artist.artwork,
+    artwork: !pictures
+      ? undefined
+      : Object.hasOwn(pictures, artist.name)
+        ? pictures[artist.name]
+        : artist.artwork,
   }));
 }
 

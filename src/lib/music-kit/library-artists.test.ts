@@ -170,10 +170,10 @@ describe("withPictures", () => {
     expect(shown.map((artist) => artist.artwork?.url)).toEqual(["cover-2", "takanaka"]);
   });
 
-  it("keeps the album covers while there are no pictures", () => {
+  it("shows no album cover while the pictures load", () => {
     const artists = groupLibraryArtists([album("1", "Kid A", "Radiohead", "cover")]);
 
-    expect(withPictures(artists, undefined)).toBe(artists);
+    expect(withPictures(artists, undefined)[0]?.artwork).toBeUndefined();
   });
 
   it("does not take a name like constructor for a picture", () => {

@@ -17,11 +17,11 @@ export function LibraryArtists() {
   const { term } = useSearch();
   const { data: albums, isPending, isError } = useSignedInQuery(libraryAlbumsQuery());
 
-  const { data: pictures } = useSignedInQuery(artistPicturesQuery());
+  const { data: pictures, isError: hasNoPictures } = useSignedInQuery(artistPicturesQuery());
 
   const artists = useMemo(
-    () => withPictures(groupLibraryArtists(albums ?? []), pictures),
-    [albums, pictures],
+    () => withPictures(groupLibraryArtists(albums ?? []), hasNoPictures ? {} : pictures),
+    [albums, pictures, hasNoPictures],
   );
 
   const tiles = useMemo(
