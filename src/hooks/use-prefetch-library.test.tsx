@@ -3,10 +3,13 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { act, cleanup, render, waitFor } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { libraryAlbumsQuery } from "@/lib/music-kit/album";
 import { setAuthStatus } from "@/lib/music-kit/auth";
+import { artistPicturesQuery } from "@/lib/music-kit/library-artists";
+import { libraryPlaylistsQuery } from "@/lib/music-kit/playlists";
 import { recentlyPlayedQuery } from "@/lib/music-kit/recently-played";
 import { stubMusicKit } from "@/test/fake-music-kit";
-import { usePrefetchRecentlyPlayed } from "./use-prefetch-recently-played";
+import { usePrefetchLibrary } from "./use-prefetch-library";
 
 vi.mock("@/lib/music-kit/instance", () => ({ getMusicKit: vi.fn() }));
 
@@ -28,7 +31,7 @@ afterEach(() => {
 });
 
 function Probe() {
-  usePrefetchRecentlyPlayed();
+  usePrefetchLibrary();
   return null;
 }
 
@@ -40,17 +43,24 @@ function renderProbe() {
   );
 }
 
+const LIBRARY_QUERIES = [
+  recentlyPlayedQuery,
+  libraryAlbumsQuery,
+  libraryPlaylistsQuery,
+  artistPicturesQuery,
+];
+
 function stored() {
-  return client.getQueryState(recentlyPlayedQuery().queryKey);
+  return LIBRARY_QUERIES.map((query) => client.getQueryState(query().queryKey)?.status);
 }
 
-describe("usePrefetchRecentlyPlayed", () => {
-  it("fetches what was played lately while a person reads a detail view", async () => {
+describe("usePrefetchLibrary", () => {
+  it("fetches the whole library as soon as a person signs in", async () => {
     act(() => setAuthStatus("signed-in"));
 
     renderProbe();
 
-    await waitFor(() => expect(stored()?.status).toBe("success"));
+    await waitFor(() => expect(stored()).toEqual(LIBRARY_QUERIES.map(() => "success")));
     expect(api).toHaveBeenCalled();
   });
 
@@ -60,7 +70,7 @@ describe("usePrefetchRecentlyPlayed", () => {
     renderProbe();
 
     await waitFor(() => expect(client.isFetching()).toBe(0));
-    expect(stored()).toBeUndefined();
+    expect(stored()).toEqual(LIBRARY_QUERIES.map(() => undefined));
     expect(api).not.toHaveBeenCalled();
   });
 
@@ -68,7 +78,7 @@ describe("usePrefetchRecentlyPlayed", () => {
     act(() => setAuthStatus("signed-in"));
 
     renderProbe();
-    await waitFor(() => expect(stored()?.status).toBe("success"));
+    await waitFor(() => expect(stored()).toEqual(LIBRARY_QUERIES.map(() => "success")));
 
     const asked = api.mock.calls.length;
 

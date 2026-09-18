@@ -14,6 +14,7 @@ import {
   useAuthStatus,
   useDemoModeHotkey,
   usePersistedCache,
+  usePrefetchLibrary,
   useResetWhenSignedOut,
 } from "@/hooks";
 import { fireConfetti } from "@/lib/confetti";
@@ -29,6 +30,7 @@ export function MusicKitGate({ children }: { children: ReactNode }) {
 
   useResetWhenSignedOut();
   usePersistedCache();
+  usePrefetchLibrary();
   useDemoModeHotkey();
 
   useEffect(() => {

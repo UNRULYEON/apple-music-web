@@ -14,6 +14,7 @@ vi.mock("@/lib/music-kit/instance", () => ({ getMusicKit: vi.fn() }));
 vi.mock("@/lib/confetti", () => ({ fireConfetti: vi.fn() }));
 vi.mock("@/hooks/use-reset-when-signed-out", () => ({ useResetWhenSignedOut: vi.fn() }));
 vi.mock("@/hooks/use-persisted-cache", () => ({ usePersistedCache: vi.fn() }));
+vi.mock("@/hooks/use-prefetch-library", () => ({ usePrefetchLibrary: vi.fn() }));
 vi.mock("@/hooks/use-demo-mode-hotkey", () => ({ useDemoModeHotkey: vi.fn() }));
 
 const confetti = vi.mocked(fireConfetti);

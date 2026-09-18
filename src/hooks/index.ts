@@ -10,7 +10,7 @@ export { usePersistedCache } from "./use-persisted-cache";
 export { usePlaybackTime } from "./use-playback-time";
 export { usePlayer } from "./use-player";
 export { usePlayerHotkeys } from "./use-player-hotkeys";
-export { usePrefetchRecentlyPlayed } from "./use-prefetch-recently-played";
+export { usePrefetchLibrary } from "./use-prefetch-library";
 export { useResetWhenSignedOut } from "./use-reset-when-signed-out";
 export { useSearch } from "./use-search";
 export { useCloseSidebarOnMobile, useSidebar } from "./use-sidebar";
