@@ -3,6 +3,7 @@ const PREFIX = "apple-music-web";
 export const STORAGE_KEYS = {
   cache: `${PREFIX}.cache`,
   demoMode: `${PREFIX}.demo-mode`,
+  devtools: `${PREFIX}.devtools`,
   devtoolsToken: `${PREFIX}.devtools-token`,
   notificationNotice: `${PREFIX}.notification-notice`,
   nowPlaying: `${PREFIX}.now-playing`,

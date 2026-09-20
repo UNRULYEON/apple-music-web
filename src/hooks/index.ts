@@ -3,6 +3,7 @@ export { useBackdrop } from "./use-backdrop";
 export { useDebounced } from "./use-debounced";
 export { useDemoMode } from "./use-demo-mode";
 export { useDemoModeHotkey } from "./use-demo-mode-hotkey";
+export { useDevtools } from "./use-devtools";
 export { useIsHydrated } from "./use-is-hydrated";
 export { useIsomorphicLayoutEffect } from "./use-isomorphic-layout-effect";
 export { useIsMobile, useMediaQuery } from "./use-media-query";

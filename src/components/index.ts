@@ -3,6 +3,7 @@ export { ArtworkImage } from "./artwork";
 export { BackButton } from "./back-button";
 export { CommandMenu, CommandMenuTrigger } from "./command-menu";
 export { DetailsView } from "./details-view";
+export { Devtools } from "./devtools";
 export { DrmNotice } from "./drm-notice";
 export { LibraryAlbums } from "./library-albums";
 export { LibraryArtists } from "./library-artists";
