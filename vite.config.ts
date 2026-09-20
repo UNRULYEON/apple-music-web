@@ -8,7 +8,7 @@ import { defineConfig } from "vite";
 export default defineConfig({
   resolve: { tsconfigPaths: true },
   plugins: [
-    devtools(),
+    devtools({ removeDevtoolsOnBuild: false }),
     cloudflare({ viteEnvironment: { name: "ssr" } }),
     tailwindcss(),
     tanstackStart({ spa: { enabled: true } }),
