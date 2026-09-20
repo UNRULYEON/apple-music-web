@@ -34,7 +34,7 @@ export function MusicKitDevtools({ theme }: { theme: "light" | "dark" }) {
     <div
       className={cn(
         "flex h-full flex-col gap-4 bg-background p-4 font-sans text-sm text-foreground",
-        theme === "dark" && "dark",
+        theme === "dark" ? "dark" : "light",
       )}
     >
       <div className="flex flex-col gap-2">

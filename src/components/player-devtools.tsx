@@ -33,7 +33,7 @@ export function PlayerDevtools({ theme }: { theme: "light" | "dark" }) {
     <div
       className={cn(
         "flex h-full flex-col gap-4 overflow-auto bg-background p-4 font-sans text-sm text-foreground",
-        theme === "dark" && "dark",
+        theme === "dark" ? "dark" : "light",
       )}
     >
       <Section title="Now playing">
