@@ -28,7 +28,8 @@ export function DevtoolsPanel() {
         },
         queryDevtools,
         hotkeysDevtoolsPlugin(),
-        ...(import.meta.env.DEV ? [appleAuthDevtools, playerDevtools] : []),
+        appleAuthDevtools,
+        playerDevtools,
       ]}
     />
   );
